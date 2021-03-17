@@ -23,6 +23,7 @@ import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3Client;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -35,6 +36,7 @@ import java.io.File;
 public class S3ServiceTest {
 
   @Test
+  @Ignore
   public void testS3() throws Exception {
     String bucket = "hyros-foxtest";
     String testData = "this is a sample test data";

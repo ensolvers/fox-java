@@ -58,7 +58,7 @@ public class S3Service {
       PutObjectRequest putObjectRequest =  new PutObjectRequest(bucketName, keyName, file);
       s3Client.putObject(putObjectRequest);
 
-      logger.info("LOG_PREFIX + \"[END] Uploading a new object to S3 from a file");
+      logger.info(LOG_PREFIX + "[END] Uploading a new object to S3 from a file");
     } catch (AmazonServiceException ase) {
       logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " +
               "means your request made it " +
@@ -83,12 +83,12 @@ public class S3Service {
    */
   public File get(String bucketName, String keyName) {
     try {
-      logger.info(LOG_PREFIX + "[START] Getting data of a encrypted object of S3");
+      logger.info(LOG_PREFIX + "[START] Getting data of object of S3");
 
       GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, keyName);
       S3Object s3Object = s3Client.getObject(getObjectRequest);
 
-      logger.info(LOG_PREFIX + "[END] Getting data of a encrypted object of S3");
+      logger.info(LOG_PREFIX + "[END] Getting data of object of S3");
 
       File tmpFile = File.createTempFile("fox", "s3");
       S3ObjectInputStream inputStream = s3Object.getObjectContent();
