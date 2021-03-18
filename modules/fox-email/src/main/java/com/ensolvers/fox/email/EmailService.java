@@ -77,7 +77,7 @@ public class EmailService {
 
     // Create a message with the specified information.
     MimeMessage msg = new MimeMessage(session);
-    msg.setFrom(new InternetAddress(this.from, FROMNAME));
+    msg.setFrom(new InternetAddress(this.from, this.from));
     msg.setRecipient(Message.RecipientType.TO, new InternetAddress(mailTo));
     msg.setSubject(subject);
     msg.setContent(body, "text/html");
