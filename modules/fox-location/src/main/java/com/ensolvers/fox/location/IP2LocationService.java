@@ -23,6 +23,14 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -48,7 +56,7 @@ public class IP2LocationService {
 
   private static volatile IP2LocationService INSTANCE;
   private Map<String, String> countryToContinentMap;
-  private static String resourceFile = "IP2LOCATION-LITE-DB5.CSV";
+  private static String resourceFile = "IP2LOCATION-LITE-DB5.tar.gz";
 
   /**
    * Creates a new service and sets its input stream
@@ -185,13 +193,16 @@ public class IP2LocationService {
   public void read() {
     this.loadingLock.lock();
     this.infos = new ArrayList<IP2LocationInfo>(4000000);
+    this.readFromTarGZ(this.csvIO);
+  }
 
-    Iterator<CSVRecord> iterator = null;
+  private void basicRead(InputStream io) {
+    CSVParser parser;
+    Iterator<CSVRecord> iterator;
     Reader reader = null;
-    CSVParser parser = null;
 
     try {
-      reader = new InputStreamReader(this.csvIO);
+      reader = new InputStreamReader(io);
       parser = new CSVParser(reader, CSVFormat.DEFAULT);
       iterator = parser.iterator();
 
@@ -219,6 +230,26 @@ public class IP2LocationService {
       IOUtils.closeQuietly(this.csvIO);
       this.hasLoaded = true;
       this.loadingLock.unlock();
+    }
+  }
+
+  private void readFromTarGZ(InputStream tarGz) {
+    try (InputStream bi = new BufferedInputStream(tarGz);
+         InputStream gzi = new GzipCompressorInputStream(bi);
+         ArchiveInputStream o = new TarArchiveInputStream(gzi)) {
+
+      ArchiveEntry entry = null;
+
+      while ((entry = o.getNextEntry()) != null) {
+        if (!o.canReadEntryData(entry)) {
+          // log something?
+          continue;
+        }
+        this.basicRead(o);
+        return;
+      }
+    } catch (IOException e) {
+      logger.error("Error fetching data from tar gz csv file", e);
     }
   }
 
