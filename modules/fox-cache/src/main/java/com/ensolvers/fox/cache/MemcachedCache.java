@@ -1,7 +1,25 @@
+/* Copyright (c) 2021 Ensolvers
+ * All Rights Reserved
+ *
+ * The contents of this file is dual-licensed under 2 alternative Open Source/Free licenses: LGPL 2.1 or later and
+ * Apache License 2.0. (starting with JNA version 4.0.0).
+ *
+ * You can freely decide which license you want to apply to the project.
+ *
+ * You may obtain a copy of the LGPL License at: http://www.gnu.org/licenses/licenses.html
+ *
+ * A copy is also included in the downloadable source code package
+ * containing JNA, in file "LGPL2.1".
+ *
+ * You may obtain a copy of the Apache License at: http://www.apache.org/licenses/
+ *
+ * A copy is also included in the downloadable source code package
+ * containing JNA, in file "AL2.0".
+ */
 package com.ensolvers.fox.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.spy.memcached.MemcachedClient;
 import org.slf4j.Logger;
@@ -17,21 +35,18 @@ import java.util.function.Function;
  * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 public class MemcachedCache<T> {
-
+    ;
     Logger logger = LoggerFactory.getLogger(MemcachedCache.class);
-
-    protected ObjectMapper mapper;
 
     protected final MemcachedClient memcachedClient;
     protected final Function<String, T> fetchFunction;
     protected final String keyPrefix;
-    protected final TypeReference<T> objectClass;
+    protected final JavaType objectType;
     protected final int expirationTimeInSeconds;
 
+    private final ObjectMapper objectMapper;
     private Function<T, String> customSerializer;
     private Function<String, T> customDeserializer;
-
-    private static String NULL_VALUE = "null";
 
     /**
      * Creates a cache instance that allows to store single objects
@@ -39,20 +54,19 @@ public class MemcachedCache<T> {
      * @param memcachedClient         the cache instance
      * @param fetchFunction           the function to fetch the object
      * @param keyPrefix               the prefix that will be used to create the key
-     * @param objectClass             the object class which model will be stored. The class MUST have a default
-     *                                constructor for jackson
      * @param expirationTimeInSeconds the default expiration time
      */
     public MemcachedCache(
             MemcachedClient memcachedClient,
             Function<String, T> fetchFunction,
             String keyPrefix,
-            TypeReference<T> objectClass,
+            Class<T> objectClass,
             int expirationTimeInSeconds) {
         this.memcachedClient = memcachedClient;
         this.fetchFunction = fetchFunction;
         this.keyPrefix = keyPrefix;
-        this.objectClass = objectClass;
+        this.objectMapper = new ObjectMapper();
+        this.objectType = this.objectMapper.getTypeFactory().constructType(objectClass);
         this.expirationTimeInSeconds = expirationTimeInSeconds;
     }
 
@@ -62,8 +76,6 @@ public class MemcachedCache<T> {
      * @param memcachedClient         the cache instance
      * @param fetchFunction           the function to fetch the object
      * @param keyPrefix               the prefix that will be used to create the key
-     * @param objectClass             the object class which model will be stored. The class MUST have a default
-     *                                constructor for jackson
      * @param expirationTimeInSeconds the default expiration time
      * @param customSerializer        custom serializer.
      * @param customDeserializer      custom deserializer.
@@ -72,7 +84,7 @@ public class MemcachedCache<T> {
             MemcachedClient memcachedClient,
             Function<String, T> fetchFunction,
             String keyPrefix,
-            TypeReference<T> objectClass,
+            Class<T> objectClass,
             int expirationTimeInSeconds,
             Function<T, String> customSerializer,
             Function<String, T> customDeserializer) {
@@ -89,7 +101,8 @@ public class MemcachedCache<T> {
      * @return the object
      */
     public T get(String key) {
-        String serializedObject = this.memcachedClient.get(this.computeKey(key)).toString();
+        String computedKey = this.computeKey(key);
+        String serializedObject = (String) this.memcachedClient.get(computedKey);
 
         // return the object
         if (serializedObject != null) {
@@ -98,20 +111,20 @@ public class MemcachedCache<T> {
             } catch (Exception e) {
                 logger.error(
                         "Error when trying to parse object with " +
-                                "key: [" + this.computeKey(key) + "], " +
-                                "type: [" + this.objectClass.getType().getTypeName() + "], " +
+                                "key: [" + computedKey + "], " +
+                                "type: [" + this.objectType.getTypeName() + "], " +
                                 "content: [" + serializedObject + "]", e);
             }
         }
 
-        // cache miss, go get the object, save as null
+        // cache miss, go get the object
         T freshObject = fetchFunction.apply(key);
 
         return this.put(key, freshObject);
     }
 
     /**
-     * Method for refresh an existing entry (distinct from put) to the cache
+     * Refreshes
      *
      * @param key         The key of the object
      * @param freshObject the object
@@ -137,7 +150,7 @@ public class MemcachedCache<T> {
         } catch (JsonProcessingException e) {
             logger.error("Error when trying to serialize object with " +
                             "key [" + key + "], " +
-                            "type: [" + this.objectClass.getType().getTypeName() + "]",
+                            "type: [" + this.objectType.getTypeName() + "]",
                     e);
         }
 
@@ -151,17 +164,17 @@ public class MemcachedCache<T> {
         }
 
         // ... otherwise, use Jackson
-        return this.mapper.writeValueAsString(object);
+        return this.objectMapper.writeValueAsString(object);
     }
 
-    protected T convertToObject(String object) throws IOException {
+    protected T convertToObject(String serializedObject) throws IOException {
         // If custom deserializer has been provided, use it...
         if (this.customDeserializer != null) {
-            return this.customDeserializer.apply(object.toString());
+            return this.customDeserializer.apply(serializedObject);
         }
 
         // ... otherwise, use Jackson
-        return this.mapper.readValue(object.toString(), this.objectClass);
+        return this.objectMapper.readValue(serializedObject, this.objectType);
     }
 
     public void invalidate(String key) {

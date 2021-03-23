@@ -18,14 +18,15 @@
  */
 package com.ensolvers.fox.location;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IP2LocationServiceIT {
 
   @Test
-  @Ignore // Test performance
+  @Disabled // Test performance
   public void testLocation() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
     IP2LocationService service = IP2LocationService.getInstance(true);
     Thread.sleep(100);
@@ -34,36 +35,36 @@ public class IP2LocationServiceIT {
     IP2LocationInfo info = service.getInfoFor("190.106.47.14");
     long toTime = System.currentTimeMillis();
 
-    Assert.assertNotNull(info.getCountryCode());
-    Assert.assertNotNull(info.getCountryName());
-    Assert.assertNotNull(info.getCityName());
-    Assert.assertTrue(info.getLat() != 0);
-    Assert.assertTrue(info.getLng() != 0);
+    assertNotNull(info.getCountryCode());
+    assertNotNull(info.getCountryName());
+    assertNotNull(info.getCityName());
+    assertTrue(info.getLat() != 0);
+    assertTrue(info.getLng() != 0);
     System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
     
     fromTime = System.currentTimeMillis();
     info = service.getInfoFor("192.91.253.248");
     toTime = System.currentTimeMillis();
 
-    Assert.assertNotNull(info.getCountryCode());
-    Assert.assertNotNull(info.getCountryName());
-    Assert.assertNotNull(info.getCityName());
-    Assert.assertTrue(info.getLat() != 0);
-    Assert.assertTrue(info.getLng() != 0);
+    assertNotNull(info.getCountryCode());
+    assertNotNull(info.getCountryName());
+    assertNotNull(info.getCityName());
+    assertTrue(info.getLat() != 0);
+    assertTrue(info.getLng() != 0);
     System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
-    Assert.assertTrue(toTime - fromTime < 5);
+    assertTrue(toTime - fromTime < 5);
 
     fromTime = System.currentTimeMillis();
     info = service.getInfoFor("136.0.16.217");
     toTime = System.currentTimeMillis();
 
-    Assert.assertNotNull(info.getCountryCode());
-    Assert.assertNotNull(info.getCountryName());
-    Assert.assertNotNull(info.getCityName());
-    Assert.assertTrue(info.getLat() != 0);
-    Assert.assertTrue(info.getLng() != 0);
+    assertNotNull(info.getCountryCode());
+    assertNotNull(info.getCountryName());
+    assertNotNull(info.getCityName());
+    assertTrue(info.getLat() != 0);
+    assertTrue(info.getLng() != 0);
     System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
-    Assert.assertTrue(toTime - fromTime < 5);
+    assertTrue(toTime - fromTime < 5);
 
     fromTime = System.currentTimeMillis();
     for (int i = 0; i < 10000000; i++) {
@@ -71,13 +72,13 @@ public class IP2LocationServiceIT {
     }
     toTime = System.currentTimeMillis();
     
-    Assert.assertNotNull(info.getCountryCode());
-    Assert.assertNotNull(info.getCountryName());
-    Assert.assertNotNull(info.getCityName());
-    Assert.assertTrue(info.getLat() != 0);
-    Assert.assertTrue(info.getLng() != 0);
+    assertNotNull(info.getCountryCode());
+    assertNotNull(info.getCountryName());
+    assertNotNull(info.getCityName());
+    assertTrue(info.getLat() != 0);
+    assertTrue(info.getLng() != 0);
     System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
-    Assert.assertTrue(toTime - fromTime < 30000); //this may fail depending on the machine
+    assertTrue(toTime - fromTime < 30000); //this may fail depending on the machine
   }
 
   @Test
@@ -90,44 +91,44 @@ public class IP2LocationServiceIT {
 
     for (String euIP : europeIPs) {
       IP2LocationInfo info = service.getInfoFor(euIP);
-      Assert.assertEquals("EU", info.getContinentCode());
-      Assert.assertTrue(service.isIpFromEU(euIP));
+      assertEquals("EU", info.getContinentCode());
+      assertTrue(service.isIpFromEU(euIP));
     }
 
     for (String noEuIP : nonEuropeIPs) {
       IP2LocationInfo info = service.getInfoFor(noEuIP);
-      Assert.assertNotEquals("EU", info.getContinentCode());
-      Assert.assertFalse(service.isIpFromEU(noEuIP));
+      assertNotEquals("EU", info.getContinentCode());
+      assertFalse(service.isIpFromEU(noEuIP));
     }
   }
 
   @Test
   public void testValidIp() {
     //IPv4
-    Assert.assertTrue(NetworkUtils.isValidIPv4Address("69.89.31.226"));
-    Assert.assertTrue(NetworkUtils.isValidIPv4Address("0.0.0.0"));
-    Assert.assertTrue(NetworkUtils.isValidIPv4Address("255.255.255.255"));
-    Assert.assertTrue(NetworkUtils.isValidIPv4Address("192.0.168.1"));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192.0.168"));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192.0.168:1"));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192.0.168.1."));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192.0.A.1"));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192.0.256.1"));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192.0.168.-1"));
-    Assert.assertFalse(NetworkUtils.isValidIPv4Address("192_0_168_1"));
+    assertTrue(NetworkUtils.isValidIPv4Address("69.89.31.226"));
+    assertTrue(NetworkUtils.isValidIPv4Address("0.0.0.0"));
+    assertTrue(NetworkUtils.isValidIPv4Address("255.255.255.255"));
+    assertTrue(NetworkUtils.isValidIPv4Address("192.0.168.1"));
+    assertFalse(NetworkUtils.isValidIPv4Address("192.0.168"));
+    assertFalse(NetworkUtils.isValidIPv4Address("192.0.168:1"));
+    assertFalse(NetworkUtils.isValidIPv4Address("192.0.168.1."));
+    assertFalse(NetworkUtils.isValidIPv4Address("192.0.A.1"));
+    assertFalse(NetworkUtils.isValidIPv4Address("192.0.256.1"));
+    assertFalse(NetworkUtils.isValidIPv4Address("192.0.168.-1"));
+    assertFalse(NetworkUtils.isValidIPv4Address("192_0_168_1"));
 
 
     //IPv6
-    Assert.assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8::1428:57ab"));
-    Assert.assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8::CD30"));
-    Assert.assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8:0000:0000:0000::1428:57ab"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("ABCD::6789:ABCD::EF01"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001::0DB8::CD30"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8Z:2de::e13"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8:2de::e13:"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB85::CD30"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB8:1001:0000:1001::1428:57ab:AC43"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB8:1428:57ab:AC43"));
-    Assert.assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8:::1400:57ab:AC43"));
+    assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8::1428:57ab"));
+    assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8::CD30"));
+    assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8:0000:0000:0000::1428:57ab"));
+    assertFalse(NetworkUtils.isValidIPv6Address("ABCD::6789:ABCD::EF01"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001::0DB8::CD30"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8Z:2de::e13"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8:2de::e13:"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB85::CD30"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB8:1001:0000:1001::1428:57ab:AC43"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB8:1428:57ab:AC43"));
+    assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8:::1400:57ab:AC43"));
   }
 }

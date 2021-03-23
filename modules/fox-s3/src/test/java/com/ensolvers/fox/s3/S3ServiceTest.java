@@ -22,11 +22,12 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3Client;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A Test case for {@link S3Service}
@@ -36,7 +37,7 @@ import java.io.File;
 public class S3ServiceTest {
 
   @Test
-  @Ignore
+  @Disabled
   public void testS3() throws Exception {
     String bucket = "hyros-foxtest";
     String testData = "this is a sample test data";
@@ -46,9 +47,9 @@ public class S3ServiceTest {
     AmazonS3Client client = new AmazonS3Client(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)));
     S3Service service = new S3Service(client);
 
-    //read non existant file
+    //read non existent file
     File file = service.get(bucket ,"t1");
-    Assert.assertNull(file);
+    assertNull(file);
 
     //no fail
     service.delete(bucket, "t1");
@@ -60,14 +61,14 @@ public class S3ServiceTest {
 
     //read existant file
     file = service.get(bucket ,"t1");
-    Assert.assertNotNull(file);
+    assertNotNull(file);
     String contents = FileUtils.readFileToString(file, "UTF8");
-    Assert.assertEquals(testData, contents);
+    assertEquals(testData, contents);
 
     //no fail
     service.delete(bucket, "t1");
 
     file = service.get(bucket ,"t1");
-    Assert.assertNull(file);
+    assertNull(file);
   }
 }
