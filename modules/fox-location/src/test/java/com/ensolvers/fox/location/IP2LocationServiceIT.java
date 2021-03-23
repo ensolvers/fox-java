@@ -25,7 +25,7 @@ import org.junit.Test;
 public class IP2LocationServiceIT {
 
   @Test
-  //@Ignore // Test performance
+  @Ignore // Test performance
   public void testLocation() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
     IP2LocationService service = IP2LocationService.getInstance(true);
     Thread.sleep(100);
