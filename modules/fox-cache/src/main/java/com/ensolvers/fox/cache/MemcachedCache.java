@@ -21,6 +21,7 @@ package com.ensolvers.fox.cache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import net.spy.memcached.MemcachedClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,6 @@ import java.util.function.Function;
  * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 public class MemcachedCache<T> {
-    ;
     Logger logger = LoggerFactory.getLogger(MemcachedCache.class);
 
     protected final MemcachedClient memcachedClient;
@@ -51,10 +51,13 @@ public class MemcachedCache<T> {
     /**
      * Creates a cache instance that allows to store single objects
      *
-     * @param memcachedClient         the cache instance
-     * @param fetchFunction           the function to fetch the object
-     * @param keyPrefix               the prefix that will be used to create the key
-     * @param expirationTimeInSeconds the default expiration time
+     * @param memcachedClient         the memcached client used to store the objects
+     * @param fetchFunction           the function to fetch the underlying object if not found in the cache
+     * @param keyPrefix               the prefix that will be used to create the keys - since several caches can use
+     *                                the same memcached instance, it is important that every one has its own
+     *                                prefix to avoid collisions
+     * @param objectClass             type of objects that will be stored in the cache
+     * @param expirationTimeInSeconds the item expiration time in seconds
      */
     public MemcachedCache(
             MemcachedClient memcachedClient,
@@ -71,13 +74,43 @@ public class MemcachedCache<T> {
     }
 
     /**
+     * Creates a cache instance that allows to store single objects
+     *
+     * @param memcachedClient         the memcached client used to store the objects
+     * @param fetchFunction           the function to fetch the underlying object if not found in the cache
+     * @param keyPrefix               the prefix that will be used to create the keys - since several caches can use
+     *                                the same memcached instance, it is important that every one has its own
+     *                                prefix to avoid collisions
+     * @param objectTypeFactory       when using the (default) Jackson serializer and complex objects (for instance,
+     *                                those that have parametric types like Lists) needed to be stored in the cache,
+     *                                given a Jackson TypeFactory, this function should return the final type
+     * @param expirationTimeInSeconds the item expiration time in seconds
+     */
+    public MemcachedCache(
+            MemcachedClient memcachedClient,
+            Function<String, T> fetchFunction,
+            String keyPrefix,
+            Function<TypeFactory, JavaType> objectTypeFactory,
+            int expirationTimeInSeconds) {
+        this.memcachedClient = memcachedClient;
+        this.fetchFunction = fetchFunction;
+        this.keyPrefix = keyPrefix;
+        this.objectMapper = new ObjectMapper();
+        this.objectType = objectTypeFactory.apply(this.objectMapper.getTypeFactory());
+        this.expirationTimeInSeconds = expirationTimeInSeconds;
+    }
+
+    /**
      * Adds custom serializer/deserializer
      *
-     * @param memcachedClient         the cache instance
-     * @param fetchFunction           the function to fetch the object
-     * @param keyPrefix               the prefix that will be used to create the key
-     * @param expirationTimeInSeconds the default expiration time
-     * @param customSerializer        custom serializer.
+     * @param memcachedClient         the memcached client used to store the objects
+     * @param fetchFunction           the function to fetch the underlying object if not found in the cache
+     * @param keyPrefix               the prefix that will be used to create the keys - since several caches can use
+     *                                the same memcached instance, it is important that every one has its own
+     *                                prefix to avoid collisions
+     * @param objectClass             type of objects that will be stored in the cache
+     * @param expirationTimeInSeconds the item expiration time in seconds
+     * @param customSerializer        serializer that will be use
      * @param customDeserializer      custom deserializer.
      */
     public MemcachedCache(

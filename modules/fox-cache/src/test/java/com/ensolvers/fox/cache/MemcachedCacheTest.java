@@ -22,8 +22,10 @@ import net.spy.memcached.MemcachedClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -87,6 +89,16 @@ class MemcachedCacheTest {
             result = 31 * result + longValue.hashCode();
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "TestClass{" +
+                    "id=" + id +
+                    ", stringValue='" + stringValue + '\'' +
+                    ", integerValue=" + integerValue +
+                    ", longValue=" + longValue +
+                    '}';
+        }
     }
 
     @BeforeEach
@@ -95,9 +107,8 @@ class MemcachedCacheTest {
     }
 
     @Test
-    void testSingleObjectCache() throws InterruptedException {
+    void testFetchingAndInvalidation() throws InterruptedException {
         AtomicInteger fetchCount = new AtomicInteger();
-        AtomicLong nextId = new AtomicLong();
 
         // create simple cache for TestClass
         MemcachedCache<TestClass> cache = new MemcachedCache<TestClass>(
@@ -123,9 +134,96 @@ class MemcachedCacheTest {
         Thread.sleep(5000);
 
         // get the object again and ensure that item expired so we get a second access
-        // to the fetching method
+        // to the fetching method - however, only 1 call should be made
+        cache.get("2");
+        cache.get("2");
         cache.get("2");
         assertEquals(2, fetchCount.get());
+
+        // now invalidate the key, access 3 extra times, only 1 extra fetching should be
+        // executed
+        cache.invalidate("2");
+        cache.get("2");
+        cache.get("2");
+        cache.get("2");
+        assertEquals(3, fetchCount.get());
     }
+
+    @Test
+    void testAdvancedJacksonSerialization() {
+        AtomicInteger fetchCount = new AtomicInteger();
+
+        // create simple cache for TestClass
+        MemcachedCache<List<TestClass>> cache = new MemcachedCache<>(
+                this.memcachedClient,
+                id -> {
+                    fetchCount.getAndIncrement();
+
+                    return Arrays.asList(
+                            new TestClass(1L, "someString", 1, 1L),
+                            new TestClass(2L, "someString", 2, 2L),
+                            new TestClass(3L, "someString", 3, 3L));
+                },
+                "testClassCache2",
+                typeFactory -> typeFactory.constructCollectionType(List.class, TestClass.class),
+                3);
+
+        cache.get("any");
+        cache.get("any");
+        List<TestClass> list = cache.get("any");
+
+        // only 1 fetching should have been done if the cache worked properly
+        assertEquals(1, fetchCount.get());
+
+        // check that the deserialized list is structurally the same
+        assertEquals(3, list.size());
+        assertEquals(list.get(0), new TestClass(1L, "someString", 1, 1L));
+        assertEquals(list.get(1), new TestClass(2L, "someString", 2, 2L));
+        assertEquals(list.get(2), new TestClass(3L, "someString", 3, 3L));
+    }
+
+    @Test
+    void testCustomSerialization() {
+        AtomicInteger fetchCount = new AtomicInteger();
+
+        // create simple cache for TestClass
+        MemcachedCache<TestClass> cache = new MemcachedCache<>(
+                this.memcachedClient,
+                id -> {
+                    fetchCount.getAndIncrement();
+                    return new TestClass(Long.parseLong(id), "someString", 1, 1L);
+                },
+                "testClassCache3",
+                TestClass.class,
+                3,
+                // serialize the object using static field order and "|" as a separator
+                (TestClass instance) ->
+                            instance.getId() + "|" +
+                            instance.getStringValue() + "|" +
+                            instance.getIntegerValue() + "|" +
+                            instance.getLongValue(),
+                serialized -> {
+                    String[] parts = serialized.split("\\|");
+                    return new TestClass(
+                            Long.parseLong(parts[0]),
+                            parts[1],
+                            Integer.parseInt(parts[2]),
+                            Long.parseLong(parts[3])
+                    );
+        });
+
+
+        cache.get("2");
+        cache.get("2");
+        TestClass instance = cache.get("2");
+
+        // only 1 fetching should have been done if the cache worked properly
+        assertEquals(1, fetchCount.get());
+
+        // check that the deserialized list is structurally the same
+        assertEquals(instance, new TestClass(2L, "someString", 1, 1L));
+    }
+
+
 
 }
