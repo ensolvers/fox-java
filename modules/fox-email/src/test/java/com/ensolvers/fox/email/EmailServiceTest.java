@@ -18,8 +18,8 @@
  */
 package com.ensolvers.fox.email;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * A Test case for {@link EmailService}
@@ -29,7 +29,7 @@ import org.junit.Test;
 public class EmailServiceTest {
 
   @Test
-  @Ignore
+  @Disabled
   public void testEmail() throws Exception {
     EmailService service = new EmailService("host", 465, "username", "password", "info@ensolvers.com");
     service.sendMailTo("esteban.roblesluna@gmail.com", "hola", "Hola esteban como estas?");
