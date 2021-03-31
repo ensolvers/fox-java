@@ -6,7 +6,7 @@
   <groupId>com.ensolvers.fox-java</groupId>
   <artifactId>main</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <name>Fox</name>
   <description>Fox - Parent project</description>
 
@@ -110,15 +110,15 @@
   <distributionManagement>
     <site>
       <id>s3.site</id>
-      <url>s3://ensolvers.com/site</url>
+      <url>s3://maven.ensolvers.com/site</url>
     </site>
     <repository>
       <id>s3.release</id>
-      <url>s3://ensolvers.com/release</url>
+      <url>s3://maven.ensolvers.com/release</url>
     </repository>
     <snapshotRepository>
       <id>s3.snapshot</id>
-      <url>s3://ensolvers.com/snapshot</url>
+      <url>s3://maven.ensolvers.com/snapshot</url>
     </snapshotRepository>
   </distributionManagement>
 
