@@ -6,7 +6,7 @@
   <groupId>com.ensolvers.fox-java</groupId>
   <artifactId>main</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1</version>
+  <version>0.0.1-SNAPSHOT</version>
   <name>Fox</name>
   <description>Fox - Parent project</description>
 
