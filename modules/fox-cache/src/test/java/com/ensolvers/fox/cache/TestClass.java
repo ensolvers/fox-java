@@ -34,14 +34,24 @@ public class TestClass {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         TestClass testClass = (TestClass) o;
 
-        if (!id.equals(testClass.id)) return false;
-        if (!stringValue.equals(testClass.stringValue)) return false;
-        if (!integerValue.equals(testClass.integerValue)) return false;
+        if (!id.equals(testClass.id)) {
+            return false;
+        }
+        if (!stringValue.equals(testClass.stringValue)) {
+            return false;
+        }
+        if (!integerValue.equals(testClass.integerValue)) {
+            return false;
+        }
         return longValue.equals(testClass.longValue);
     }
 

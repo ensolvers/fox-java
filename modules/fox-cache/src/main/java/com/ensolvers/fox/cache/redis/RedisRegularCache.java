@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
+import com.ensolvers.fox.cache.CacheSerializingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -19,7 +20,6 @@ public class RedisRegularCache<V> extends RedisCache<V> {
         super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer);
     }
 
-
     /**
      * Given a key returns the associated value. Return null if there's no such key.
      *
@@ -29,14 +29,10 @@ public class RedisRegularCache<V> extends RedisCache<V> {
     public V get(String key) {
         try {
             return this.deserializeValue(this.redis.get(this.computeKey(key)));
-        } catch (JsonProcessingException e) {
-            logger.error("Error when trying to serialize key", e);
         } catch (IOException e) {
-            logger.error("Error when trying to deserialize value", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
-        return null;
     }
-
 
     /**
      * Sets a value to a key. Overrides previous value if key already exists.
@@ -51,9 +47,8 @@ public class RedisRegularCache<V> extends RedisCache<V> {
         try {
             this.redis.set(this.computeKey(key), this.serializeValue(value), new SetArgs().ex(expirationTime));
         } catch (JsonProcessingException e) {
-            logger.error("Error when trying to serialize key or value", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
     }
-
 
 }

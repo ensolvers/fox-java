@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 public class RedisCacheTest {
     /**
      * Tests ignored until redis instance is setup
@@ -28,7 +27,6 @@ public class RedisCacheTest {
     RedisClient client;
     RedisCacheFactory factory;
 
-
     @BeforeEach
     public void setUp() {
         this.client = RedisClient.create(REDIS_URI);
@@ -38,12 +36,12 @@ public class RedisCacheTest {
     @Test
     @Disabled
     public void redisRegularCacheTestCase() {
-        RedisRegularCache<String> cache = (RedisRegularCache<String>) this.factory.getCache("testRegularCacheString", 5, String.class, RedisCacheType.REGULAR);
-        RedisRegularCache<String> cache2 = (RedisRegularCache<String>) this.factory.getCache("testRegularCacheString2", 5, String.class, RedisCacheType.REGULAR);
+        RedisRegularCache<String> cache = this.factory.getCache("testRegularCacheString", 5, String.class, RedisRegularCache.class);
+        RedisRegularCache<String> cache2 = this.factory.getCache("testRegularCacheString2", 5, String.class, RedisRegularCache.class);
 
-        assertFalse(cache.existsKey("testKey-1"));
+        assertFalse(cache.keyExists("testKey-1"));
         cache.set("testKey-1", "testValue-1");
-        assertTrue(cache.existsKey("testKey-1"));
+        assertTrue(cache.keyExists("testKey-1"));
 
         cache.set("testKey-2", "testValue-2");
         cache.set("testKey-3", "testValue-3");
@@ -70,8 +68,8 @@ public class RedisCacheTest {
     @Test
     @Disabled
     public void redisListCacheTestCase() {
-        RedisListCache<String> cache = (RedisListCache<String>) this.factory.getCache("testListCacheString", 1, String.class, RedisCacheType.LIST);
-        RedisListCache<String> cache2 = (RedisListCache<String>) this.factory.getCache("testListCacheString2", 3, String.class, RedisCacheType.LIST);
+        RedisListCache<String> cache = this.factory.getCache("testListCacheString", 1, String.class, RedisListCache.class);
+        RedisListCache<String> cache2 = this.factory.getCache("testListCacheString2", 3, String.class, RedisListCache.class);
 
         cache.push("testKey-1", "testValue-1");
         cache.push("testKey-1", "testValue-2");
@@ -105,8 +103,8 @@ public class RedisCacheTest {
     @Test
     @Disabled
     public void redisSetCacheTestCase() {
-        RedisSetCache<String> cache = (RedisSetCache<String>) this.factory.getCache("testSetCacheString", 1, String.class, RedisCacheType.SET);
-        RedisSetCache<String> cache2 = (RedisSetCache<String>) this.factory.getCache("testSetCacheString2", 2, String.class, RedisCacheType.SET);
+        RedisSetCache<String> cache = this.factory.getCache("testSetCacheString", 1, String.class, RedisSetCache.class);
+        RedisSetCache<String> cache2 = this.factory.getCache("testSetCacheString2", 2, String.class, RedisSetCache.class);
         Set<String> cache2set = new HashSet<>(Collections.emptySet());
         cache2set.add("repeatedValue-1");
 
@@ -148,10 +146,10 @@ public class RedisCacheTest {
         RedisRegularCache<Character> characterCache;
         RedisRegularCache<Boolean> booleanCache;
 
-        longCache = (RedisRegularCache<Long>) this.factory.getCache("testRegularCacheLong", 1, Long.class, RedisCacheType.REGULAR);
-        integerCache = (RedisRegularCache<Integer>) this.factory.getCache("testRegularCacheInteger", 1, Integer.class, RedisCacheType.REGULAR);
-        characterCache = (RedisRegularCache<Character>) this.factory.getCache("testRegularCacheCharacter", 1, Character.class, RedisCacheType.REGULAR);
-        booleanCache = (RedisRegularCache<Boolean>) this.factory.getCache("testRegularCacheBoolean", 1, Boolean.class, RedisCacheType.REGULAR);
+        longCache = this.factory.getCache("testRegularCacheLong", 1, Long.class, RedisRegularCache.class);
+        integerCache = this.factory.getCache("testRegularCacheInteger", 1, Integer.class,RedisRegularCache.class);
+        characterCache = this.factory.getCache("testRegularCacheCharacter", 1, Character.class, RedisRegularCache.class);
+        booleanCache = this.factory.getCache("testRegularCacheBoolean", 1, Boolean.class, RedisRegularCache.class);
 
 
         Long longKey = 1L;
@@ -182,9 +180,9 @@ public class RedisCacheTest {
         RedisListCache<String> listCache;
         RedisSetCache<String> setCache;
 
-        regularCache = (RedisRegularCache<String>) this.factory.getCache("testRegularCacheString3", 3, String.class, RedisCacheType.REGULAR);
-        listCache = (RedisListCache<String>) this.factory.getCache("testListCacheString2", 3, String.class, RedisCacheType.LIST);
-        setCache = (RedisSetCache<String>) this.factory.getCache("testSetCacheString3", 3, String.class, RedisCacheType.SET);
+        regularCache = this.factory.getCache("testRegularCacheString3", 3, String.class, RedisRegularCache.class);
+        listCache = this.factory.getCache("testListCacheString2", 3, String.class, RedisListCache.class);
+        setCache = this.factory.getCache("testSetCacheString3", 3, String.class, RedisSetCache.class);
 
         String regularCacheKey = "regularCacheKey";
         String regularCacheValue = "regularCacheValue";
@@ -194,7 +192,6 @@ public class RedisCacheTest {
 
         String setCacheKey = "setCacheKey";
         String setCacheValue = "setCacheValue";
-
 
         regularCache.set(regularCacheKey, regularCacheValue);
         listCache.push(listCacheKey, listCacheValue);
@@ -217,9 +214,9 @@ public class RedisCacheTest {
 
         TimeUnit.SECONDS.sleep(2);
 
-        regularCache.resetTTL(regularCacheKey);
-        listCache.resetTTL(listCacheKey);
-        setCache.resetTTL(setCacheKey);
+        regularCache.TTLReset(regularCacheKey);
+        listCache.TTLReset(listCacheKey);
+        setCache.TTLReset(setCacheKey);
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -232,7 +229,7 @@ public class RedisCacheTest {
     @Disabled
     public void redisCustomClassCacheTestCase() {
         RedisRegularCache<TestClass> cache;
-        cache = (RedisRegularCache<TestClass>) this.factory.getCache("testRegularCacheTestClass", 3, TestClass.class, RedisCacheType.REGULAR);
+        cache = this.factory.getCache("testRegularCacheTestClass", 3, TestClass.class, RedisRegularCache.class);
 
         String cacheKey = "regularCacheKey";
         TestClass cacheValue = new TestClass(1L, "someString", 2, 3L);
@@ -245,11 +242,11 @@ public class RedisCacheTest {
     @Disabled
     public void redisCustomSerializerTestCase() {
         RedisRegularCache<TestClass> cache;
-        cache = (RedisRegularCache<TestClass>) this.factory.getCache(
+        cache = this.factory.getCache(
                 "testRegularCacheTestClass",
                 3,
                 TestClass.class,
-                RedisCacheType.REGULAR,
+                RedisRegularCache.class,
                 // serialize the object using static field order and "|" as a separator
                 (TestClass instance) ->
                         instance.getId() + "|" +

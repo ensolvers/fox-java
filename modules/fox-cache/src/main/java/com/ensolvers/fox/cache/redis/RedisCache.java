@@ -28,7 +28,6 @@ public abstract class RedisCache<V> {
     protected final JavaType valueType;
     private final ObjectMapper objectMapper;
 
-
     public RedisCache(
             RedisCommands<String, String> redis,
             String cacheName,
@@ -48,7 +47,7 @@ public abstract class RedisCache<V> {
     }
 
     /**
-     * Serializes the key. Its implemented this way in order to simulate different topics on one cache.
+     * Obtains the final key adding a prefix so a single Redis instance can be shared by several caches.
      *
      * @param key The Key to compute.
      * @return The computed key.
@@ -58,7 +57,7 @@ public abstract class RedisCache<V> {
     }
 
     /**
-     * Serializes the value.
+     * Serializes a value instance so it can be stored in the cache.
      *
      * @param value The value to be serialized.
      * @return The serialized value.
@@ -78,14 +77,15 @@ public abstract class RedisCache<V> {
      * @return The original Value.
      */
     protected V deserializeValue(String serializedValue) throws IOException {
-        if (serializedValue == null) return null;
+        if (serializedValue == null) {
+            return null;
+        }
         if (customDeserializer != null) {
             return this.customDeserializer.apply(serializedValue);
         } else {
             return this.objectMapper.readValue(serializedValue, valueType);
         }
     }
-
 
     /**
      * Used to convert Collection<V> to String[] in order to pass it as parameter.
@@ -125,24 +125,22 @@ public abstract class RedisCache<V> {
         } while (!cursor.isFinished() && cursor.getKeys() != null && cursor.getKeys().size() > 0);
     }
 
-
     /**
      * Determines whether the key exists on the cache.
      *
      * @param key
      * @return True if the key exists, False if it doesn't.
      */
-    public Boolean existsKey(String key) {
+    public Boolean keyExists(String key) {
         return this.redis.exists(this.computeKey(key)) > 0;
     }
-
 
     /**
      * Resets the Time To Live for the entry associated with the given key.
      *
      * @param key
      */
-    public void resetTTL(String key) {
+    public void TTLReset(String key) {
         if (key == null) throw new NullPointerException("Key cannot be null");
         this.redis.expire(this.computeKey(key), expirationTime);
     }
@@ -164,7 +162,6 @@ public abstract class RedisCache<V> {
     }
 
     //Validators - for internal use
-
     protected void notEmpty(Collection collection) {
         if (collection == null || collection.size() == 0) {
             throw new IllegalArgumentException("The validated collection is empty");

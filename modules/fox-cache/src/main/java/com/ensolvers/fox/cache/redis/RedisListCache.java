@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
+import com.ensolvers.fox.cache.CacheSerializingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.api.sync.RedisCommands;
 
@@ -31,14 +32,10 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
                 result.add(this.deserializeValue(representation));
             }
             return result;
-        } catch (JsonProcessingException e) {
-            logger.error("Error when trying to serialize key", e);
         } catch (IOException e) {
-            logger.error("Error when trying to deserialize value", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
-        return null;
     }
-
 
     /**
      * Remove and get the first element of the list.
@@ -50,18 +47,16 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
         try {
             return this.deserializeValue(this.redis.lpop(this.computeKey(key)));
         } catch (IOException e) {
-            logger.error("Error when trying to deserialize value", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
-        return null;
     }
-
 
     @Override
     public void del(String key, V value) {
         try {
             this.redis.lrem(this.computeKey(key), 0, this.serializeValue(value));
         } catch (JsonProcessingException e) {
-            logger.error("Error when trying to serialize key or value", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
     }
 
@@ -102,7 +97,6 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
     public void append(String key, V value) {
         this.append(key, Collections.singletonList(value));
     }
-
 
     /**
      * Append multiple values to a list.

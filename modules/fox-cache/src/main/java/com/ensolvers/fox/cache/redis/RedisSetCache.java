@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
+import com.ensolvers.fox.cache.CacheSerializingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.api.sync.RedisCommands;
 
@@ -31,12 +32,9 @@ public class RedisSetCache<V> extends RedisCache<V> implements RedisCollection<V
                 result.add(this.deserializeValue(representation));
             }
             return result;
-        } catch (JsonProcessingException e) {
-            logger.error("Error when trying to serialize key", e);
         } catch (IOException e) {
-            logger.error("Error when trying to deserialize value", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
-        return null;
     }
 
     @Override
@@ -49,7 +47,7 @@ public class RedisSetCache<V> extends RedisCache<V> implements RedisCollection<V
         try {
             this.redis.srem(this.computeKey(key), this.collectionOfVToStringArray(values));
         } catch (JsonProcessingException e) {
-            logger.error("Error when trying to serialize key", e);
+            throw new CacheSerializingException("There was a problem during serialization", e);
         }
     }
 
