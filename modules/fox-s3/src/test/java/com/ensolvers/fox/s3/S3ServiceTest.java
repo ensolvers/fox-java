@@ -24,10 +24,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,24 +70,5 @@ public class S3ServiceTest {
 
     file = service.get(bucket ,"t1");
     assertNull(file);
-  }
-
-  @Test
-  @Disabled
-  public void testS3Multipart() {
-    String bucket = "qa-nuelife-images";
-    String accessKey = "";
-    String secretKey = "";
-    String name = "file.txt";
-    String originalFileName = "file.txt";
-    String contentType = "text/plain";
-    byte[] content = null;
-    MultipartFile mpFile = new MockMultipartFile(name,
-            originalFileName, contentType, content);
-
-    AmazonS3Client client = new AmazonS3Client(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)));
-    S3Service service = new S3Service(client);
-
-    service.put(bucket, "t1", mpFile);
   }
 }

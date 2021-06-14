@@ -25,12 +25,8 @@ import com.amazonaws.services.s3.model.*;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * The S3 service takes care of put,get and delete objects from S3
@@ -83,38 +79,28 @@ public class S3Service {
    *
    * @param bucketName the bucket
    * @param keyName the path to the file
-   * @param mpFile the MultipartFile to be uploaded
    */
-  public void put(String bucketName, String keyName, MultipartFile mpFile) {
-    try {
-      logger.info(String.format("%s[START] Uploading a new object to S3 from a file", LOG_PREFIX));
+  public String put(String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead) {
+    logger.info("{}[START] Uploading a new object to S3 from a file", LOG_PREFIX);
 
-      ObjectMetadata objectMetadata = new ObjectMetadata();
-      objectMetadata.setContentLength(mpFile.getSize());
-      PutObjectRequest request = new PutObjectRequest(
-              bucketName,
-              keyName,
-              mpFile.getInputStream(),
-              objectMetadata
-      );
-      s3Client.putObject(request);
+    var objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentLength(size);
+    var request = new PutObjectRequest(
+            bucketName,
+            keyName,
+            inputStream,
+            objectMetadata
+    );
 
-      logger.info(String.format("%s[END] Uploading a new object to S3 from a file", LOG_PREFIX));
-    } catch (AmazonServiceException ase) {
-      logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " +
-              "means your request made it " +
-              "to Amazon S3, but was rejected with an error response" +
-              " for some reason.", ase);
-    } catch (AmazonClientException ace) {
-      logger.error(LOG_PREFIX + " Caught an AmazonClientException, which " +
-              "means the client encountered " +
-              "an internal error while trying to " +
-              "communicate with S3, " +
-              "such as not being able to access the network.", ace);
-    } catch (IOException ioe) {
-      logger.error(LOG_PREFIX + " Caught an IOException, which " +
-              "might happen when the MultiPartFile is invalid.", ioe);
+    if (isPublicRead) {
+      request.setCannedAcl(CannedAccessControlList.PublicRead);
     }
+
+    s3Client.putObject(request);
+
+    logger.info("{}[END] Uploading a new object to S3 from a file", LOG_PREFIX);
+
+    return String.format("https://%s.amazonaws.com/%s", bucketName, keyName);
   }
 
   /**
