@@ -16,15 +16,21 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
       Function<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
-
   }
 
-    @Override
-    public void push(String key, V value) {
-        super.push(key, value);
-    }
+  // Defaulted to non expiring cache
+  @Override
+  public void push(String key, V value) {
+    this.push(key, value, false);
+  }
 
-    public void push(String key, V value, boolean expire) {
+  // Defaulted to non expiring cache
+  @Override
+  public void push(String key, Collection<V> values) {
+    this.push(key, values, false);
+  }
+
+  public void push(String key, V value, boolean expire) {
     notNull(value);
     this.push(key, Collections.singletonList(value), expire);
   }
@@ -32,8 +38,17 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
   public void push(String key, Collection<V> values, boolean expire) {
     notNull(key);
     notEmpty(values);
+    boolean keyExists = this.keyExists(key);
+    boolean overflowEntries = this.size(key) >= this.maxEntriesPerBlock;
+
+    if (keyExists && overflowEntries) {
+      this.redis.lpop(key);
+    }
     this.redisTransaction(
         () -> {
+          // Takes the first element if block size reached
+
+
           this.redis.lpush(this.computeKey(key), this.collectionOfVToStringArray(values));
 
           if (expire) {
@@ -43,5 +58,6 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
           return null;
         });
   }
+
 
 }

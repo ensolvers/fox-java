@@ -142,12 +142,39 @@ public class RedisCacheTest {
 
   @Test
   @Disabled
-  public void redisLimitedListCacheTestCase() {
+  public void testMaxEntriesPerBlockLimitingCorrectly() {
     RedisLimitedCache<String> cache =
-            this.factory.getLimitedListCache("testListCacheString", 1, String.class, 5);
-    RedisLimitedCache<String> cache2 =
-            this.factory.getLimitedListCache("testListCacheString2", 3, String.class, 5);
+            this.factory.getLimitedListCache(
+                    "testListCacheString",
+                    0, String.class, 3);
 
+    cache.invalidateAll();
+
+    cache.push("testKey-1", "testValue-1");
+    cache.push("testKey-1", "testValue-2");
+    cache.push("testKey-1", "testValue-3");
+
+    assertEquals(3, cache.get("testKey-1").size());
+    cache.push("testKey-1", "testValue-4");
+    cache.push("testKey-1", "testValue-5");
+
+    assertEquals(3, cache.get("testKey-1").size());
+  }
+
+  @Test
+  @Disabled
+  public void testLimitedCacheRemovingFirstItem() {
+    RedisLimitedCache<String> cache =
+            this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
+
+    cache.push("testKey-1", "testValue-1");
+    cache.push("testKey-1", "testValue-2");
+    cache.push("testKey-1", "testValue-3");
+    cache.push("testKey-1", "testValue-4");
+    cache.push("testKey-1", "testValue-5");
+
+    assertEquals("testValue-5", cache.get("testKey-1").get(0));
+    assertEquals("testValue-4", cache.get("testKey-1").get(1));
   }
 
   @Test
