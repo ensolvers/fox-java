@@ -32,7 +32,7 @@ public class RedisCacheFactory {
    */
   public <V> RedisRegularCache<V> getRegularCache(
       String name, int expireTime, Class<V> valueClass) {
-    return this.getCache(name, expireTime, valueClass, RedisRegularCache.class, null, null);
+    return this.getCache(name, expireTime, valueClass, RedisRegularCache.class, null, null, null);
   }
 
   /**
@@ -55,7 +55,8 @@ public class RedisCacheFactory {
         valueClass,
         RedisRegularCache.class,
         customSerializer,
-        customDeserializer);
+        customDeserializer,
+        null);
   }
 
   /**
@@ -67,7 +68,7 @@ public class RedisCacheFactory {
    * @param <V> Class of the values.
    */
   public <V> RedisListCache<V> getListCache(String name, int expireTime, Class<V> valueClass) {
-    return this.getCache(name, expireTime, valueClass, RedisListCache.class, null, null);
+    return this.getCache(name, expireTime, valueClass, RedisListCache.class, null, null, null);
   }
 
   /**
@@ -85,7 +86,38 @@ public class RedisCacheFactory {
       Function<V, String> customSerializer,
       Function<String, V> customDeserializer) {
     return this.getCache(
-        name, expireTime, valueClass, RedisListCache.class, customSerializer, customDeserializer);
+        name, expireTime, valueClass, RedisListCache.class, customSerializer, customDeserializer, null);
+  }
+
+  /**
+   * Creates a new RedisLimitedListCache.
+   *
+   * @param name of the cache, serves as "topic"
+   * @param expireTime time in seconds for the elements in the cache to expire.
+   * @param valueClass Class of the values.
+   * @param <V> Class of the values.
+   */
+  public <V> RedisLimitedCache<V> getLimitedListCache(String name, int expireTime, Class<V> valueClass, Integer maxEntriesPerBlock) {
+    return this.getCache(name, expireTime, valueClass, RedisLimitedCache.class, null, null, maxEntriesPerBlock);
+  }
+
+  /**
+   * Creates a new RedisLimitedListCache with custom serializers.
+   *
+   * @param name of the cache, serves as "topic"
+   * @param expireTime time in seconds for the elements in the cache to expire.
+   * @param valueClass Class of the values.
+   * @param <V> Class of the values.
+   */
+  public <V> RedisLimitedCache<V> RedisLimitedCache(
+          String name,
+          int expireTime,
+          Class<V> valueClass,
+          Function<V, String> customSerializer,
+          Function<String, V> customDeserializer,
+          Integer maxEntriesPerBlock) {
+    return this.getCache(
+            name, expireTime, valueClass, RedisLimitedCache.class, customSerializer, customDeserializer, maxEntriesPerBlock);
   }
 
   /**
@@ -97,7 +129,7 @@ public class RedisCacheFactory {
    * @param <V> Class of the values.
    */
   public <V> RedisSetCache<V> getSetCache(String name, int expireTime, Class<V> valueClass) {
-    return this.getCache(name, expireTime, valueClass, RedisSetCache.class, null, null);
+    return this.getCache(name, expireTime, valueClass, RedisSetCache.class, null, null, null);
   }
 
   /**
@@ -113,9 +145,10 @@ public class RedisCacheFactory {
       int expireTime,
       Class<V> valueClass,
       Function<V, String> customSerializer,
-      Function<String, V> customDeserializer) {
+      Function<String, V> customDeserializer,
+      Integer maxEntriesPerBlock) {
     return this.getCache(
-        name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer);
+        name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer, null);
   }
 
   /**
@@ -135,7 +168,8 @@ public class RedisCacheFactory {
       Class<V> valueClass,
       Class<C> cacheType,
       Function<V, String> customSerializer,
-      Function<String, V> customDeserializer) {
+      Function<String, V> customDeserializer,
+      Integer maxEntriesPerBlock) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException("Cache name cannot be empty");
     }
@@ -149,9 +183,10 @@ public class RedisCacheFactory {
                     int.class,
                     Class.class,
                     Function.class,
-                    Function.class)
+                    Function.class,
+                    Integer.class)
                 .newInstance(
-                    redis, name, expireTime, valueClass, customSerializer, customDeserializer);
+                    redis, name, expireTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
         caches.add(name);
         return cache;
       } catch (Exception e) {

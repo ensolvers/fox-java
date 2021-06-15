@@ -142,6 +142,16 @@ public class RedisCacheTest {
 
   @Test
   @Disabled
+  public void redisLimitedListCacheTestCase() {
+    RedisLimitedCache<String> cache =
+            this.factory.getLimitedListCache("testListCacheString", 1, String.class, 5);
+    RedisLimitedCache<String> cache2 =
+            this.factory.getLimitedListCache("testListCacheString2", 3, String.class, 5);
+
+  }
+
+  @Test
+  @Disabled
   public void redisTypesTestCase() {
     RedisRegularCache<Long> longCache;
     RedisRegularCache<Integer> integerCache;
