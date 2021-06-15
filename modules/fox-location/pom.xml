@@ -9,7 +9,6 @@
         <relativePath>../..</relativePath>
     </parent>
 
-    <groupId>com.ensolvers.fox-location</groupId>
     <artifactId>fox-location</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
