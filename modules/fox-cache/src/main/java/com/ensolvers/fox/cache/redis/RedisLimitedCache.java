@@ -18,23 +18,43 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
     super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
   }
 
-  // Defaulted to non expiring cache
+    /**
+     * Pushes an element to a non-expiring list cache that is clipped to the maxEntriesPerBlock
+     * @param key The key of the collection.
+     * @param value to be added
+     */
   @Override
   public void push(String key, V value) {
     this.push(key, value, false);
   }
 
-  // Defaulted to non expiring cache
+  /**
+  * Pushes a collection of elements to a non-expiring list cache that is clipped to the maxEntriesPerBlock
+  * @param key The key of the collection.
+  * @param values to be added.
+  */
   @Override
   public void push(String key, Collection<V> values) {
     this.push(key, values, false);
   }
 
+  /**
+   * Pushes an element to a list cache that is clipped to the maxEntriesPerBlock
+   * @param key of the collection
+   * @param value to be added
+   * @param expire Add expiration time
+   */
   public void push(String key, V value, boolean expire) {
     notNull(value);
     this.push(key, Collections.singletonList(value), expire);
   }
 
+  /**
+   * Pushes an element to a list cache that is clipped to the maxEntriesPerBlock
+   * @param key of the collection
+   * @param values to be added
+   * @param expire Add expiration time
+   */
   public void push(String key, Collection<V> values, boolean expire) {
     notNull(key);
     notEmpty(values);
@@ -46,7 +66,7 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
         () -> {
           // Takes the first element if block size reached
           if (keyExists && overflowEntries) {
-            this.redis.lpop(this.computeKey(key));
+            this.redis.rpop(this.computeKey(key));
           }
 
           this.redis.lpush(this.computeKey(key), this.collectionOfVToStringArray(values));
