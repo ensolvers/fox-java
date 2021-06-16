@@ -109,7 +109,7 @@ public class RedisCacheFactory {
    * @param valueClass Class of the values.
    * @param <V> Class of the values.
    */
-  public <V> RedisLimitedCache<V> RedisLimitedCache(
+  public <V> RedisLimitedCache<V> getLimitedListCache(
           String name,
           int expireTime,
           Class<V> valueClass,
