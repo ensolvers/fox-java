@@ -38,16 +38,16 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
   public void push(String key, Collection<V> values, boolean expire) {
     notNull(key);
     notEmpty(values);
+
     boolean keyExists = this.keyExists(key);
     boolean overflowEntries = this.size(key) >= this.maxEntriesPerBlock;
 
-    if (keyExists && overflowEntries) {
-      this.redis.lpop(key);
-    }
     this.redisTransaction(
         () -> {
           // Takes the first element if block size reached
-
+          if (keyExists && overflowEntries) {
+            this.redis.lpop(this.computeKey(key));
+          }
 
           this.redis.lpush(this.computeKey(key), this.collectionOfVToStringArray(values));
 
