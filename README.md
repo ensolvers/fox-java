@@ -17,15 +17,6 @@ In your `pom.xml`, simply add the following to enable access to our public Maven
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>ensolvers-mynvoice-arg</id>
-			<name>Ensolvers Mynvoice ARG</name>
-			<url>https://maven.ensolvers.com/release</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
 	</repositories>
 ```
 

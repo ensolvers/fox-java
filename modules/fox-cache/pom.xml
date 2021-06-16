@@ -9,7 +9,6 @@
         <relativePath>../..</relativePath>
     </parent>
 
-    <groupId>com.ensolvers.fox-cache</groupId>
     <artifactId>fox-cache</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
