@@ -18,8 +18,9 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
       int expirationTime,
       Class<V> valueClass,
       Function<V, String> customSerializer,
-      Function<String, V> customDeserializer) {
-    super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer);
+      Function<String, V> customDeserializer,
+      Integer maxEntriesPerBlock) {
+    super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
   }
 
   @Override

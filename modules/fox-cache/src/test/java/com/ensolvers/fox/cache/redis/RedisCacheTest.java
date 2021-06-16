@@ -142,6 +142,52 @@ public class RedisCacheTest {
 
   @Test
   @Disabled
+  public void testMaxEntriesPerBlockLimitingCorrectly() {
+    RedisLimitedCache<String> cache =
+            this.factory.getLimitedListCache(
+                    "testListCacheString",
+                    0, String.class, 3);
+
+    cache.push("testKey-1", "testValue-1");
+    cache.push("testKey-1", "testValue-2");
+    cache.push("testKey-1", "testValue-3");
+
+    assertEquals(3, cache.get("testKey-1").size());
+    cache.push("testKey-1", "testValue-4");
+    cache.push("testKey-1", "testValue-5");
+
+    assertEquals(3, cache.get("testKey-1").size());
+
+    cache.invalidateAll();
+  }
+
+  @Test
+  @Disabled
+  public void testLimitedCacheReplacingOldElementsOnLimitReached() {
+    RedisLimitedCache<String> cache =
+            this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
+
+    cache.push("testKey-1", "testValue-1");
+    cache.push("testKey-1", "testValue-2");
+    cache.push("testKey-1", "testValue-3");
+    cache.push("testKey-1", "testValue-4");
+    cache.push("testKey-1", "testValue-5");
+
+    assertEquals("testValue-5", cache.get("testKey-1").get(0));
+    assertEquals("testValue-4", cache.get("testKey-1").get(1));
+    assertEquals("testValue-3", cache.get("testKey-1").get(2));
+
+    cache.push("testKey-1", "testValue-6");
+    assertEquals("testValue-6", cache.get("testKey-1").get(0));
+
+    assertThrows(IndexOutOfBoundsException.class, () -> cache.get("testKey-1").get(3));
+    assertThrows(IndexOutOfBoundsException.class, () -> cache.get("testKey-1").get(4));
+
+    cache.invalidateAll();
+  }
+
+  @Test
+  @Disabled
   public void redisTypesTestCase() {
     RedisRegularCache<Long> longCache;
     RedisRegularCache<Integer> integerCache;

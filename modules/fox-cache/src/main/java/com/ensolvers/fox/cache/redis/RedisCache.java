@@ -26,6 +26,7 @@ public abstract class RedisCache<V> {
   private final Function<String, V> customDeserializer;
   protected final JavaType valueType;
   private final ObjectMapper objectMapper;
+  protected final Integer maxEntriesPerBlock;
 
   public RedisCache(
       RedisCommands<String, String> redis,
@@ -33,7 +34,8 @@ public abstract class RedisCache<V> {
       int expirationTime,
       Class<V> valueClass,
       Function<V, String> customSerializer,
-      Function<String, V> customDeserializer) {
+      Function<String, V> customDeserializer,
+      Integer maxEntriesPerBlock) {
     this.redis = redis;
     this.cacheName = cacheName;
     this.expirationTime = expirationTime;
@@ -42,6 +44,7 @@ public abstract class RedisCache<V> {
     this.customDeserializer = customDeserializer;
     this.objectMapper = new ObjectMapper();
     this.valueType = this.objectMapper.getTypeFactory().constructType(valueClass);
+    this.maxEntriesPerBlock = maxEntriesPerBlock;
   }
 
   /**
