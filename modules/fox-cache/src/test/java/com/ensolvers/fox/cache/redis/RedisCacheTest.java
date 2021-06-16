@@ -163,7 +163,7 @@ public class RedisCacheTest {
 
   @Test
   @Disabled
-  public void testLimitedCacheClippingOnLimitReached() {
+  public void testLimitedCacheReplacingOldElementsOnLimitReached() {
     RedisLimitedCache<String> cache =
             this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
 
