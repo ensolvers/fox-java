@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
+import com.ensolvers.fox.cache.CheckedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,8 +23,8 @@ public abstract class RedisCache<V> {
   private static final int KEY_SCAN_MAX_LIMIT = 1000;
   private static final String KEY_SEPARATOR = "::";
   protected final Class<V> valueClass;
-  private final Function<V, String> customSerializer;
-  private final Function<String, V> customDeserializer;
+  private final CheckedFunction<V, String> customSerializer;
+  private final CheckedFunction<String, V> customDeserializer;
   protected final JavaType valueType;
   private final ObjectMapper objectMapper;
   protected final Integer maxEntriesPerBlock;
@@ -33,8 +34,8 @@ public abstract class RedisCache<V> {
       String cacheName,
       int expirationTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer,
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     this.redis = redis;
     this.cacheName = cacheName;
@@ -163,6 +164,7 @@ public abstract class RedisCache<V> {
     } catch (Exception e) {
       logger.error("[REDIS_CACHE] There was an error when executing the transaction", e);
       this.redis.discard();
+      throw new RuntimeException(e);
     }
   }
 

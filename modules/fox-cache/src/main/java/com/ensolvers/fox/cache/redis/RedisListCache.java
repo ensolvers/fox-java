@@ -1,6 +1,7 @@
 package com.ensolvers.fox.cache.redis;
 
 import com.ensolvers.fox.cache.CacheSerializingException;
+import com.ensolvers.fox.cache.CheckedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.io.IOException;
@@ -17,8 +18,8 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
       String name,
       int expirationTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer,
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
   }
@@ -32,7 +33,7 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
         result.add(this.deserializeValue(representation));
       }
       return result;
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new CacheSerializingException("There was a problem during serialization", e);
     }
   }

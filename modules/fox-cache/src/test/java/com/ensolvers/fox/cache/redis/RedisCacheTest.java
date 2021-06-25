@@ -3,9 +3,11 @@ package com.ensolvers.fox.cache.redis;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.ensolvers.fox.cache.TestClass;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,12 +23,14 @@ public class RedisCacheTest {
   }
 
   RedisClient client;
-  RedisCacheFactory factory;
+  RedisCacheFactoryTest factory;
+  ObjectMapper objectMapper;
 
   @BeforeEach
   public void setUp() {
     this.client = RedisClient.create(REDIS_URI);
-    this.factory = new RedisCacheFactory(client);
+    this.factory = new RedisCacheFactoryTest(client);
+    this.objectMapper = new ObjectMapper();
   }
 
   @Test
@@ -186,6 +190,72 @@ public class RedisCacheTest {
     cache.invalidateAll();
   }
 
+
+  // Dummy custom deserializer test that adds dummy data to the DTO
+  @Test
+  @Disabled
+  public void testCustomSerializer() {
+    RedisListCache<TestDTO> cache =
+            this.factory.getListCache("testListCache",
+                    100,
+                    TestDTO.class,
+                    objectMapper::writeValueAsString,
+                    (string) -> {
+                      TestDTO dto = objectMapper.readValue(string, TestDTO.class);
+                      dto.setTestNumber(dto.getTestNumber() + 1000);
+                      dto.setTestString("From custom deserializer" + dto.getTestString());
+
+                      return dto;
+                    });
+
+    cache.push("123", new TestDTO( " - 1", 1));
+    cache.push("123", new TestDTO( " - 2", 2));
+
+    assertEquals("From custom deserializer - 1", cache.get("123").get(1).getTestString());
+    assertEquals("From custom deserializer - 2", cache.get("123").get(0).getTestString());
+    assertEquals(Integer.valueOf(1001), cache.get("123").get(1).getTestNumber());
+    assertEquals(Integer.valueOf(1002), cache.get("123").get(0).getTestNumber());
+
+    cache.push("abc", new TestDTO( " - 3", 3));
+    assertEquals("From custom deserializer - 3", cache.get("abc").get(0).getTestString());
+    assertEquals(Integer.valueOf(1003), cache.get("abc").get(0).getTestNumber());
+
+
+  }
+
+  @Test
+  @Disabled
+  public void testRedisCachePropagatesSerializingException() {
+    RedisListCache<TestDTO> cache =
+            this.factory.getListCache("testListCache",
+                    100,
+                    TestDTO.class,
+                    objectMapper::writeValueAsString,
+                    (string) -> objectMapper.readValue(string, TestDTO.class));
+
+    cache.push("123", new TestDTO());
+    cache.get("123");
+    cache.push("abc", new TestDTO());
+    cache.get("abc");
+
+    this.factory.removeCacheFromList("testListCache");
+
+    cache = this.factory.getListCache("testListCache",
+                    100,
+                    TestDTO.class,
+                    (o) -> {
+                      throw new Exception();
+                    },
+                    (s) -> {
+                      throw new Exception();
+                    });
+
+    RedisListCache<TestDTO> finalCache = cache;
+    assertThrows(Exception.class, () -> finalCache.push("123", new TestDTO()));
+    assertThrows(Exception.class, () -> finalCache.get("123"));
+    assertThrows(Exception.class, () -> finalCache.push("abc", new TestDTO()));
+  }
+
   @Test
   @Disabled
   public void redisTypesTestCase() {
@@ -318,4 +388,34 @@ public class RedisCacheTest {
     cache.set(cacheKey, cacheValue);
     assertEquals(cacheValue, cache.get(cacheKey));
   }
+
+  private static class TestDTO {
+    private String testString;
+    private Integer testNumber;
+
+    public TestDTO() {
+    }
+
+    public TestDTO(String testString, Integer testNumber) {
+      this.testString = testString;
+      this.testNumber = testNumber;
+    }
+
+    public String getTestString() {
+      return testString;
+    }
+
+    public void setTestString(String testString) {
+      this.testString = testString;
+    }
+
+    public Integer getTestNumber() {
+      return testNumber;
+    }
+
+    public void setTestNumber(Integer testNumber) {
+      this.testNumber = testNumber;
+    }
+  }
+
 }
