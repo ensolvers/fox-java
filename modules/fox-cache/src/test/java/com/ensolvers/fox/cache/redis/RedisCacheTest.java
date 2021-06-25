@@ -195,54 +195,54 @@ public class RedisCacheTest {
   @Test
   @Disabled
   public void testCustomSerializer() {
-    RedisListCache<TestDTO> cache =
+    RedisListCache<TestClass> cache =
             this.factory.getListCache("testListCache",
                     100,
-                    TestDTO.class,
+                    TestClass.class,
                     objectMapper::writeValueAsString,
                     (string) -> {
-                      TestDTO dto = objectMapper.readValue(string, TestDTO.class);
-                      dto.setTestNumber(dto.getTestNumber() + 1000);
-                      dto.setTestString("From custom deserializer" + dto.getTestString());
+                      TestClass testClass = objectMapper.readValue(string, TestClass.class);
+                      testClass.setIntegerValue(testClass.getIntegerValue() + 1000);
+                      testClass.setStringValue("From custom deserializer" + testClass.getStringValue());
 
-                      return dto;
+                      return testClass;
                     });
 
-    cache.push("123", new TestDTO( " - 1", 1));
-    cache.push("123", new TestDTO( " - 2", 2));
+    cache.push("123", new TestClass( " - 1", 1));
+    cache.push("123", new TestClass( " - 2", 2));
 
-    assertEquals("From custom deserializer - 1", cache.get("123").get(1).getTestString());
-    assertEquals("From custom deserializer - 2", cache.get("123").get(0).getTestString());
-    assertEquals(Integer.valueOf(1001), cache.get("123").get(1).getTestNumber());
-    assertEquals(Integer.valueOf(1002), cache.get("123").get(0).getTestNumber());
+    assertEquals("From custom deserializer - 1", cache.get("123").get(1).getStringValue());
+    assertEquals("From custom deserializer - 2", cache.get("123").get(0).getStringValue());
+    assertEquals(Integer.valueOf(1001), cache.get("123").get(1).getIntegerValue());
+    assertEquals(Integer.valueOf(1002), cache.get("123").get(0).getIntegerValue());
 
-    cache.push("abc", new TestDTO( " - 3", 3));
-    assertEquals("From custom deserializer - 3", cache.get("abc").get(0).getTestString());
-    assertEquals(Integer.valueOf(1003), cache.get("abc").get(0).getTestNumber());
+    cache.push("abc", new TestClass( " - 3", 3));
+    assertEquals("From custom deserializer - 3", cache.get("abc").get(0).getStringValue());
+    assertEquals(Integer.valueOf(1003), cache.get("abc").get(0).getIntegerValue());
 
-
+    cache.invalidateAll();
   }
 
   @Test
   @Disabled
   public void testRedisCachePropagatesSerializingException() {
-    RedisListCache<TestDTO> cache =
+    RedisListCache<TestClass> cache =
             this.factory.getListCache("testListCache",
                     100,
-                    TestDTO.class,
+                    TestClass.class,
                     objectMapper::writeValueAsString,
-                    (string) -> objectMapper.readValue(string, TestDTO.class));
+                    (string) -> objectMapper.readValue(string, TestClass.class));
 
-    cache.push("123", new TestDTO());
+    cache.push("123", new TestClass());
     cache.get("123");
-    cache.push("abc", new TestDTO());
+    cache.push("abc", new TestClass());
     cache.get("abc");
 
     this.factory.removeCacheFromList("testListCache");
 
     cache = this.factory.getListCache("testListCache",
                     100,
-                    TestDTO.class,
+            TestClass.class,
                     (o) -> {
                       throw new Exception();
                     },
@@ -250,10 +250,12 @@ public class RedisCacheTest {
                       throw new Exception();
                     });
 
-    RedisListCache<TestDTO> finalCache = cache;
-    assertThrows(Exception.class, () -> finalCache.push("123", new TestDTO()));
+    RedisListCache<TestClass> finalCache = cache;
+    assertThrows(Exception.class, () -> finalCache.push("123", new TestClass()));
     assertThrows(Exception.class, () -> finalCache.get("123"));
-    assertThrows(Exception.class, () -> finalCache.push("abc", new TestDTO()));
+    assertThrows(Exception.class, () -> finalCache.push("abc", new TestClass()));
+
+    cache.invalidateAll();
   }
 
   @Test
@@ -388,34 +390,4 @@ public class RedisCacheTest {
     cache.set(cacheKey, cacheValue);
     assertEquals(cacheValue, cache.get(cacheKey));
   }
-
-  private static class TestDTO {
-    private String testString;
-    private Integer testNumber;
-
-    public TestDTO() {
-    }
-
-    public TestDTO(String testString, Integer testNumber) {
-      this.testString = testString;
-      this.testNumber = testNumber;
-    }
-
-    public String getTestString() {
-      return testString;
-    }
-
-    public void setTestString(String testString) {
-      this.testString = testString;
-    }
-
-    public Integer getTestNumber() {
-      return testNumber;
-    }
-
-    public void setTestNumber(Integer testNumber) {
-      this.testNumber = testNumber;
-    }
-  }
-
 }
