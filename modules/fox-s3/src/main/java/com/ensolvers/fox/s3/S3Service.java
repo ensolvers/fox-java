@@ -73,6 +73,35 @@ public class S3Service {
     }
   }
 
+  /**
+   * Sets the contents of the MultipartFile into the bucketName/keyName
+   * This overload of the put method simplifies the image uploading process to S3
+   *
+   * @param bucketName the bucket
+   * @param keyName the path to the file
+   */
+  public String put(String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead) {
+    logger.info("{}[START] Uploading a new object to S3 from a file", LOG_PREFIX);
+
+    var objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentLength(size);
+    var request = new PutObjectRequest(
+            bucketName,
+            keyName,
+            inputStream,
+            objectMetadata
+    );
+
+    if (isPublicRead) {
+      request.setCannedAcl(CannedAccessControlList.PublicRead);
+    }
+
+    s3Client.putObject(request);
+
+    logger.info("{}[END] Uploading a new object to S3 from a file", LOG_PREFIX);
+
+    return String.format("https://%s.amazonaws.com/%s", bucketName, keyName);
+  }
 
   /**
    * Gets the contents of the file in bucketName/keyName
