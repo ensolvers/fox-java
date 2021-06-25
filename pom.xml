@@ -159,6 +159,7 @@
     <module>modules/fox-email</module>
     <module>modules/fox-cache</module>
     <module>modules/fox-location</module>
+    <module>modules/fox-cognito</module>
   </modules>
 
 </project>
