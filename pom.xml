@@ -12,6 +12,7 @@
 
   <properties>
     <aws-sdk.version>1.11.890</aws-sdk.version>
+    <software.amazon.awssdk.version>2.16.29</software.amazon.awssdk.version>
   </properties>
 
   <dependencyManagement>
@@ -27,6 +28,17 @@
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk-s3</artifactId>
         <version>${aws-sdk.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>auth</artifactId>
+        <version>${software.amazon.awssdk.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>cognitoidentityprovider</artifactId>
+        <version>${software.amazon.awssdk.version}</version>
       </dependency>
 
       <dependency>
@@ -110,19 +122,6 @@
         <executions>
           <execution>
             <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.3.0</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
             <goals>
               <goal>jar</goal>
             </goals>
