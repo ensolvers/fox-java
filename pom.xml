@@ -31,6 +31,18 @@
       </dependency>
 
       <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-ses</artifactId>
+        <version>1.12.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-sns</artifactId>
+        <version>1.12.6</version>
+      </dependency>
+
+      <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>auth</artifactId>
         <version>${software.amazon.awssdk.version}</version>
@@ -159,6 +171,8 @@
     <module>modules/fox-cache</module>
     <module>modules/fox-location</module>
     <module>modules/fox-cognito</module>
+    <module>modules/fox-ses</module>
+    <module>modules/fox-sns</module>
   </modules>
 
 </project>
