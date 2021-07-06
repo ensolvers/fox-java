@@ -56,7 +56,7 @@ public class CognitoService {
         .userPoolId(userPoolId)
         .temporaryPassword(password);
 
-    if (sendConfirmation) {
+    if (!sendConfirmation) {
       request.messageAction(MessageActionType.SUPPRESS);
     }
 
