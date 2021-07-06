@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class S3ServiceTest {
 
   @Test
-  @Disabled
   public void testS3() throws Exception {
     String bucket = "hyros-foxtest";
     String testData = "this is a sample test data";
@@ -70,5 +70,9 @@ public class S3ServiceTest {
 
     file = service.get(bucket ,"t1");
     assertNull(file);
+
+
+    List<String> keys = service.list(bucket, "folder");
+    assertFalse(keys.isEmpty());
   }
 }

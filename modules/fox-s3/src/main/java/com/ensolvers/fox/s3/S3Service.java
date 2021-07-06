@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The S3 service takes care of put,get and delete objects from S3
@@ -174,5 +176,34 @@ public class S3Service {
       logger.error(LOG_PREFIX + " Caught an AmazonClientException." +
               "Error Message: " + ace.getMessage());
     }
+  }
+
+  /**
+   * List all the files in buckey under the folderKey, returning the list of file names
+   *
+   * @param bucket the name of the buckey
+   * @param folderKey the name of the container
+   * @return the list of file names
+   */
+  public List<String> list(String bucket, String folderKey) {
+    ListObjectsV2Request request = new ListObjectsV2Request()
+            .withBucketName(bucket)
+            .withPrefix(folderKey);
+
+    ListObjectsV2Result result;
+    List<String> keys = new ArrayList<>();
+    do {
+      result = this.s3Client.listObjectsV2(request);
+
+      for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
+        keys.add(objectSummary.getKey());
+      }
+
+      String token = result.getNextContinuationToken();
+      request.setContinuationToken(token);
+
+    } while (result.isTruncated());
+
+    return keys;
   }
 }
