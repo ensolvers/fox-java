@@ -102,7 +102,7 @@ public class S3Service {
 
     logger.info("{}[END] Uploading a new object to S3 from a file", LOG_PREFIX);
 
-    return String.format("https://%s.amazonaws.com/%s", bucketName, keyName);
+    return String.format("https://%s.s3.amazonaws.com/%s", bucketName, keyName);
   }
 
   /**
