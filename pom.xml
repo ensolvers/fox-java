@@ -13,6 +13,8 @@
   <properties>
     <aws-sdk.version>1.11.890</aws-sdk.version>
     <software.amazon.awssdk.version>2.16.29</software.amazon.awssdk.version>
+    <spring.version>5.3.4</spring.version>
+    <aspectj.version>1.9.6</aspectj.version>
   </properties>
 
   <dependencyManagement>
@@ -63,6 +65,29 @@
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>cognitoidentityprovider</artifactId>
         <version>${software.amazon.awssdk.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+
+
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjrt</artifactId>
+        <version>${aspectj.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>${aspectj.version}</version>
       </dependency>
 
       <dependency>
@@ -186,6 +211,7 @@
     <module>modules/fox-ses</module>
     <module>modules/fox-sns</module>
     <module>modules/fox-cloudwatch</module>
+    <module>modules/fox-spring</module>
   </modules>
 
 </project>
