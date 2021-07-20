@@ -22,14 +22,9 @@ import java.io.*;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorInputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -40,11 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The IP 2 Location services provides a convenient way of obtaining geo location information
- * from an IP. We are levering the CSV service from: https://lite.ip2location.com/
+ * The IP 2 Location services provides a convenient way of obtaining geo location information from
+ * an IP. We are levering the CSV service from: https://lite.ip2location.com/
  *
- * Internally, data is loaded into memory: About 50MB and then the search is done by binary search over the sorted array.
- * Performance is less than 1ms per call.
+ * <p>Internally, data is loaded into memory: About 50MB and then the search is done by binary
+ * search over the sorted array. Performance is less than 1ms per call.
  *
  * @author Esteban Robles Luna
  */
@@ -69,7 +64,8 @@ public class IP2LocationService {
   }
 
   /**
-   * @param ip2LocationServiceEnabled true to read the ip2location csv, false to read the test csv (smaller, faster)
+   * @param ip2LocationServiceEnabled true to read the ip2location csv, false to read the test csv
+   *     (smaller, faster)
    * @return an IP2LocationService service instance
    */
   public static IP2LocationService getInstance(Boolean ip2LocationServiceEnabled) {
@@ -97,9 +93,7 @@ public class IP2LocationService {
     return INSTANCE;
   }
 
-  /**
-   * Use the test csv.
-   */
+  /** Use the test csv. */
   public static void useTestResource() {
     resourceFile = TEST_FILE;
   }
@@ -115,22 +109,39 @@ public class IP2LocationService {
       IP2LocationInfo info = this.getInfoFor(ip);
 
       if (StringUtils.isEmpty(info.getContinentCode())) {
-        logger.warn(FoxStringUtils.concat("[IP2LOCATION] Failed to find continent for info: ", info.getCountryName(), ", ", info.getCityName()));
+        logger.warn(
+            FoxStringUtils.concat(
+                "[IP2LOCATION] Failed to find continent for info: ",
+                info.getCountryName(),
+                ", ",
+                info.getCityName()));
         return EUROPEAN_IP_DEFAULT_VALUE;
       }
 
       return info.getContinentCode().equals("EU");
     } catch (IPV4NotFoundException e) {
-      logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, ipv4 not found: ", ip), e);
+      logger.warn(
+          FoxStringUtils.concat(
+              "[IP2LOCATION] Error trying to get location info for ip, ipv4 not found: ", ip),
+          e);
       return EUROPEAN_IP_DEFAULT_VALUE;
     } catch (IPV6NotFoundException e) {
-      logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, ipv6 not found: ", ip), e);
+      logger.warn(
+          FoxStringUtils.concat(
+              "[IP2LOCATION] Error trying to get location info for ip, ipv6 not found: ", ip),
+          e);
       return EUROPEAN_IP_DEFAULT_VALUE;
     } catch (InvalidIPException e) {
-      logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, invalid ip: ", ip), e);
+      logger.warn(
+          FoxStringUtils.concat(
+              "[IP2LOCATION] Error trying to get location info for ip, invalid ip: ", ip),
+          e);
       return EUROPEAN_IP_DEFAULT_VALUE;
     } catch (Exception e) {
-      logger.warn(FoxStringUtils.concat("[IP2LOCATION] Something went wrong for when getting info for ip: ", ip), e);
+      logger.warn(
+          FoxStringUtils.concat(
+              "[IP2LOCATION] Something went wrong for when getting info for ip: ", ip),
+          e);
       return EUROPEAN_IP_DEFAULT_VALUE;
     }
   }
@@ -147,12 +158,12 @@ public class IP2LocationService {
       this.countryToContinentMap = this.createMapFromFile();
     }
     return countryToContinentMap.get(countryCode);
-
   }
 
-
-  /** Instantiates a Map with country code => continent code
-   *  Used by other methods to quickly determine a country's continent.
+  /**
+   * Instantiates a Map with country code => continent code Used by other methods to quickly
+   * determine a country's continent.
+   *
    * @return
    * @throws IOException
    */
@@ -175,7 +186,7 @@ public class IP2LocationService {
   private InputStream csvIO;
   // The list of sorted IPs obtained from the CSV
   private List<IP2LocationInfo> infos;
-  //loading lock to avoid blocking when obtaining the instance
+  // loading lock to avoid blocking when obtaining the instance
   private volatile ReentrantLock loadingLock;
 
   private volatile boolean hasLoaded;
@@ -210,15 +221,15 @@ public class IP2LocationService {
       while (iterator.hasNext()) {
         IP2LocationInfo info = this.parse(iterator.next());
         /*
-        * IMPROVEMENT (see getIpAsNumber() comments for the reason)
-        * make this.infos a MAP indexed by info.getFromIP() to search faster
-        */
+         * IMPROVEMENT (see getIpAsNumber() comments for the reason)
+         * make this.infos a MAP indexed by info.getFromIP() to search faster
+         */
         this.infos.add(info);
         i++;
 
         if (i % 10000 == 0) {
           logger.info("Read " + i + " rows");
-          //System.out.println("Read " + i + " rows");
+          // System.out.println("Read " + i + " rows");
         }
       }
 
@@ -235,8 +246,8 @@ public class IP2LocationService {
 
   private void readFromTarGZ(InputStream tarGz) {
     try (InputStream bi = new BufferedInputStream(tarGz);
-         InputStream gzi = new GzipCompressorInputStream(bi);
-         ArchiveInputStream o = new TarArchiveInputStream(gzi)) {
+        InputStream gzi = new GzipCompressorInputStream(bi);
+        ArchiveInputStream o = new TarArchiveInputStream(gzi)) {
 
       ArchiveEntry entry = null;
 
@@ -294,9 +305,9 @@ public class IP2LocationService {
    * @throws IPV4NotFoundException when the IPv4 has not been found.
    * @throws IPV6NotFoundException when the IPv6 has not been found.
    * @throws InvalidIPException when the ip parameter is not an IP address
-   *
    */
-  public IP2LocationInfo getInfoFor(String ip) throws IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
+  public IP2LocationInfo getInfoFor(String ip)
+      throws IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
     if (StringUtils.isEmpty(ip)) {
       throw new InvalidIPException();
     }
@@ -304,12 +315,12 @@ public class IP2LocationService {
     this.waitForLoaded();
 
     // Ipv4 logic
-    if(NetworkUtils.isValidIPv4Address(ip)) {
+    if (NetworkUtils.isValidIPv4Address(ip)) {
       return getInfoForIpv4(ip);
     }
 
     // Ipv6 logic
-    if(NetworkUtils.isValidIPv6Address(ip)) {
+    if (NetworkUtils.isValidIPv6Address(ip)) {
       return getInfoForIpv6(ip);
     }
 
@@ -326,7 +337,7 @@ public class IP2LocationService {
      * If the data is stored in a MAP, x21 faster access is possible
      */
     int index = Collections.binarySearch(this.infos, toFind);
-    if(index >= 0) {
+    if (index >= 0) {
       return this.infos.get(index);
     } else {
       throw new IPV4NotFoundException();
@@ -343,9 +354,9 @@ public class IP2LocationService {
       b) use the network for x21 faster search (if the data is stored in a hashmap)
     */
     return (Long.valueOf(parts[0]) * 256 * 256 * 256)
-      + (Long.valueOf(parts[1]) * 256 * 256)
-      + (Long.valueOf(parts[2]) * 256)
-      + (Long.valueOf(parts[3]));
+        + (Long.valueOf(parts[1]) * 256 * 256)
+        + (Long.valueOf(parts[2]) * 256)
+        + (Long.valueOf(parts[3]));
   }
 
   private IP2LocationInfo getInfoForIpv6(String ip) throws IPV6NotFoundException {
@@ -356,7 +367,10 @@ public class IP2LocationService {
     }
   }
 
-  /** This method returns the ipv6 address as a BigInteger due to a long not being big enough to store the value, it's not in use yet because of the mock approach we are taking, in case we change the approach it might be relevant again
+  /**
+   * This method returns the ipv6 address as a BigInteger due to a long not being big enough to
+   * store the value, it's not in use yet because of the mock approach we are taking, in case we
+   * change the approach it might be relevant again
    *
    * @param addr the ipv6 address
    * @return
@@ -389,12 +403,12 @@ public class IP2LocationService {
     return retValue;
   }
 
-  private int countChar(String str, char reg){
-    char[] ch=str.toCharArray();
-    int count=0;
-    for(int i=0; i<ch.length; ++i){
-      if(ch[i]==reg){
-        if(ch[i+1]==reg){
+  private int countChar(String str, char reg) {
+    char[] ch = str.toCharArray();
+    int count = 0;
+    for (int i = 0; i < ch.length; ++i) {
+      if (ch[i] == reg) {
+        if (ch[i + 1] == reg) {
           ++i;
           break;
         }

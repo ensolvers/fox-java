@@ -18,5 +18,4 @@
  */
 package com.ensolvers.fox.location;
 
-public class IPNotFoundException extends Exception {
-}
+public class IPNotFoundException extends Exception {}

@@ -22,15 +22,14 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * The SNS service takes care of sending SMS notifications using AWS SNS
- * Docs: https://docs.aws.amazon.com/sns/latest/dg/sms_publish-to-phone.html
+ * The SNS service takes care of sending SMS notifications using AWS SNS Docs:
+ * https://docs.aws.amazon.com/sns/latest/dg/sms_publish-to-phone.html
  *
  * @author Facundo Garbino
  */
@@ -48,33 +47,46 @@ public class SNSService {
   /**
    * Sends a SMS with the specified parameters
    *
-   * @param senderId      the sender name that appears in the phone (3–11 alphanumeric characters, at least 1 letter and no spaces)
-   * @param phoneNumber   the phone number (in E.164 format, a maximum of 15 digits along with the prefix (+) and the country code.
-   *                      For example, a US phone number in E.164 format appears as +1XXX5550100.
-   * @param message       the message text  (up to 140 bytes)
-   * @param highPriority  whether should be send with high priority (Transactional) or not (Promotional)
-   * @param maxPrice      the maximum price to spend in the message (in USD)
+   * @param senderId the sender name that appears in the phone (3–11 alphanumeric characters, at
+   *     least 1 letter and no spaces)
+   * @param phoneNumber the phone number (in E.164 format, a maximum of 15 digits along with the
+   *     prefix (+) and the country code. For example, a US phone number in E.164 format appears as
+   *     +1XXX5550100.
+   * @param message the message text (up to 140 bytes)
+   * @param highPriority whether should be send with high priority (Transactional) or not
+   *     (Promotional)
+   * @param maxPrice the maximum price to spend in the message (in USD)
    */
-  public String sendSMSMessage(String senderId, String phoneNumber, String message, boolean highPriority, double maxPrice) {
+  public String sendSMSMessage(
+      String senderId, String phoneNumber, String message, boolean highPriority, double maxPrice) {
     Map<String, MessageAttributeValue> smsAttributes = new HashMap<>();
-    smsAttributes.put("AWS.SNS.SMS.SenderID", new MessageAttributeValue()
-            .withStringValue(senderId) //The sender ID shown on the device.
+    smsAttributes.put(
+        "AWS.SNS.SMS.SenderID",
+        new MessageAttributeValue()
+            .withStringValue(senderId) // The sender ID shown on the device.
             .withDataType("String"));
-    smsAttributes.put("AWS.SNS.SMS.MaxPrice", new MessageAttributeValue()
+    smsAttributes.put(
+        "AWS.SNS.SMS.MaxPrice",
+        new MessageAttributeValue()
             .withStringValue(Double.toString(maxPrice))
             .withDataType("Number"));
-    smsAttributes.put("AWS.SNS.SMS.SMSType", new MessageAttributeValue()
-            .withStringValue(highPriority ? "Transactional" : "Promotional") //Transactional is send with higher priority
+    smsAttributes.put(
+        "AWS.SNS.SMS.SMSType",
+        new MessageAttributeValue()
+            .withStringValue(
+                highPriority
+                    ? "Transactional"
+                    : "Promotional") // Transactional is send with higher priority
             .withDataType("String"));
 
-    PublishResult result = this.client.publish(new PublishRequest()
-            .withMessage(message)
-            .withPhoneNumber(phoneNumber)
-            .withMessageAttributes(smsAttributes));
+    PublishResult result =
+        this.client.publish(
+            new PublishRequest()
+                .withMessage(message)
+                .withPhoneNumber(phoneNumber)
+                .withMessageAttributes(smsAttributes));
 
     logger.info(String.format("%s SMS sent to %s, result: %s", LOG_PREFIX, phoneNumber, result));
     return result.getMessageId();
   }
-
-
 }

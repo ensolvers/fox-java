@@ -144,9 +144,7 @@ public class RedisCacheTest {
   @Disabled
   public void testMaxEntriesPerBlockLimitingCorrectly() {
     RedisLimitedCache<String> cache =
-            this.factory.getLimitedListCache(
-                    "testListCacheString",
-                    0, String.class, 3);
+        this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
 
     cache.push("testKey-1", "testValue-1");
     cache.push("testKey-1", "testValue-2");
@@ -165,7 +163,7 @@ public class RedisCacheTest {
   @Disabled
   public void testLimitedCacheReplacingOldElementsOnLimitReached() {
     RedisLimitedCache<String> cache =
-            this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
+        this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
 
     cache.push("testKey-1", "testValue-1");
     cache.push("testKey-1", "testValue-2");

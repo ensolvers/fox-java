@@ -22,13 +22,12 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The S3 service takes care of put,get and delete objects from S3
@@ -57,42 +56,44 @@ public class S3Service {
     try {
       logger.info(LOG_PREFIX + "[START] Uploading a new object to S3 from a file");
 
-      PutObjectRequest putObjectRequest =  new PutObjectRequest(bucketName, keyName, file);
+      PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, keyName, file);
       s3Client.putObject(putObjectRequest);
 
       logger.info(LOG_PREFIX + "[END] Uploading a new object to S3 from a file");
     } catch (AmazonServiceException ase) {
-      logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " +
-              "means your request made it " +
-              "to Amazon S3, but was rejected with an error response" +
-              " for some reason.", ase);
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonServiceException, which "
+              + "means your request made it "
+              + "to Amazon S3, but was rejected with an error response"
+              + " for some reason.",
+          ase);
     } catch (AmazonClientException ace) {
-      logger.error(LOG_PREFIX + " Caught an AmazonClientException, which " +
-              "means the client encountered " +
-              "an internal error while trying to " +
-              "communicate with S3, " +
-              "such as not being able to access the network.", ace);
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonClientException, which "
+              + "means the client encountered "
+              + "an internal error while trying to "
+              + "communicate with S3, "
+              + "such as not being able to access the network.",
+          ace);
     }
   }
 
   /**
-   * Sets the contents of the MultipartFile into the bucketName/keyName
-   * This overload of the put method simplifies the image uploading process to S3
+   * Sets the contents of the MultipartFile into the bucketName/keyName This overload of the put
+   * method simplifies the image uploading process to S3
    *
    * @param bucketName the bucket
    * @param keyName the path to the file
    */
-  public String put(String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead) {
+  public String put(
+      String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead) {
     logger.info("{}[START] Uploading a new object to S3 from a file", LOG_PREFIX);
 
     var objectMetadata = new ObjectMetadata();
     objectMetadata.setContentLength(size);
-    var request = new PutObjectRequest(
-            bucketName,
-            keyName,
-            inputStream,
-            objectMetadata
-    );
+    var request = new PutObjectRequest(bucketName, keyName, inputStream, objectMetadata);
 
     if (isPublicRead) {
       request.setCannedAcl(CannedAccessControlList.PublicRead);
@@ -131,16 +132,22 @@ public class S3Service {
 
       return tmpFile;
     } catch (AmazonServiceException ase) {
-      logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " +
-              "means your request made it " +
-              "to Amazon S3, but was rejected with an error response" +
-              " for some reason.", ase);
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonServiceException, which "
+              + "means your request made it "
+              + "to Amazon S3, but was rejected with an error response"
+              + " for some reason.",
+          ase);
     } catch (AmazonClientException ace) {
-      logger.error(LOG_PREFIX + " Caught an AmazonClientException, which " +
-              "means the client encountered " +
-              "an internal error while trying to " +
-              "communicate with S3, " +
-              "such as not being able to access the network.", ace);
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonClientException, which "
+              + "means the client encountered "
+              + "an internal error while trying to "
+              + "communicate with S3, "
+              + "such as not being able to access the network.",
+          ace);
     } catch (FileNotFoundException e) {
       logger.error(LOG_PREFIX + " not found", e);
     } catch (IOException e) {
@@ -149,7 +156,6 @@ public class S3Service {
 
     return null;
   }
-
 
   /**
    * Delete the object in bucketName/keyName
@@ -161,20 +167,27 @@ public class S3Service {
     logger.info(LOG_PREFIX + "[START] Deleting a object of S3");
 
     try {
-      DeleteObjectRequest deleteObjectRequest =  new DeleteObjectRequest(bucketName, keyName);
+      DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, keyName);
       s3Client.deleteObject(deleteObjectRequest);
 
       logger.info(LOG_PREFIX + "[END] Deleting a object of S3");
     } catch (AmazonServiceException ase) {
-      logger.error(LOG_PREFIX + " Caught an AmazonServiceException." +
-              "Error Message:    " + ase.getMessage() +
-              "HTTP Status Code: " + ase.getStatusCode() +
-              "AWS Error Code:   " + ase.getErrorCode() +
-              "Error Type:       " + ase.getErrorType() +
-              "Request ID:       " + ase.getRequestId());
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonServiceException."
+              + "Error Message:    "
+              + ase.getMessage()
+              + "HTTP Status Code: "
+              + ase.getStatusCode()
+              + "AWS Error Code:   "
+              + ase.getErrorCode()
+              + "Error Type:       "
+              + ase.getErrorType()
+              + "Request ID:       "
+              + ase.getRequestId());
     } catch (AmazonClientException ace) {
-      logger.error(LOG_PREFIX + " Caught an AmazonClientException." +
-              "Error Message: " + ace.getMessage());
+      logger.error(
+          LOG_PREFIX + " Caught an AmazonClientException." + "Error Message: " + ace.getMessage());
     }
   }
 
@@ -186,9 +199,8 @@ public class S3Service {
    * @return the list of file names
    */
   public List<String> list(String bucket, String folderKey) {
-    ListObjectsV2Request request = new ListObjectsV2Request()
-            .withBucketName(bucket)
-            .withPrefix(folderKey);
+    ListObjectsV2Request request =
+        new ListObjectsV2Request().withBucketName(bucket).withPrefix(folderKey);
 
     ListObjectsV2Result result;
     List<String> keys = new ArrayList<>();

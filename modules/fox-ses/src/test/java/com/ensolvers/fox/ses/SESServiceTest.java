@@ -8,21 +8,19 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-
 public class SESServiceTest {
 
   @Test
   @Disabled
-  public void testSES()  {
+  public void testSES() {
     String accessKey = "";
     String secretKey = "";
     Regions region = Regions.US_EAST_1;
 
-    AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder
-            .standard()
+    AmazonSimpleEmailService client =
+        AmazonSimpleEmailServiceClientBuilder.standard()
             .withCredentials(
-                    new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))
-            )
+                new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
             .withRegion(region)
             .build();
 

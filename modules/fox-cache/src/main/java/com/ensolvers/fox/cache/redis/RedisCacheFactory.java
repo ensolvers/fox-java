@@ -86,7 +86,13 @@ public class RedisCacheFactory {
       Function<V, String> customSerializer,
       Function<String, V> customDeserializer) {
     return this.getCache(
-        name, expireTime, valueClass, RedisListCache.class, customSerializer, customDeserializer, null);
+        name,
+        expireTime,
+        valueClass,
+        RedisListCache.class,
+        customSerializer,
+        customDeserializer,
+        null);
   }
 
   /**
@@ -97,8 +103,10 @@ public class RedisCacheFactory {
    * @param valueClass Class of the values.
    * @param <V> Class of the values.
    */
-  public <V> RedisLimitedCache<V> getLimitedListCache(String name, int expireTime, Class<V> valueClass, Integer maxEntriesPerBlock) {
-    return this.getCache(name, expireTime, valueClass, RedisLimitedCache.class, null, null, maxEntriesPerBlock);
+  public <V> RedisLimitedCache<V> getLimitedListCache(
+      String name, int expireTime, Class<V> valueClass, Integer maxEntriesPerBlock) {
+    return this.getCache(
+        name, expireTime, valueClass, RedisLimitedCache.class, null, null, maxEntriesPerBlock);
   }
 
   /**
@@ -110,14 +118,20 @@ public class RedisCacheFactory {
    * @param <V> Class of the values.
    */
   public <V> RedisLimitedCache<V> getLimitedListCache(
-          String name,
-          int expireTime,
-          Class<V> valueClass,
-          Function<V, String> customSerializer,
-          Function<String, V> customDeserializer,
-          Integer maxEntriesPerBlock) {
+      String name,
+      int expireTime,
+      Class<V> valueClass,
+      Function<V, String> customSerializer,
+      Function<String, V> customDeserializer,
+      Integer maxEntriesPerBlock) {
     return this.getCache(
-            name, expireTime, valueClass, RedisLimitedCache.class, customSerializer, customDeserializer, maxEntriesPerBlock);
+        name,
+        expireTime,
+        valueClass,
+        RedisLimitedCache.class,
+        customSerializer,
+        customDeserializer,
+        maxEntriesPerBlock);
   }
 
   /**
@@ -148,7 +162,13 @@ public class RedisCacheFactory {
       Function<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     return this.getCache(
-        name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer, null);
+        name,
+        expireTime,
+        valueClass,
+        RedisSetCache.class,
+        customSerializer,
+        customDeserializer,
+        null);
   }
 
   /**
@@ -186,7 +206,13 @@ public class RedisCacheFactory {
                     Function.class,
                     Integer.class)
                 .newInstance(
-                    redis, name, expireTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
+                    redis,
+                    name,
+                    expireTime,
+                    valueClass,
+                    customSerializer,
+                    customDeserializer,
+                    maxEntriesPerBlock);
         caches.add(name);
         return cache;
       } catch (Exception e) {

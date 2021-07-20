@@ -20,7 +20,6 @@ package com.ensolvers.fox.cloudwatch;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
-
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
@@ -36,61 +35,57 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit;
  */
 public class CloudwatchService {
 
-    private final String namespace;
-    private final AmazonCloudWatch client;
+  private final String namespace;
+  private final AmazonCloudWatch client;
 
-    public CloudwatchService(
-            String accessKeyId, String secretAccessKeyId, Regions region, String namespace) {
-        this.namespace = namespace;
+  public CloudwatchService(
+      String accessKeyId, String secretAccessKeyId, Regions region, String namespace) {
+    this.namespace = namespace;
 
-        this.client = this.createClient(accessKeyId, secretAccessKeyId, region);
-    }
+    this.client = this.createClient(accessKeyId, secretAccessKeyId, region);
+  }
 
-    private AmazonCloudWatch createClient(
-            String accessKeyId, String secretAccessKeyId, Regions region) {
-        AmazonCloudWatchClientBuilder cloudwatchClientBuilder =
-                AmazonCloudWatchClientBuilder.standard();
-        cloudwatchClientBuilder.setRegion(region.getName());
-        cloudwatchClientBuilder.setCredentials(
-                new AWSStaticCredentialsProvider(
-                        new AWSCredentials() {
-                            @Override
-                            public String getAWSAccessKeyId() {
-                                return accessKeyId;
-                            }
+  private AmazonCloudWatch createClient(
+      String accessKeyId, String secretAccessKeyId, Regions region) {
+    AmazonCloudWatchClientBuilder cloudwatchClientBuilder =
+        AmazonCloudWatchClientBuilder.standard();
+    cloudwatchClientBuilder.setRegion(region.getName());
+    cloudwatchClientBuilder.setCredentials(
+        new AWSStaticCredentialsProvider(
+            new AWSCredentials() {
+              @Override
+              public String getAWSAccessKeyId() {
+                return accessKeyId;
+              }
 
-                            @Override
-                            public String getAWSSecretKey() {
-                                return secretAccessKeyId;
-                            }
-                        }));
-        return cloudwatchClientBuilder.build();
-    }
+              @Override
+              public String getAWSSecretKey() {
+                return secretAccessKeyId;
+              }
+            }));
+    return cloudwatchClientBuilder.build();
+  }
 
-    /**
-     * Publishes a new value for a specific metric
-     * @param dimensionName name for the dimension - e.g. <code>UNIQUE_PAGES</code>
-     * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
-     * @param value individual metric to be published for the dimension
-     */
-    public void put(String dimensionName, String dimensionValue, double value) {
-        Dimension dimension = new Dimension()
-                .withName(dimensionName)
-                .withValue(dimensionValue);
+  /**
+   * Publishes a new value for a specific metric
+   *
+   * @param dimensionName name for the dimension - e.g. <code>UNIQUE_PAGES</code>
+   * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
+   * @param value individual metric to be published for the dimension
+   */
+  public void put(String dimensionName, String dimensionValue, double value) {
+    Dimension dimension = new Dimension().withName(dimensionName).withValue(dimensionValue);
 
-        MetricDatum datum =
-                new MetricDatum()
-                        .withMetricName(dimensionValue)
-                        .withUnit(StandardUnit.None)
-                        .withValue(value)
-                        .withDimensions(dimension);
+    MetricDatum datum =
+        new MetricDatum()
+            .withMetricName(dimensionValue)
+            .withUnit(StandardUnit.None)
+            .withValue(value)
+            .withDimensions(dimension);
 
-        PutMetricDataRequest request =
-                new PutMetricDataRequest()
-                        .withNamespace(this.namespace)
-                        .withMetricData(datum);
+    PutMetricDataRequest request =
+        new PutMetricDataRequest().withNamespace(this.namespace).withMetricData(datum);
 
-        this.client.putMetricData(request);
-    }
-
+    this.client.putMetricData(request);
+  }
 }

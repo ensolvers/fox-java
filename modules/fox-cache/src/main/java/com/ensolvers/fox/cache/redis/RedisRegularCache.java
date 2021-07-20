@@ -17,7 +17,14 @@ public class RedisRegularCache<V> extends RedisCache<V> {
       Function<V, String> customSerializer,
       Function<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
-    super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
+    super(
+        redis,
+        name,
+        expirationTime,
+        valueClass,
+        customSerializer,
+        customDeserializer,
+        maxEntriesPerBlock);
   }
 
   /**

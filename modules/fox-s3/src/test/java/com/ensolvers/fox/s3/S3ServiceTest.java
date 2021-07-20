@@ -18,17 +18,15 @@
  */
 package com.ensolvers.fox.s3;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3Client;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.io.*;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Test;
 
 /**
  * A Test case for {@link S3Service}
@@ -44,33 +42,34 @@ public class S3ServiceTest {
     String accessKey = "";
     String secretKey = "";
 
-    AmazonS3Client client = new AmazonS3Client(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)));
+    AmazonS3Client client =
+        new AmazonS3Client(
+            new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)));
     S3Service service = new S3Service(client);
 
-    //read non existent file
-    File file = service.get(bucket ,"t1");
+    // read non existent file
+    File file = service.get(bucket, "t1");
     assertNull(file);
 
-    //no fail
+    // no fail
     service.delete(bucket, "t1");
 
-    //write file
+    // write file
     File f = File.createTempFile("ensolversfox", ".txt");
     FileUtils.writeStringToFile(f, testData, "UTF8");
     service.put(bucket, "t1", f);
 
-    //read existant file
-    file = service.get(bucket ,"t1");
+    // read existant file
+    file = service.get(bucket, "t1");
     assertNotNull(file);
     String contents = FileUtils.readFileToString(file, "UTF8");
     assertEquals(testData, contents);
 
-    //no fail
+    // no fail
     service.delete(bucket, "t1");
 
-    file = service.get(bucket ,"t1");
+    file = service.get(bucket, "t1");
     assertNull(file);
-
 
     List<String> keys = service.list(bucket, "folder");
     assertFalse(keys.isEmpty());

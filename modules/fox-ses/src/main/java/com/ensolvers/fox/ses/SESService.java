@@ -20,10 +20,9 @@ package com.ensolvers.fox.ses;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
 
 /**
  * The SES service takes care of sending emails using AWS SES
@@ -44,34 +43,36 @@ public class SESService {
   /**
    * Sends an email with the specified parameters
    *
-   * @param fromEmail   the email to sent it from (must be from a validated domain)
-   * @param subject     the email subject
-   * @param bodyText    the email body (might be plain text or HTML)
-   * @param isHTML      whether the email is HTML or plain text
-   * @param toEmails    an array of email addresses to send the email to
-   * @return  the message id of the result
+   * @param fromEmail the email to sent it from (must be from a validated domain)
+   * @param subject the email subject
+   * @param bodyText the email body (might be plain text or HTML)
+   * @param isHTML whether the email is HTML or plain text
+   * @param toEmails an array of email addresses to send the email to
+   * @return the message id of the result
    */
-  public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String... toEmails) {
+  public String sendEmail(
+      String fromEmail, String subject, String bodyText, boolean isHTML, String... toEmails) {
     Body body = new Body();
     if (isHTML) {
-      body.withHtml(new Content()
-              .withCharset("UTF-8").withData(bodyText));
+      body.withHtml(new Content().withCharset("UTF-8").withData(bodyText));
     } else {
-      body.withText(new Content()
-              .withCharset("UTF-8").withData(bodyText));
+      body.withText(new Content().withCharset("UTF-8").withData(bodyText));
     }
 
-    SendEmailRequest request = new SendEmailRequest()
-            .withDestination(
-                    new Destination().withToAddresses(toEmails))
-            .withMessage(new Message()
+    SendEmailRequest request =
+        new SendEmailRequest()
+            .withDestination(new Destination().withToAddresses(toEmails))
+            .withMessage(
+                new Message()
                     .withBody(body)
-                    .withSubject(new Content()
-                            .withCharset("UTF-8").withData(subject)))
+                    .withSubject(new Content().withCharset("UTF-8").withData(subject)))
             .withSource(fromEmail);
 
     SendEmailResult sendEmailResult = client.sendEmail(request);
-    logger.info(String.format("%s Email sent to %s, result: %s", LOG_PREFIX, Arrays.toString(toEmails), sendEmailResult));
+    logger.info(
+        String.format(
+            "%s Email sent to %s, result: %s",
+            LOG_PREFIX, Arrays.toString(toEmails), sendEmailResult));
     return sendEmailResult.getMessageId();
   }
 }

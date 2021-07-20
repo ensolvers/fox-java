@@ -18,16 +18,18 @@
  */
 package com.ensolvers.fox.location;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class IP2LocationServiceIT {
 
   @Test
   @Disabled // Test performance
-  public void testLocation() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
+  public void testLocation()
+      throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException,
+          InvalidIPException {
     IP2LocationService service = IP2LocationService.getInstance(true);
     Thread.sleep(100);
 
@@ -41,7 +43,7 @@ public class IP2LocationServiceIT {
     assertTrue(info.getLat() != 0);
     assertTrue(info.getLng() != 0);
     System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
-    
+
     fromTime = System.currentTimeMillis();
     info = service.getInfoFor("192.91.253.248");
     toTime = System.currentTimeMillis();
@@ -71,23 +73,31 @@ public class IP2LocationServiceIT {
       info = service.getInfoFor("104.236.195.72");
     }
     toTime = System.currentTimeMillis();
-    
+
     assertNotNull(info.getCountryCode());
     assertNotNull(info.getCountryName());
     assertNotNull(info.getCityName());
     assertTrue(info.getLat() != 0);
     assertTrue(info.getLng() != 0);
     System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
-    assertTrue(toTime - fromTime < 30000); //this may fail depending on the machine
+    assertTrue(toTime - fromTime < 30000); // this may fail depending on the machine
   }
 
   @Test
-  public void testIsEU() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
+  public void testIsEU()
+      throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException,
+          InvalidIPException {
     IP2LocationService service = IP2LocationService.getInstance(false);
     Thread.sleep(100);
 
-    String[] europeIPs = new String[]{"217.171.223.0", "217.212.238.0", "217.217.253.0", "217.223.255.0", "221.120.144.0"};
-    String[] nonEuropeIPs = new String[]{"217.139.235.0", "217.146.5.0", "222.165.163.0", "223.252.112.0", "223.255.255.0"};
+    String[] europeIPs =
+        new String[] {
+          "217.171.223.0", "217.212.238.0", "217.217.253.0", "217.223.255.0", "221.120.144.0"
+        };
+    String[] nonEuropeIPs =
+        new String[] {
+          "217.139.235.0", "217.146.5.0", "222.165.163.0", "223.252.112.0", "223.255.255.0"
+        };
 
     for (String euIP : europeIPs) {
       IP2LocationInfo info = service.getInfoFor(euIP);
@@ -104,7 +114,7 @@ public class IP2LocationServiceIT {
 
   @Test
   public void testValidIp() {
-    //IPv4
+    // IPv4
     assertTrue(NetworkUtils.isValidIPv4Address("69.89.31.226"));
     assertTrue(NetworkUtils.isValidIPv4Address("0.0.0.0"));
     assertTrue(NetworkUtils.isValidIPv4Address("255.255.255.255"));
@@ -117,8 +127,7 @@ public class IP2LocationServiceIT {
     assertFalse(NetworkUtils.isValidIPv4Address("192.0.168.-1"));
     assertFalse(NetworkUtils.isValidIPv4Address("192_0_168_1"));
 
-
-    //IPv6
+    // IPv6
     assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8::1428:57ab"));
     assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8::CD30"));
     assertTrue(NetworkUtils.isValidIPv6Address("2001:0DB8:0000:0000:0000::1428:57ab"));

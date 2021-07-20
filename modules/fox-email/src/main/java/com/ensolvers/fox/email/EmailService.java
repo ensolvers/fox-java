@@ -18,15 +18,14 @@
  */
 package com.ensolvers.fox.email;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for sending emails
@@ -44,12 +43,7 @@ public class EmailService {
   private int port = 587;
 
   public EmailService(
-          String host,
-          int port,
-          String smptUsername,
-          String smtpPassword,
-          String fromMail
-  ) {
+      String host, int port, String smptUsername, String smtpPassword, String fromMail) {
     this.from = fromMail;
     this.smtpUsername = smptUsername;
     this.smtpPassword = smtpPassword;
@@ -59,6 +53,7 @@ public class EmailService {
 
   /**
    * Sends a transactional email from the configured account to mailTo
+   *
    * @param mailTo the to of the email
    * @param subject the subject
    * @param body the body

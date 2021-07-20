@@ -15,24 +15,34 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
       Function<V, String> customSerializer,
       Function<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
-    super(redis, name, expirationTime, valueClass, customSerializer, customDeserializer, maxEntriesPerBlock);
+    super(
+        redis,
+        name,
+        expirationTime,
+        valueClass,
+        customSerializer,
+        customDeserializer,
+        maxEntriesPerBlock);
   }
 
-    /**
-     * Pushes an element to a non-expiring list cache that is clipped to the maxEntriesPerBlock
-     * @param key The key of the collection.
-     * @param value to be added
-     */
+  /**
+   * Pushes an element to a non-expiring list cache that is clipped to the maxEntriesPerBlock
+   *
+   * @param key The key of the collection.
+   * @param value to be added
+   */
   @Override
   public void push(String key, V value) {
     this.push(key, value, false);
   }
 
   /**
-  * Pushes a collection of elements to a non-expiring list cache that is clipped to the maxEntriesPerBlock
-  * @param key The key of the collection.
-  * @param values to be added.
-  */
+   * Pushes a collection of elements to a non-expiring list cache that is clipped to the
+   * maxEntriesPerBlock
+   *
+   * @param key The key of the collection.
+   * @param values to be added.
+   */
   @Override
   public void push(String key, Collection<V> values) {
     this.push(key, values, false);
@@ -40,6 +50,7 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
 
   /**
    * Pushes an element to a list cache that is clipped to the maxEntriesPerBlock
+   *
    * @param key of the collection
    * @param value to be added
    * @param expire Add expiration time
@@ -51,6 +62,7 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
 
   /**
    * Pushes an element to a list cache that is clipped to the maxEntriesPerBlock
+   *
    * @param key of the collection
    * @param values to be added
    * @param expire Add expiration time
@@ -78,6 +90,4 @@ public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisColl
           return null;
         });
   }
-
-
 }

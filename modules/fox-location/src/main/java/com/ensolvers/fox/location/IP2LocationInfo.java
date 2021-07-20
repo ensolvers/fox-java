@@ -94,9 +94,13 @@ public class IP2LocationInfo implements Comparable<IP2LocationInfo> {
     this.lng = lng;
   }
 
-  public String getContinentCode() {return continentCode;}
+  public String getContinentCode() {
+    return continentCode;
+  }
 
-  public void setContinentCode(String continentCode) {this.continentCode = continentCode;}
+  public void setContinentCode(String continentCode) {
+    this.continentCode = continentCode;
+  }
 
   public int compareTo(IP2LocationInfo o) {
     if (this.fromIP <= o.fromIP && this.toIP >= o.toIP) {
@@ -111,8 +115,9 @@ public class IP2LocationInfo implements Comparable<IP2LocationInfo> {
   }
 
   /**
-   * This method is only for IPv6 processing. Depending on the application's IPv6 traffic, a real location service for
-   * IPv6 would be created
+   * This method is only for IPv6 processing. Depending on the application's IPv6 traffic, a real
+   * location service for IPv6 would be created
+   *
    * @return a mocked location
    */
   public static IP2LocationInfo generateMockLocation() {
@@ -124,5 +129,4 @@ public class IP2LocationInfo implements Comparable<IP2LocationInfo> {
     mockLocation.setCityName(mockData);
     return mockLocation;
   }
-
 }

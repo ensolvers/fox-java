@@ -18,6 +18,4 @@
  */
 package com.ensolvers.fox.location;
 
-
-public class InvalidIPV4Exception extends Exception {
-}
+public class InvalidIPV4Exception extends Exception {}

@@ -18,5 +18,4 @@
  */
 package com.ensolvers.fox.location;
 
-public class IPV4NotFoundException extends Exception {
-}
+public class IPV4NotFoundException extends Exception {}
