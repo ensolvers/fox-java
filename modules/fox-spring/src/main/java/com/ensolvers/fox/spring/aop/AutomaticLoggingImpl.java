@@ -13,10 +13,12 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /** AutomaticLogging default implementation */
 @Aspect
 @Configuration
+@Component
 public class AutomaticLoggingImpl {
 
   public static <T> boolean switchType(Object o, Consumer... a) {
@@ -70,7 +72,7 @@ public class AutomaticLoggingImpl {
       proceed = joinPoint.proceed();
 
       // When it is finished, we calculate how long it took and the message is updated to be logged
-      // again if TimeElapsedLogging is activated */
+      // again if TimeElapsedLogging is activated
       if (annotation.timeElapsedLogging()) {
         long executionTime = System.currentTimeMillis() - start;
         logContent.set(logContent.get().replace("[Call]", "[Finish]"));

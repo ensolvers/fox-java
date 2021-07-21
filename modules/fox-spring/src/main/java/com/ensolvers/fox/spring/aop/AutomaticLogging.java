@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  *
  * <p>- {@code logSuffix} specifies a suffix for every log entry written by the annotation - {@code
  * includeParameters} specifies if it must log the concrete parameters used in method call - {@code
- * logCollctionSizeOnly} when collections are passed as parameters and {@code includeParamteres} is
+ * logCollctionSizeOnly} when collections are passed as parameters and {@code includeParameteres} is
  * true, it specifies if all the inner parameters should be logged or only it must log the size -
  * {@code timeElapsedLogging} specifies if the time that passed between the invocation and the
  * return of the function must be logged
