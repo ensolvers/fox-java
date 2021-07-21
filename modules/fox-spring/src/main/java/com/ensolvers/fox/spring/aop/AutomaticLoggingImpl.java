@@ -51,9 +51,7 @@ public class AutomaticLoggingImpl {
                 + "["
                 + className
                 + "] "
-                + "["
                 + methodSignature.getName()
-                + "] "
                 + (annotation.timeElapsedLogging() ? "[Call] " : ""));
     String[] parameterNames = methodSignature.getParameterNames();
     Object[] parameterValues = joinPoint.getArgs();

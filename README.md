@@ -36,6 +36,10 @@ Then, libraries can be referenced simply by its groupId, artifactId and version,
 - `fox-email`: Utilities for email sending and processing
 - `fox-s3`: AWS S3 client that simplifies content uploading and fetching
 - `fox-location`: IP2Location using MaxMind DB
+- `fox-ses`: Utils for sending emails via AWS SES
+- `fox-sns`: Utils for sending notifications via AWS SNS
+- [`fox-spring`](modules/fox-spring/README.md): General utils for Spring and Spring Boot
+
 
 ## How to collaborate to this project
 
