@@ -9,11 +9,11 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>fox-cloudwatch</artifactId>
+    <artifactId>fox-metrics</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Fox - Cloudwatch</name>
+    <name>Fox - Metrics</name>
 
     <dependencies>
         <dependency>
