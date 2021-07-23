@@ -18,15 +18,15 @@
  */
 package com.ensolvers.fox.cloudwatch;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
-import com.amazonaws.services.cloudwatch.model.Dimension;
-import com.amazonaws.services.cloudwatch.model.MetricDatum;
-import com.amazonaws.services.cloudwatch.model.PutMetricDataRequest;
-import com.amazonaws.services.cloudwatch.model.StandardUnit;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.Dimension;
+import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
+import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
+import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
 
 /**
  * Service which simplifies metric pushing to AWS Cloudwatch
@@ -36,34 +36,30 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit;
 public class CloudwatchService {
 
   private final String namespace;
-  private final AmazonCloudWatch client;
+  private final CloudWatchClient client;
 
   public CloudwatchService(
-      String accessKeyId, String secretAccessKeyId, Regions region, String namespace) {
+      String accessKeyId, String secretAccessKeyId, Region region, String namespace) {
     this.namespace = namespace;
 
     this.client = this.createClient(accessKeyId, secretAccessKeyId, region);
   }
 
-  private AmazonCloudWatch createClient(
-      String accessKeyId, String secretAccessKeyId, Regions region) {
-    AmazonCloudWatchClientBuilder cloudwatchClientBuilder =
-        AmazonCloudWatchClientBuilder.standard();
-    cloudwatchClientBuilder.setRegion(region.getName());
-    cloudwatchClientBuilder.setCredentials(
-        new AWSStaticCredentialsProvider(
-            new AWSCredentials() {
-              @Override
-              public String getAWSAccessKeyId() {
-                return accessKeyId;
-              }
+  private CloudWatchClient createClient(
+      String accessKeyId, String secretAccessKeyId, Region region) {
+    CloudWatchClient client =
+        CloudWatchClient.builder()
+            .region(region)
+            .credentialsProvider(
+                new AwsCredentialsProvider() {
+                  @Override
+                  public AwsCredentials resolveCredentials() {
+                    return AwsBasicCredentials.create(accessKeyId, secretAccessKeyId);
+                  }
+                })
+            .build();
 
-              @Override
-              public String getAWSSecretKey() {
-                return secretAccessKeyId;
-              }
-            }));
-    return cloudwatchClientBuilder.build();
+    return client;
   }
 
   /**
@@ -74,17 +70,18 @@ public class CloudwatchService {
    * @param value individual metric to be published for the dimension
    */
   public void put(String dimensionName, String dimensionValue, double value) {
-    Dimension dimension = new Dimension().withName(dimensionName).withValue(dimensionValue);
+    Dimension dimension = Dimension.builder().name(dimensionName).value(dimensionValue).build();
 
     MetricDatum datum =
-        new MetricDatum()
-            .withMetricName(dimensionValue)
-            .withUnit(StandardUnit.None)
-            .withValue(value)
-            .withDimensions(dimension);
+        MetricDatum.builder()
+            .metricName(dimensionValue)
+            .unit(StandardUnit.NONE)
+            .value(value)
+            .dimensions(dimension)
+            .build();
 
     PutMetricDataRequest request =
-        new PutMetricDataRequest().withNamespace(this.namespace).withMetricData(datum);
+        PutMetricDataRequest.builder().namespace(this.namespace).metricData(datum).build();
 
     this.client.putMetricData(request);
   }

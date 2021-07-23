@@ -1,6 +1,5 @@
 package com.ensolvers.fox.quality.model;
 
-import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -10,22 +9,21 @@ import java.util.Date;
  */
 public class SonarQubeMetricMeasure {
 
-    private String value;
-    private Date date;
+  private String value;
+  private Date date;
 
-    protected SonarQubeMetricMeasure() {
-    }
+  protected SonarQubeMetricMeasure() {}
 
-    public SonarQubeMetricMeasure(String value, Date date) {
-        this.value = value;
-        this.date = date;
-    }
+  public SonarQubeMetricMeasure(String value, Date date) {
+    this.value = value;
+    this.date = date;
+  }
 
-    public String getValue() {
-        return value;
-    }
+  public String getValue() {
+    return value;
+  }
 
-    public Date getDate() {
-        return date;
-    }
+  public Date getDate() {
+    return date;
+  }
 }

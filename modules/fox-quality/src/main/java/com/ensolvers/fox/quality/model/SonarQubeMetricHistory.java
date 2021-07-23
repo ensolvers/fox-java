@@ -10,32 +10,30 @@ import java.util.List;
  */
 public class SonarQubeMetricHistory {
 
-    String metric;
-    List<SonarQubeMetricMeasure> history;
+  String metric;
+  List<SonarQubeMetricMeasure> history;
 
-    protected SonarQubeMetricHistory() {
-    }
+  protected SonarQubeMetricHistory() {}
 
-    public SonarQubeMetricHistory(String metric) {
-        this.metric = metric;
-        this.history = new ArrayList<>();
-    }
+  public SonarQubeMetricHistory(String metric) {
+    this.metric = metric;
+    this.history = new ArrayList<>();
+  }
 
-    public SonarQubeMetricHistory(String metric, List<SonarQubeMetricMeasure> history) {
-        this.metric = metric;
-        this.history = history;
-    }
+  public SonarQubeMetricHistory(String metric, List<SonarQubeMetricMeasure> history) {
+    this.metric = metric;
+    this.history = history;
+  }
 
-    public String getMetric() {
-        return metric;
-    }
+  public String getMetric() {
+    return metric;
+  }
 
-    public List<SonarQubeMetricMeasure> getHistory() {
-        return history;
-    }
+  public List<SonarQubeMetricMeasure> getHistory() {
+    return history;
+  }
 
-    public void addMeasure(SonarQubeMetricMeasure value) {
-        this.history.add(value);
-    }
-
+  public void addMeasure(SonarQubeMetricMeasure value) {
+    this.history.add(value);
+  }
 }
