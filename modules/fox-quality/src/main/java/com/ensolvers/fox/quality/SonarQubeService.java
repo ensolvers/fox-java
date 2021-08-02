@@ -16,7 +16,7 @@ import okhttp3.Response;
 /**
  * A utils class that allows to interact with SonarQube (mostly for data fetching) via its API
  *
- * @author josematiasrivero
+ * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 public class SonarQubeService {
 
@@ -45,7 +45,7 @@ public class SonarQubeService {
    * @return a {@code SonarQubeMetricHistoryResponse} structure with all the individual measures
    * @throws Exception if an error occurs during the fetching
    */
-  public SonarQubeMetricHistoryResponse getMetricHistory(
+  public SonarQubeMetricHistoryResponse getMetricHistory (
       String component, String metric, Instant from, Instant to) throws Exception {
     DateTimeFormatter formatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
@@ -73,6 +73,10 @@ public class SonarQubeService {
             .addHeader("Authorization", "Basic " + tokenInBase64)
             .build();
     Response response = client.newCall(request).execute();
+
+    if (response.code() == 404) {
+      throw new Exception("Platform or component not found");
+    }
 
     String stringResponse = response.body().string();
     SonarQubeMetricHistoryResponse sonarQubeMetricHistoryResponse =

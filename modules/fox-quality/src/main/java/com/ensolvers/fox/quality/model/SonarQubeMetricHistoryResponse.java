@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Represents a response for a metric history request against SonarQube
  *
- * @author josematiasrivero
+ * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 public class SonarQubeMetricHistoryResponse {
 

@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Represents a specific measure in the context of a SonarQube metric
  *
- * @author josematiasrivero
+ * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 public class SonarQubeMetricMeasure {
 

@@ -1,3 +1,5 @@
+package com.ensolvers.fox.alerts;
+
 import com.slack.api.Slack;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.model.Attachment;

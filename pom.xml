@@ -171,6 +171,12 @@
       </dependency>
 
       <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>4.6.1</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>3.8.0</version>
@@ -241,6 +247,7 @@
     <module>modules/fox-spring</module>
     <module>modules/fox-alerts</module>
     <module>modules/fox-quality</module>
+    <module>modules/fox-cli</module>
   </modules>
 
 </project>

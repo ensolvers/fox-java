@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Represents a set of historic values of a particular metric
  *
- * @author josematiasrivero
+ * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 public class SonarQubeMetricHistory {
 
