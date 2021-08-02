@@ -45,7 +45,7 @@ public class SonarQubeService {
    * @return a {@code SonarQubeMetricHistoryResponse} structure with all the individual measures
    * @throws Exception if an error occurs during the fetching
    */
-  public SonarQubeMetricHistoryResponse getMetricHistory (
+  public SonarQubeMetricHistoryResponse getMetricHistory(
       String component, String metric, Instant from, Instant to) throws Exception {
     DateTimeFormatter formatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));

@@ -9,7 +9,6 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
-
 /**
  * Command-line application that allows to generate and send SonarQube reports to a Slack channel
  *
