@@ -16,7 +16,7 @@ import picocli.CommandLine;
  * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
 @CommandLine.Command(name = "sonarqube-metrics-report")
-public class SonarQubeMetricsReport implements Callable<Integer> {
+public class SonarQubeMetricsPublisher implements Callable<Integer> {
 
   @CommandLine.Option(
       names = {"--sonar-token"},
@@ -71,13 +71,14 @@ public class SonarQubeMetricsReport implements Callable<Integer> {
     } catch (Exception e) {
       System.out.printf("Error when trying to execute SonarQube publishing\n");
       e.printStackTrace();
+      return 1;
     }
 
-    return 1;
+    return 0;
   }
 
   public static void main(String... args) {
-    int exitCode = new CommandLine(new SonarQubeMetricsReport()).execute(args);
+    int exitCode = new CommandLine(new SonarQubeMetricsPublisher()).execute(args);
     System.exit(exitCode);
   }
 }
