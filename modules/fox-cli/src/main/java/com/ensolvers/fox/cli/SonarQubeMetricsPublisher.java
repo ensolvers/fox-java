@@ -3,10 +3,15 @@ package com.ensolvers.fox.cli;
 import com.ensolvers.fox.alerts.SlackService;
 import com.ensolvers.fox.quality.SonarQubeService;
 import com.ensolvers.fox.quality.model.SonarQubeMetricHistoryResponse;
+import com.ensolvers.fox.quality.model.SonarQubeMetricMeasure;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import picocli.CommandLine;
 
 /**
@@ -16,6 +21,10 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(name = "sonarqube-metrics-report")
 public class SonarQubeMetricsPublisher implements Callable<Integer> {
+
+  public static final String GRAY = "#CCCCCC";
+  public static final String RED = "#FF0000";
+  public static final String GREEN = "#00FF00";
 
   @CommandLine.Option(
       names = {"--sonar-token"},
@@ -41,39 +50,85 @@ public class SonarQubeMetricsPublisher implements Callable<Integer> {
       required = true)
   private String slackChannel;
 
+  @CommandLine.Option(
+      names = {"--metrics"},
+      description = "Comma-separated list of metrics to be reported",
+      defaultValue = "bugs,code_smells,security_hotspots")
+  private String metrics;
+
   @Override
   public Integer call() throws Exception {
     SlackService slackService = new SlackService(slackBotToken, slackChannel);
     SonarQubeService sonarQubeService = new SonarQubeService(sonarToken);
 
-    try {
-      String metric = "coverage";
+    Stream<String> metrics = Arrays.stream(this.metrics.split(","));
 
+    this.sendIntroMessagge(slackService);
+
+    metrics.forEach(
+        metric -> {
+          fetchAndPublishMetric(metric, slackService, sonarQubeService);
+        });
+
+    return 0;
+  }
+
+  private void sendIntroMessagge(SlackService slackService) throws Exception {
+    String url =
+        "https://sonarcloud.io/project/issues?id="
+            + URLEncoder.encode(this.sonarComponent, "utf8")
+            + "&resolved=false";
+    slackService.sendMessageWithColor(
+        "*SONARQUBE ANALYSIS RESULTS FOR <" + url + "|" + this.sonarComponent + ">*", "#4287f5");
+  }
+
+  private void fetchAndPublishMetric(
+      String metric, SlackService slackService, SonarQubeService sonarQubeService) {
+    try {
       SonarQubeMetricHistoryResponse history =
           sonarQubeService.getMetricHistory(
               this.sonarComponent, metric, Instant.now().minus(10, ChronoUnit.DAYS), Instant.now());
 
       String message;
+      String messageColor = GRAY;
 
       if (!history.getMeasures().isEmpty()) {
-        message = "Measures for metric: " + metric + "\n";
+        message = "*Measures for metric: " + metric + "*\n";
+
+        List<SonarQubeMetricMeasure> listToPublish =
+            history.getMeasures().get(0).getHistory().stream()
+                // sort historic values in reverse order
+                .sorted(
+                    (m1, m2) ->
+                        (int)
+                            (m2.getDate().toInstant().toEpochMilli()
+                                - m1.getDate().toInstant().toEpochMilli()))
+                .limit(4)
+                .collect(Collectors.toList());
+
+        double firstValue = Double.parseDouble(listToPublish.get(0).getValue());
+        double lastValue =
+            Double.parseDouble(listToPublish.get(listToPublish.size() - 1).getValue());
+
+        if (firstValue > lastValue) {
+          messageColor = RED;
+        } else if (firstValue < lastValue) {
+          messageColor = GREEN;
+        }
+
         message =
-            message
-                + history.getMeasures().get(0).getHistory().stream()
-                    .map(m -> m.getDate() + ": " + m.getValue())
-                    .collect(Collectors.joining("\n"));
+            listToPublish.stream()
+                .map(m -> m.getDate() + ": " + m.getValue())
+                .collect(Collectors.joining("\n"));
       } else {
         message = "No measures for metric: " + metric;
       }
 
-      slackService.sendMessageWithColor(message, "#CCCCCC");
+      slackService.sendMessageWithColor(message, messageColor);
     } catch (Exception e) {
       System.out.printf("Error when trying to execute SonarQube publishing\n");
       e.printStackTrace();
-      return 1;
     }
-
-    return 0;
   }
 
   public static void main(String... args) {
