@@ -63,7 +63,7 @@ public class SonarQubeMetricsPublisher implements Callable<Integer> {
 
     Stream<String> metrics = Arrays.stream(this.metrics.split(","));
 
-    this.sendIntroMessagge(slackService);
+    this.sendIntroMessage(slackService);
 
     metrics.forEach(
         metric -> {
@@ -73,7 +73,7 @@ public class SonarQubeMetricsPublisher implements Callable<Integer> {
     return 0;
   }
 
-  private void sendIntroMessagge(SlackService slackService) throws Exception {
+  private void sendIntroMessage(SlackService slackService) throws Exception {
     String url =
         "https://sonarcloud.io/project/issues?id="
             + URLEncoder.encode(this.sonarComponent, "utf8")
@@ -116,7 +116,7 @@ public class SonarQubeMetricsPublisher implements Callable<Integer> {
           messageColor = GREEN;
         }
 
-        message =
+        message +=
             listToPublish.stream()
                 .map(m -> m.getDate() + ": " + m.getValue())
                 .collect(Collectors.joining("\n"));
