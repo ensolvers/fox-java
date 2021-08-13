@@ -15,6 +15,7 @@
     <software.amazon.awssdk.version>2.16.29</software.amazon.awssdk.version>
     <spring.version>5.3.4</spring.version>
     <aspectj.version>1.9.6</aspectj.version>
+    <license.dir>${basedir}</license.dir>
   </properties>
 
   <dependencyManagement>
@@ -164,11 +165,6 @@
         <version>3.4.2</version>
       </dependency>
 
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.11.1</version>
-      </dependency>
 
       <dependency>
         <groupId>info.picocli</groupId>
@@ -189,6 +185,30 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>2.0.0</version>
+        <configuration>
+          <licenseName>lgpl_v2_1</licenseName>
+          <organizationName>Ensolvers</organizationName>
+          <projectName> Fox </projectName>
+          <inceptionYear>2021</inceptionYear>
+          <includes>
+            <include>src/main/java/**</include>
+            <include>src/test/java/**</include>
+          </includes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>first</id>
+            <goals>
+              <goal>update-project-license</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
