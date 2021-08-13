@@ -20,11 +20,14 @@ package com.ensolvers.fox.s3;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.internal.StaticCredentialsProvider;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import java.io.*;
 import java.util.List;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -42,9 +45,8 @@ public class S3ServiceTest {
     String accessKey = "";
     String secretKey = "";
 
-    AmazonS3Client client =
-        new AmazonS3Client(
-            new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)));
+    AWSStaticCredentialsProvider credentials = new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey));
+    AmazonS3Client client = (AmazonS3Client) AmazonS3ClientBuilder.standard().withCredentials(credentials).withRegion(Regions.DEFAULT_REGION).build();
     S3Service service = new S3Service(client);
 
     // read non existent file
