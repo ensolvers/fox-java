@@ -127,8 +127,8 @@ public class S3Service {
       FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
 
       IOUtils.copy(inputStream, fileOutputStream);
-      IOUtils.closeQuietly(inputStream);
-      IOUtils.closeQuietly(fileOutputStream);
+      IOUtils.closeQuietly(inputStream, null);
+      IOUtils.closeQuietly(fileOutputStream, null);
 
       return tmpFile;
     } catch (AmazonServiceException ase) {
