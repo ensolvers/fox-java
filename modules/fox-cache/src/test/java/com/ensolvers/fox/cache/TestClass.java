@@ -13,22 +13,43 @@ public class TestClass {
     this.longValue = longValue;
   }
 
-  protected TestClass() {}
+  public TestClass() {}
+
+  public TestClass(String stringValue, Integer integerValue) {
+    this.stringValue = stringValue;
+    this.integerValue = integerValue;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
 
   public String getStringValue() {
     return stringValue;
+  }
+
+  public void setStringValue(String stringValue) {
+    this.stringValue = stringValue;
   }
 
   public Integer getIntegerValue() {
     return integerValue;
   }
 
+  public void setIntegerValue(Integer integerValue) {
+    this.integerValue = integerValue;
+  }
+
   public Long getLongValue() {
     return longValue;
   }
 
-  public Long getId() {
-    return id;
+  public void setLongValue(Long longValue) {
+    this.longValue = longValue;
   }
 
   @Override

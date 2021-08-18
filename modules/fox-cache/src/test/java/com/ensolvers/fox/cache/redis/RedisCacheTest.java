@@ -3,6 +3,7 @@ package com.ensolvers.fox.cache.redis;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.ensolvers.fox.cache.TestClass;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -21,12 +22,14 @@ public class RedisCacheTest {
   }
 
   RedisClient client;
-  RedisCacheFactory factory;
+  RedisCacheFactoryTest factory;
+  ObjectMapper objectMapper;
 
   @BeforeEach
   public void setUp() {
     this.client = RedisClient.create(REDIS_URI);
-    this.factory = new RedisCacheFactory(client);
+    this.factory = new RedisCacheFactoryTest(client);
+    this.objectMapper = new ObjectMapper();
   }
 
   @Test
@@ -180,6 +183,77 @@ public class RedisCacheTest {
 
     assertThrows(IndexOutOfBoundsException.class, () -> cache.get("testKey-1").get(3));
     assertThrows(IndexOutOfBoundsException.class, () -> cache.get("testKey-1").get(4));
+
+    cache.invalidateAll();
+  }
+
+  // Dummy custom deserializer test that adds dummy data to the DTO
+  @Test
+  @Disabled
+  public void testCustomSerializer() {
+    RedisListCache<TestClass> cache =
+        this.factory.getListCache(
+            "testListCache",
+            100,
+            TestClass.class,
+            objectMapper::writeValueAsString,
+            (string) -> {
+              TestClass testClass = objectMapper.readValue(string, TestClass.class);
+              testClass.setIntegerValue(testClass.getIntegerValue() + 1000);
+              testClass.setStringValue("From custom deserializer" + testClass.getStringValue());
+
+              return testClass;
+            });
+
+    cache.push("123", new TestClass(" - 1", 1));
+    cache.push("123", new TestClass(" - 2", 2));
+
+    assertEquals("From custom deserializer - 1", cache.get("123").get(1).getStringValue());
+    assertEquals("From custom deserializer - 2", cache.get("123").get(0).getStringValue());
+    assertEquals(Integer.valueOf(1001), cache.get("123").get(1).getIntegerValue());
+    assertEquals(Integer.valueOf(1002), cache.get("123").get(0).getIntegerValue());
+
+    cache.push("abc", new TestClass(" - 3", 3));
+    assertEquals("From custom deserializer - 3", cache.get("abc").get(0).getStringValue());
+    assertEquals(Integer.valueOf(1003), cache.get("abc").get(0).getIntegerValue());
+
+    cache.invalidateAll();
+  }
+
+  @Test
+  @Disabled
+  public void testRedisCachePropagatesSerializingException() {
+    RedisListCache<TestClass> cache =
+        this.factory.getListCache(
+            "testListCache",
+            100,
+            TestClass.class,
+            objectMapper::writeValueAsString,
+            (string) -> objectMapper.readValue(string, TestClass.class));
+
+    cache.push("123", new TestClass());
+    cache.get("123");
+    cache.push("abc", new TestClass());
+    cache.get("abc");
+
+    this.factory.removeCacheFromList("testListCache");
+
+    cache =
+        this.factory.getListCache(
+            "testListCache",
+            100,
+            TestClass.class,
+            (o) -> {
+              throw new Exception();
+            },
+            (s) -> {
+              throw new Exception();
+            });
+
+    RedisListCache<TestClass> finalCache = cache;
+    assertThrows(Exception.class, () -> finalCache.push("123", new TestClass()));
+    assertThrows(Exception.class, () -> finalCache.get("123"));
+    assertThrows(Exception.class, () -> finalCache.push("abc", new TestClass()));
 
     cache.invalidateAll();
   }

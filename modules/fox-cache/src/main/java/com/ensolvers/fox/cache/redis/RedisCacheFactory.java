@@ -1,19 +1,19 @@
 package com.ensolvers.fox.cache.redis;
 
 import com.ensolvers.fox.cache.CacheInitializationException;
+import com.ensolvers.fox.cache.CheckedFunction;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class RedisCacheFactory {
   private final RedisClient client;
   private final StatefulRedisConnection<String, String> connection;
   private final RedisCommands<String, String> redis;
-  private List<String> caches;
+  protected List<String> caches;
 
   public RedisCacheFactory(RedisClient client) {
     caches = new ArrayList<>();
@@ -47,8 +47,8 @@ public class RedisCacheFactory {
       String name,
       int expireTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer) {
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer) {
     return this.getCache(
         name,
         expireTime,
@@ -83,8 +83,8 @@ public class RedisCacheFactory {
       String name,
       int expireTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer) {
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer) {
     return this.getCache(
         name,
         expireTime,
@@ -121,8 +121,8 @@ public class RedisCacheFactory {
       String name,
       int expireTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer,
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     return this.getCache(
         name,
@@ -158,8 +158,8 @@ public class RedisCacheFactory {
       String name,
       int expireTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer,
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     return this.getCache(
         name,
@@ -187,8 +187,8 @@ public class RedisCacheFactory {
       int expireTime,
       Class<V> valueClass,
       Class<C> cacheType,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer,
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException("Cache name cannot be empty");
@@ -202,8 +202,8 @@ public class RedisCacheFactory {
                     String.class,
                     int.class,
                     Class.class,
-                    Function.class,
-                    Function.class,
+                    CheckedFunction.class,
+                    CheckedFunction.class,
                     Integer.class)
                 .newInstance(
                     redis,

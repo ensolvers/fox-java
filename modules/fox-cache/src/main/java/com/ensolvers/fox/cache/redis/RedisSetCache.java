@@ -1,6 +1,7 @@
 package com.ensolvers.fox.cache.redis;
 
 import com.ensolvers.fox.cache.CacheSerializingException;
+import com.ensolvers.fox.cache.CheckedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 
 public class RedisSetCache<V> extends RedisCache<V> implements RedisCollection<V> {
 
@@ -17,8 +17,8 @@ public class RedisSetCache<V> extends RedisCache<V> implements RedisCollection<V
       String cacheName,
       int expirationTime,
       Class<V> valueClass,
-      Function<V, String> customSerializer,
-      Function<String, V> customDeserializer,
+      CheckedFunction<V, String> customSerializer,
+      CheckedFunction<String, V> customDeserializer,
       Integer maxEntriesPerBlock) {
     super(
         redis,
