@@ -248,7 +248,7 @@
     <module>modules/fox-alerts</module>
     <module>modules/fox-quality</module>
     <module>modules/fox-cli</module>
-    <module>modules/fox-logger</module>
+    <module>modules/fox-logging</module>
   </modules>
 
 </project>

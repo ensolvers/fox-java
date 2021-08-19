@@ -17,30 +17,17 @@
  * containing JNA, in file "AL2.0".
  */
 
-package com.ensolvers.fox.logger;
+package com.ensolvers.fox.logging;
 
 import com.newrelic.api.agent.NewRelic;
 import java.util.Collections;
 import org.apache.log4j.Category;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.slf4j.helpers.MessageFormatter;
 
 /** Provides utilities for adding logging with New Relic support. */
 public class FoxLogger extends Category {
-
-    private static final String INFO =
-            "[\u001b[1;34m %-5p \u001b[m] \u001b[0;37m%d{yyyy-MM-dd HH:mm:ss}\u001b[m \u001b[0;36m%c{3}\u001b[m - %m%n";
-    private static final String ERROR =
-            "[\u001b[1;31m %-5p \u001b[m] \u001b[0;37m%d{yyyy-MM-dd HH:mm:ss}\u001b[m \u001b[0;36m%c{3}\u001b[m - %m%n";
-    private static final String DEBUG =
-            "[\u001b[1;32m %-5p \u001b[m] \u001b[0;37m%d{yyyy-MM-dd HH:mm:ss}\u001b[m \u001b[0;36m%c{3}\u001b[m - %m%n";
-    private static final String WARN =
-            "[\u001b[1;35m %-5p \u001b[m] \u001b[0;37m%d{yyyy-MM-dd HH:mm:ss}\u001b[m \u001b[0;36m%c{3}\u001b[m - %m%n";
-    private static final String FATAL =
-            "[\u001b[1;31m %-5p \u001b[m] \u001b[0;37m%d{yyyy-MM-dd HH:mm:ss}\u001b[m \u001b[0;36m%c{3}\u001b[m - %m%n";
-
     private Logger logger;
 
     public static FoxLogger getLogger(String name) {
@@ -52,34 +39,24 @@ public class FoxLogger extends Category {
         this.logger = logger;
     }
 
-    private void changeConversionPattern(String pattern) {
-        ((PatternLayout) logger.getParent().getAppender("stdout").getLayout())
-                .setConversionPattern(pattern);
-    }
-
     @Override
     public void info(Object message) {
-        this.changeConversionPattern(INFO);
         this.logger.info(message);
     }
 
     @Override
     public void error(Object message) {
         NewRelic.noticeError(String.valueOf(message));
-        this.changeConversionPattern(ERROR);
         this.logger.error(message);
     }
 
     public void error(String message) {
         NewRelic.noticeError(message);
-        this.changeConversionPattern(ERROR);
         this.logger.error(message);
     }
 
-    // @Override
     public void error(String message, Throwable t) {
         NewRelic.noticeError(t, Collections.singletonMap("message", message));
-        this.changeConversionPattern(ERROR);
         this.logger.error(message, t);
     }
 
@@ -87,7 +64,6 @@ public class FoxLogger extends Category {
         if (doNewRelicLog) {
             NewRelic.noticeError(message);
         }
-        this.changeConversionPattern(ERROR);
         this.logger.error(message);
     }
 
@@ -95,33 +71,35 @@ public class FoxLogger extends Category {
         if (doNewRelicLog) {
             NewRelic.noticeError(t);
         }
-        this.changeConversionPattern(ERROR);
         this.logger.error("UNHANDLED EXCEPTION", t);
     }
 
     @Override
     public void warn(Object message) {
-        this.changeConversionPattern(WARN);
         this.logger.warn(message);
     }
 
     @Override
     public void warn(Object message, Throwable t) {
-        this.changeConversionPattern(WARN);
         this.logger.warn(message, t);
     }
 
     @Override
     public void debug(Object message) {
-        this.changeConversionPattern(DEBUG);
         this.logger.debug(message);
     }
 
     @Override
     public void fatal(Object message) {
-        this.changeConversionPattern(FATAL);
         this.logger.fatal(message);
     }
+
+    /**
+     * Log a message at different levels according to the specified format and argument.
+     *
+     * @param format   like "This {} is {} a text"
+     * @param args like "first word, another word"
+     */
 
     public void finfo(String format, Object... args) {
         this.info(MessageFormatter.arrayFormat(format, args).getMessage());
