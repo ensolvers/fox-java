@@ -50,6 +50,12 @@
 
       <dependency>
         <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-chime</artifactId>
+        <version>1.12.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk-sns</artifactId>
         <version>${aws-sdk.version}</version>
       </dependency>
@@ -87,7 +93,11 @@
         <artifactId>spring-context</artifactId>
         <version>${spring.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.aspectj</groupId>
@@ -268,6 +278,7 @@
     <module>modules/fox-alerts</module>
     <module>modules/fox-quality</module>
     <module>modules/fox-cli</module>
+    <module>modules/fox-chime</module>
   </modules>
 
 </project>
