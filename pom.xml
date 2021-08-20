@@ -50,6 +50,12 @@
 
       <dependency>
         <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-chime</artifactId>
+        <version>${aws-sdk.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk-sns</artifactId>
         <version>${aws-sdk.version}</version>
       </dependency>
@@ -268,6 +274,7 @@
     <module>modules/fox-alerts</module>
     <module>modules/fox-quality</module>
     <module>modules/fox-cli</module>
+    <module>modules/fox-chime</module>
   </modules>
 
 </project>
