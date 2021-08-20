@@ -52,9 +52,10 @@ public class ChimeService {
   /**
    * Constructs a Chime Service
    *
-   * @param managementCredentials the AWS credentials for a user with read/write access to all chime services
-   * @param region  the AWS region
-   * @param appInstanceArn  the app instance arn where the chat channels will be scoped
+   * @param managementCredentials the AWS credentials for a user with read/write access to all chime
+   *     services
+   * @param region the AWS region
+   * @param appInstanceArn the app instance arn where the chat channels will be scoped
    * @param chattingCredentials the AWS credentials for a user with permission to chime:connect
    */
   public ChimeService(
@@ -81,6 +82,7 @@ public class ChimeService {
 
   /**
    * Creates a video meeting
+   *
    * @param clientRequestToken a unique identifier
    * @return the meeting
    */
@@ -94,13 +96,12 @@ public class ChimeService {
   }
 
   /**
-   * Creates an attendee object with the credentials to join a meeting
-   * with the specified user id
+   * Creates an attendee object with the credentials to join a meeting with the specified user id
    *
-   * @param userId      the user id
-   * @param meetingId   the (already created) meeting id
-   * @return  the attendee object with credentials
-   * @throws NotFoundException  if the meeting wasn't found
+   * @param userId the user id
+   * @param meetingId the (already created) meeting id
+   * @return the attendee object with credentials
+   * @throws NotFoundException if the meeting wasn't found
    */
   public Attendee joinMeeting(String userId, String meetingId) throws NotFoundException {
     CreateAttendeeRequest request = new CreateAttendeeRequest();
@@ -112,14 +113,12 @@ public class ChimeService {
     return attendee;
   }
 
-
   /**
-   * Creates an app instance user inside the app instance
-   * to be able to be member of channels
+   * Creates an app instance user inside the app instance to be able to be member of channels
    *
-   * @param userId    the user id
-   * @param fullName  the display name
-   * @return  the app instance user arn
+   * @param userId the user id
+   * @param fullName the display name
+   * @return the app instance user arn
    */
   public String createUser(String userId, String fullName) {
     CreateAppInstanceUserRequest userRequest =
@@ -210,7 +209,8 @@ public class ChimeService {
 
   /**
    * This method creates an app instance where a set of users and channels will exist
-   * @param name  the name of the app instance
+   *
+   * @param name the name of the app instance
    * @return the app instance arn
    */
   public String createAppInstance(String name) {
