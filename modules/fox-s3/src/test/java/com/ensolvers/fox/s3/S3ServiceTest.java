@@ -59,7 +59,8 @@ public class S3ServiceTest {
   public void testS3() throws Exception {
     String bucket = "foxtest";
     String testData = "this is a sample test data";
-    String key = "";
+    String key = "t1";
+    String folderName = "f1";
 
     AmazonS3Client client =
         (AmazonS3Client)
@@ -70,32 +71,45 @@ public class S3ServiceTest {
                     .build();
 
     S3Service service = new S3Service(client);
+    // prepares the bucket
+    client.createBucket(bucket);
 
     // read non existent file
-    File file = service.get(bucket, "t1");
+    File file = service.get(bucket, key);
     assertNull(file);
 
     // no fail
-    service.delete(bucket, "t1");
+    service.delete(bucket, key);
 
-    // write file
+    // write file in root context
     File f = File.createTempFile("ensolversfox", ".txt");
     FileUtils.writeStringToFile(f, testData, "UTF8");
-    service.put(bucket, "t1", f);
+    service.put(bucket, key, f);
+    f.delete();
 
     // read existant file
-    file = service.get(bucket, "t1");
+    file = service.get(bucket, key);
     assertNotNull(file);
     String contents = FileUtils.readFileToString(file, "UTF8");
     assertEquals(testData, contents);
 
     // no fail
-    service.delete(bucket, "t1");
+    service.delete(bucket, key);
 
-    file = service.get(bucket, "t1");
+    file = service.get(bucket, key);
     assertNull(file);
 
-    List<String> keys = service.list(bucket, "folder");
+    List<String> keys = service.list(bucket, folderName);
+    assertTrue(keys.isEmpty());
+
+    // write file in folder
+    f = File.createTempFile("ensolversfox", ".txt");
+    FileUtils.writeStringToFile(f, testData, "UTF8");
+    service.put(bucket, folderName + "/" + key, f);
+    f.delete();
+
+    // now folder shouldn't be empty
+    keys = service.list(bucket, folderName);
     assertFalse(keys.isEmpty());
   }
 }
