@@ -18,6 +18,7 @@
  */
 package com.ensolvers.fox.s3;
 
+import static com.amazonaws.regions.ServiceAbbreviations.S3;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -27,31 +28,47 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.io.*;
 import java.util.List;
+
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * A Test case for {@link S3Service}
  *
  * @author Esteban Robles Luna
  */
+@Testcontainers
 public class S3ServiceTest {
+
+  DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
+
+  @Container
+  public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
+          .withServices(LocalStackContainer.Service.S3);
 
   @Test
   public void testS3() throws Exception {
-    String bucket = "hyros-foxtest";
+    String bucket = "foxtest";
     String testData = "this is a sample test data";
-    String accessKey = "";
-    String secretKey = "";
+    String key = "";
 
-    AWSStaticCredentialsProvider credentials =
-        new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey));
     AmazonS3Client client =
         (AmazonS3Client)
-            AmazonS3ClientBuilder.standard()
-                .withCredentials(credentials)
-                .withRegion(Regions.DEFAULT_REGION)
-                .build();
+            AmazonS3ClientBuilder
+                    .standard()
+                    .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
+                    .withCredentials(localstack.getDefaultCredentialsProvider())
+                    .build();
+
     S3Service service = new S3Service(client);
 
     // read non existent file
