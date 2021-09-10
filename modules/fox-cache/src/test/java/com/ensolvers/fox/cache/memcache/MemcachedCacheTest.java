@@ -30,14 +30,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.spy.memcached.MemcachedClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+@Testcontainers
 class MemcachedCacheTest {
+
+  DockerImageName MEMCACHED_IMAGE = DockerImageName.parse("memcached:1.6.10");
+
+  @Container
+  public GenericContainer<?> memcachedContainer = new GenericContainer<>(MEMCACHED_IMAGE)
+          .withExposedPorts(11211);
 
   private MemcachedClient memcachedClient;
 
   @BeforeEach
   public void initializeCache() throws IOException {
-    this.memcachedClient = new MemcachedClient(new InetSocketAddress(11211));
+    this.memcachedClient = new MemcachedClient(new InetSocketAddress(memcachedContainer.getMappedPort(11211)));
   }
 
   @Test

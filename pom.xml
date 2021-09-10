@@ -13,11 +13,11 @@
   <properties>
     <aws-sdk.version>1.11.890</aws-sdk.version>
     <software.amazon.awssdk.version>2.16.29</software.amazon.awssdk.version>
-    <spring.version>5.3.4</spring.version>
-    <aspectj.version>1.9.6</aspectj.version>
-    <license.dir>${basedir}</license.dir>
-    <slf4j.version>1.7.30</slf4j.version>
-  </properties>
+        <spring.version>5.3.4</spring.version>
+        <aspectj.version>1.9.6</aspectj.version>
+        <license.dir>${basedir}</license.dir>
+        <slf4j.version>1.7.30</slf4j.version>
+      </properties>
 
   <dependencyManagement>
     <dependencies>

@@ -49,10 +49,10 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public class S3ServiceTest {
 
-  DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
+  DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:0.11.3");
 
   @Container
-  public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
+  public LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
           .withServices(LocalStackContainer.Service.S3);
 
   @Test

@@ -9,12 +9,18 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+@Testcontainers
 public class RedisCacheTest {
-  /** Tests ignored until redis instance is setup */
-  private static final String REDIS_URI = "redis://localhost:6379/0";
+
+  @Container
+  public GenericContainer<?> redisContainer = new GenericContainer<>(DockerImageName.parse("redis:6.2.5"))
+          .withExposedPorts(6379);
 
   @AfterEach
   public void clear() {
@@ -27,13 +33,12 @@ public class RedisCacheTest {
 
   @BeforeEach
   public void setUp() {
-    this.client = RedisClient.create(REDIS_URI);
+    this.client = RedisClient.create("redis://localhost:" + redisContainer.getMappedPort(6379) + "/0");
     this.factory = new RedisCacheFactoryTest(client);
     this.objectMapper = new ObjectMapper();
   }
 
   @Test
-  @Disabled
   public void redisRegularCacheTestCase() {
     RedisRegularCache<String> cache =
         this.factory.getRegularCache("testRegularCacheString", 5, String.class);
@@ -67,7 +72,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void redisListCacheTestCase() {
     RedisListCache<String> cache =
         this.factory.getListCache("testListCacheString", 1, String.class);
@@ -105,7 +109,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void redisSetCacheTestCase() {
     RedisSetCache<String> cache = this.factory.getSetCache("testSetCacheString", 1, String.class);
     RedisSetCache<String> cache2 = this.factory.getSetCache("testSetCacheString2", 2, String.class);
@@ -144,7 +147,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void testMaxEntriesPerBlockLimitingCorrectly() {
     RedisLimitedCache<String> cache =
         this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
@@ -163,7 +165,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void testLimitedCacheReplacingOldElementsOnLimitReached() {
     RedisLimitedCache<String> cache =
         this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
@@ -189,7 +190,6 @@ public class RedisCacheTest {
 
   // Dummy custom deserializer test that adds dummy data to the DTO
   @Test
-  @Disabled
   public void testCustomSerializer() {
     RedisListCache<TestClass> cache =
         this.factory.getListCache(
@@ -221,7 +221,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void testRedisCachePropagatesSerializingException() {
     RedisListCache<TestClass> cache =
         this.factory.getListCache(
@@ -259,7 +258,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void redisTypesTestCase() {
     RedisRegularCache<Long> longCache;
     RedisRegularCache<Integer> integerCache;
@@ -293,7 +291,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void redisTimeoutTestCase() throws InterruptedException {
     RedisRegularCache<String> regularCache;
     RedisListCache<String> listCache;
@@ -345,7 +342,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void redisCustomClassCacheTestCase() {
     RedisRegularCache<TestClass> cache;
     cache = this.factory.getRegularCache("testRegularCacheTestClass", 3, TestClass.class);
@@ -358,7 +354,6 @@ public class RedisCacheTest {
   }
 
   @Test
-  @Disabled
   public void redisCustomSerializerTestCase() {
     RedisRegularCache<TestClass> cache;
     cache =
