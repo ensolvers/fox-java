@@ -7,22 +7,27 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+@Testcontainers
 public class SESServiceTest {
 
-  @Test
-  @Disabled
-  public void testSES() {
-    String accessKey = "";
-    String secretKey = "";
-    Regions region = Regions.US_EAST_1;
+  @Container
+  public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
+          .withServices(LocalStackContainer.Service.SES);
 
+
+  @Test
+  public void testSES() {
     AmazonSimpleEmailService client =
-        AmazonSimpleEmailServiceClientBuilder.standard()
-            .withCredentials(
-                new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-            .withRegion(region)
-            .build();
+        AmazonSimpleEmailServiceClientBuilder
+                .standard()
+                .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
+                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .build();
 
     SESService service = new SESService(client);
 

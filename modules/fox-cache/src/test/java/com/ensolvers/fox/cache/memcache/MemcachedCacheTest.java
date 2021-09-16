@@ -39,10 +39,8 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class MemcachedCacheTest {
 
-  DockerImageName MEMCACHED_IMAGE = DockerImageName.parse("memcached:1.6.10");
-
   @Container
-  public GenericContainer<?> memcachedContainer = new GenericContainer<>(MEMCACHED_IMAGE)
+  public GenericContainer<?> memcachedContainer = new GenericContainer<>(DockerImageName.parse("memcached:1.6.10"))
           .withExposedPorts(11211);
 
   private MemcachedClient memcachedClient;

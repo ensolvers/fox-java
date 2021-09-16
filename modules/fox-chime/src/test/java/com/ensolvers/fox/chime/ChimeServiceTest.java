@@ -24,9 +24,13 @@ import com.amazonaws.services.chime.model.Attendee;
 import com.amazonaws.services.chime.model.Meeting;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 public class ChimeServiceTest {
 
+  // NOTE: test disabled since Localstack Chime integration is not available
   @Test
   @Disabled
   public void testChime() {
