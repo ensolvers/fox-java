@@ -121,6 +121,25 @@ public class CognitoService {
   }
 
   /**
+   * Changes a password user
+   *
+   * @param username    the username or email
+   * @param newPassword the new password
+   * @return the response object without any information
+   */
+  public AdminSetUserPasswordResponse resetPassword(String username, String newPassword) {
+    var adminSetUserPasswordRequest =
+        AdminSetUserPasswordRequest.builder()
+            .username(username)
+            .password(newPassword)
+            .userPoolId(userPoolId)
+            .permanent(true)
+            .build();
+
+    return cognitoIdentityProviderClient.adminSetUserPassword(adminSetUserPasswordRequest);
+  }
+
+  /**
    * Refresh a user token, when an id token expires, this method should be called to refresh it
    *
    * @param refreshToken The user's refresh token
