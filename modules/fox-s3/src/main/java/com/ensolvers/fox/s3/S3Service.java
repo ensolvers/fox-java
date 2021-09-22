@@ -23,8 +23,11 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +48,31 @@ public class S3Service {
     this.s3Client = s3Client;
   }
 
+  /**
+   * Generates a temporary URL to download a file from a private S3 bucket
+   *
+   * @param bucketName the bucket
+   * @param keyName the path to the file
+   * @param secondsToExpire the expiration time (in seconds)
+   * @param fileName the filename to be downloaded with
+   * @return the temporary URL to download the object
+   */
+  public String generatePresignedUrl(String bucketName, String keyName,
+                                     Long secondsToExpire, String fileName) {
+    logger.info(LOG_PREFIX + "[START] Generating a presigned URL");
+    GeneratePresignedUrlRequest generatePresignedUrlRequest =
+            new GeneratePresignedUrlRequest(bucketName, keyName)
+                    .withExpiration(new Date(new Date().getTime() + secondsToExpire * 1000));
+    // Generates a header with the name for the file to be downloaded with
+    ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
+    responseHeaders.setContentDisposition(
+            "attachment; filename =\"" + fileName + "\"");
+    generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
+
+    URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+    logger.info(LOG_PREFIX + "[END] Generating a presigned URL");
+    return url.toString();
+  }
   /**
    * Sets the contents of file into the bucketName/keyName
    *
