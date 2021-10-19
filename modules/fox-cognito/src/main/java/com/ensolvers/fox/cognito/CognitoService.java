@@ -123,7 +123,7 @@ public class CognitoService {
   /**
    * Changes a password user
    *
-   * @param username    the username or email
+   * @param username the username or email
    * @param newPassword the new password
    * @return the response object without any information
    */

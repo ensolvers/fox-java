@@ -18,23 +18,13 @@
  */
 package com.ensolvers.fox.s3;
 
-import static com.amazonaws.regions.ServiceAbbreviations.S3;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.io.*;
 import java.util.List;
-
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -50,7 +40,8 @@ import org.testcontainers.utility.DockerImageName;
 public class S3ServiceTest {
 
   @Container
-  public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
+  public LocalStackContainer localstack =
+      new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
           .withServices(LocalStackContainer.Service.S3);
 
   @Test
@@ -62,11 +53,11 @@ public class S3ServiceTest {
 
     AmazonS3Client client =
         (AmazonS3Client)
-            AmazonS3ClientBuilder
-                    .standard()
-                    .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
-                    .withCredentials(localstack.getDefaultCredentialsProvider())
-                    .build();
+            AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(
+                    localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
+                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .build();
 
     S3Service service = new S3Service(client);
     // prepares the bucket
@@ -79,7 +70,7 @@ public class S3ServiceTest {
     // no fail
     service.delete(bucket, key);
 
-    // write file in root context
+    // write file in1 root context
     File f = File.createTempFile("ensolversfox", ".txt");
     FileUtils.writeStringToFile(f, testData, "UTF8");
     service.put(bucket, key, f);

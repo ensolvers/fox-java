@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 
 public class SNSServiceTest {
 
+  @Disabled("Real credentials need to be provided")
   @Test
-  @Disabled
   public void testSNS() {
     String accessKey = "";
     String secretKey = "";
@@ -31,6 +31,6 @@ public class SNSServiceTest {
     String message = "Test SMS message";
     double maxPrice = 0.01;
 
-    service.sendSMSMessage(senderId, phoneNumber, message, true, maxPrice);
+    // TODO send message
   }
 }

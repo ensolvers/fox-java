@@ -19,8 +19,8 @@ import org.testcontainers.utility.DockerImageName;
 public class RedisCacheTest {
 
   @Container
-  public GenericContainer<?> redisContainer = new GenericContainer<>(DockerImageName.parse("redis:6.2.5"))
-          .withExposedPorts(6379);
+  public GenericContainer<?> redisContainer =
+      new GenericContainer<>(DockerImageName.parse("redis:6.2.5")).withExposedPorts(6379);
 
   @AfterEach
   public void clear() {
@@ -33,7 +33,8 @@ public class RedisCacheTest {
 
   @BeforeEach
   public void setUp() {
-    this.client = RedisClient.create("redis://localhost:" + redisContainer.getMappedPort(6379) + "/0");
+    this.client =
+        RedisClient.create("redis://localhost:" + redisContainer.getMappedPort(6379) + "/0");
     this.factory = new RedisCacheFactoryTest(client);
     this.objectMapper = new ObjectMapper();
   }

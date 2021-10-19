@@ -27,7 +27,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,16 +56,15 @@ public class S3Service {
    * @param fileName the filename to be downloaded with
    * @return the temporary URL to download the object
    */
-  public String generatePresignedUrl(String bucketName, String keyName,
-                                     Long secondsToExpire, String fileName) {
+  public String generatePresignedUrl(
+      String bucketName, String keyName, Long secondsToExpire, String fileName) {
     logger.info(LOG_PREFIX + "[START] Generating a presigned URL");
     GeneratePresignedUrlRequest generatePresignedUrlRequest =
-            new GeneratePresignedUrlRequest(bucketName, keyName)
-                    .withExpiration(new Date(new Date().getTime() + secondsToExpire * 1000));
+        new GeneratePresignedUrlRequest(bucketName, keyName)
+            .withExpiration(new Date(new Date().getTime() + secondsToExpire * 1000));
     // Generates a header with the name for the file to be downloaded with
     ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
-    responseHeaders.setContentDisposition(
-            "attachment; filename =\"" + fileName + "\"");
+    responseHeaders.setContentDisposition("attachment; filename =\"" + fileName + "\"");
     generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
     URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);

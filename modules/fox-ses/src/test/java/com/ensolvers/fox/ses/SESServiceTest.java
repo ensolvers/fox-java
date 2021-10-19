@@ -1,11 +1,7 @@
 package com.ensolvers.fox.ses;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.internal.StaticCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -16,18 +12,18 @@ import org.testcontainers.utility.DockerImageName;
 public class SESServiceTest {
 
   @Container
-  public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
+  public LocalStackContainer localstack =
+      new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
           .withServices(LocalStackContainer.Service.SES);
-
 
   @Test
   public void testSES() {
     AmazonSimpleEmailService client =
-        AmazonSimpleEmailServiceClientBuilder
-                .standard()
-                .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
-                .withCredentials(localstack.getDefaultCredentialsProvider())
-                .build();
+        AmazonSimpleEmailServiceClientBuilder.standard()
+            .withEndpointConfiguration(
+                localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
+            .withCredentials(localstack.getDefaultCredentialsProvider())
+            .build();
 
     SESService service = new SESService(client);
 
