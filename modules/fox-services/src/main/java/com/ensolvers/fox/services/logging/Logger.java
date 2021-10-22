@@ -1,5 +1,6 @@
 package com.ensolvers.fox.services.logging;
 
+import ch.qos.logback.classic.Level;
 
 public class Logger {
 
@@ -79,13 +80,11 @@ public class Logger {
     public static org.slf4j.Logger getCategory( Class clazz ) {             return org.slf4j.LoggerFactory.getLogger( clazz );          }
     public static org.slf4j.Logger getCategory( String clazz ) {            return org.slf4j.LoggerFactory.getLogger( clazz );          }
 
-//    wip: explore a way to runtime set log level for a category
-//    import org.slf4j.event.Level;
-//    public static void setDebugLevel( Class clazz ) {                       ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.DEBUG ); }
-//    public static void setDebugLevel( String clazz ) {                      ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.DEBUG ); }
-//    public static void setInfoLevel( Class clazz ) {                        ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.INFO );  }
-//    public static void setInfoLevel( String clazz ) {                       ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.INFO );  }
-//    public static void setWarnLevel( Class clazz ) {                        ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.WARN );  }
-//    public static void setWarnLevel( String clazz ) {                       ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.WARN );  }
+    public static void setDebugLevel( Class clazz ) {                       ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.DEBUG ); }
+    public static void setDebugLevel( String clazz ) {                      ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.DEBUG ); }
+    public static void setInfoLevel( Class clazz ) {                        ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.INFO );  }
+    public static void setInfoLevel( String clazz ) {                       ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.INFO );  }
+    public static void setWarnLevel( Class clazz ) {                        ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.WARN );  }
+    public static void setWarnLevel( String clazz ) {                       ((ch.qos.logback.classic.Logger)getCategory( clazz )).setLevel( Level.WARN );  }
 
 }
