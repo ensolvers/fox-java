@@ -118,17 +118,42 @@ public class ChimeService {
    *
    * @param userId the user id
    * @param fullName the display name
+   * @param metadata the user metadata
    * @return the app instance user arn
    */
-  public String createUser(String userId, String fullName) {
+  public String createUser(String userId, String fullName, String metadata) {
     CreateAppInstanceUserRequest userRequest =
         new CreateAppInstanceUserRequest()
             .withAppInstanceArn(appInstanceArn)
             .withName(fullName)
+            .withMetadata(metadata)
             .withAppInstanceUserId(userId);
 
     CreateAppInstanceUserResult appInstanceUser = amazonChime.createAppInstanceUser(userRequest);
     logger.info(String.format("User created for userId %s, arn: %s", userId, appInstanceUser));
+    return appInstanceUser.getAppInstanceUserArn();
+  }
+
+  /**
+   * Creates an app instance user inside the app instance to be able to be member of channels
+   *
+   * @param userId the user id
+   * @param fullName the display name
+   * @return the app instance user arn
+   */
+  public String createUser(String userId, String fullName) {
+    return this.createUser(userId, fullName, null);
+  }
+
+  public String updateUser(String userArn, String fullName, String metadata) {
+    UpdateAppInstanceUserRequest userRequest =
+        new UpdateAppInstanceUserRequest()
+            .withAppInstanceUserArn(userArn)
+            .withName(fullName)
+            .withMetadata(metadata);
+
+    UpdateAppInstanceUserResult appInstanceUser = amazonChime.updateAppInstanceUser(userRequest);
+    logger.info(String.format("User with arn: %s updated", userArn));
     return appInstanceUser.getAppInstanceUserArn();
   }
 
@@ -149,17 +174,35 @@ public class ChimeService {
     logger.info("Members added to channel: " + members);
   }
 
-  public String createChannel(String name, String creatorArn) {
+  public String createChannel(String name, String creatorArn, String metadata) {
     CreateChannelRequest createChannelRequest =
         new CreateChannelRequest()
             .withAppInstanceArn(appInstanceArn)
             .withChimeBearer(creatorArn)
             .withName(name)
+            .withMetadata(metadata)
             .withPrivacy(ChannelPrivacy.PRIVATE);
 
     String arn = amazonChime.createChannel(createChannelRequest).getChannelArn();
     logger.info("Channel created: " + arn);
     return arn;
+  }
+
+  public String createChannel(String name, String creatorArn) {
+    return this.createChannel(name, creatorArn, null);
+  }
+
+  public String updateChannel(String channelArn, String creatorArn, String name, String metadata) {
+    UpdateChannelRequest updateChannelRequest =
+        new UpdateChannelRequest()
+            .withChimeBearer(creatorArn)
+            .withChannelArn(channelArn)
+            .withName(name)
+            .withMetadata(metadata);
+
+    UpdateChannelResult updateChannelResult = amazonChime.updateChannel(updateChannelRequest);
+    logger.info(String.format("Channel with arn: %s updated", channelArn));
+    return updateChannelResult.getChannelArn();
   }
 
   public void sendMessage(String userArn, String channelArn, String message, String metadata) {
