@@ -23,7 +23,6 @@ import ch.qos.logback.classic.Level;
  * <p>
  * <code>set[debug|info|warn|error]Level( category )</code> allows to set log level for a <code>category</code>
  *
- * @see #setDebugLevel <p>
  * <p>
  */
 public class Logger {
@@ -32,6 +31,15 @@ public class Logger {
         return msg.toString();
     }
 
+    public static <L> void info(Object category, CodeBlock fn) {
+        info(category.getClass(), fn);
+    }
+    public static <L> void info(Class category, CodeBlock fn) {
+        org.slf4j.Logger c = getCategory(category);
+        if (c.isInfoEnabled()) {
+            c.info(fn.value());
+        }
+    }
     public static void info(Object category, String msg) {
         info(category.getClass(), msg);
     }
@@ -60,6 +68,15 @@ public class Logger {
         }
     }
 
+    public static <L> void debug(Object category, CodeBlock fn) {
+        debug(category.getClass(), fn);
+    }
+    public static <L> void debug(Class category, CodeBlock fn) {
+        org.slf4j.Logger c = getCategory(category);
+        if (c.isDebugEnabled()) {
+            c.debug(customizeMsg(fn.value()));
+        }
+    }
     public static void debug(Object category, Object msg) {
         debug(category.getClass(), msg);
     }
@@ -172,5 +189,8 @@ public class Logger {
     public static void setWarnLevel(String clazz) {
         ((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.WARN);
     }
+}
 
+interface CodeBlock {
+    String value();
 }
