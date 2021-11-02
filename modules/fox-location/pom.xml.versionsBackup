@@ -5,20 +5,21 @@
     <parent>
         <groupId>com.ensolvers.fox-java</groupId>
         <artifactId>main</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
 
-    <artifactId>fox-metrics</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <artifactId>fox-location</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Fox - Metrics</name>
+    <name>Fox - Location</name>
 
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -27,10 +28,21 @@
         </dependency>
 
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>cloudwatch</artifactId>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-csv</artifactId>
         </dependency>
-
+        <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

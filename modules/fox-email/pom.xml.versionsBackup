@@ -5,20 +5,21 @@
     <parent>
         <groupId>com.ensolvers.fox-java</groupId>
         <artifactId>main</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
 
-    <artifactId>fox-metrics</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <artifactId>fox-email</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Fox - Metrics</name>
+    <name>Fox - Email</name>
 
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.1.0</version>
         </dependency>
 
         <dependency>
@@ -27,10 +28,9 @@
         </dependency>
 
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>cloudwatch</artifactId>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>

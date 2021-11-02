@@ -5,32 +5,33 @@
     <parent>
         <groupId>com.ensolvers.fox-java</groupId>
         <artifactId>main</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
 
-    <artifactId>fox-metrics</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <artifactId>fox-cognito</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Fox - Metrics</name>
+    <name>Fox - Cognito</name>
 
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>cloudwatch</artifactId>
+            <artifactId>auth</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
