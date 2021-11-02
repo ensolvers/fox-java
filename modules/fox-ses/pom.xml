@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.ensolvers.fox-java</groupId>
         <artifactId>main</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
 
     <artifactId>fox-ses</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Fox - SES</name>
