@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.spring;
+package com.ensolvers.fox.cache.spring.providers;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

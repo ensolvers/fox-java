@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.core;
+package com.ensolvers.fox.cache.guava;
 
 /** Exception thrown by a custom cache */
 public class CacheException extends Exception {

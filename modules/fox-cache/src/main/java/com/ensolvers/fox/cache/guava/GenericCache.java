@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.core;
+package com.ensolvers.fox.cache.guava;
 
 /**
  * Generic cache interface to abstract underlying implementation
