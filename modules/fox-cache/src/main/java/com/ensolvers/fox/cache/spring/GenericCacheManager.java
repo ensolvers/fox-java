@@ -9,26 +9,25 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
 /**
- * Generic implementation of a Spring Cache Manager that uses a ConcurrentHashMap to index caches by name
+ * Generic implementation of a Spring Cache Manager that uses a
+ * ConcurrentHashMap to index caches by name
  */
 public class GenericCacheManager implements CacheManager {
 
-  private Map<String, Cache> cacheMap;
+	private Map<String, Cache> cacheMap;
 
-  public GenericCacheManager(CacheSpec... caches) {
-    this.cacheMap =
-        new ConcurrentHashMap<>(
-            Arrays.stream(caches)
-                .collect(Collectors.toMap(CacheSpec::getCacheName, CacheSpec::getCache)));
-  }
+	public GenericCacheManager(CacheSpec... caches) {
+		this.cacheMap = new ConcurrentHashMap<>(
+				Arrays.stream(caches).collect(Collectors.toMap(CacheSpec::getCacheName, CacheSpec::getCache)));
+	}
 
-  @Override
-  public Cache getCache(String name) {
-    return this.cacheMap.get(name);
-  }
+	@Override
+	public Cache getCache(String name) {
+		return this.cacheMap.get(name);
+	}
 
-  @Override
-  public Collection<String> getCacheNames() {
-    return cacheMap.keySet();
-  }
+	@Override
+	public Collection<String> getCacheNames() {
+		return cacheMap.keySet();
+	}
 }

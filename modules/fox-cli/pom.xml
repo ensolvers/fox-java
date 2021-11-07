@@ -15,6 +15,10 @@
 
     <name>Fox - CLI</name>
 
+    <properties>
+        <main.basedir>${project.parent.basedir}</main.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -98,8 +102,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
-
         </plugins>
     </build>
 </project>

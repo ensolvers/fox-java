@@ -9,15 +9,16 @@ import java.util.List;
  */
 public class SonarQubeMetricHistoryResponse {
 
-  private List<SonarQubeMetricHistory> measures;
+	private List<SonarQubeMetricHistory> measures;
 
-  protected SonarQubeMetricHistoryResponse() {}
+	protected SonarQubeMetricHistoryResponse() {
+	}
 
-  public SonarQubeMetricHistoryResponse(List<SonarQubeMetricHistory> measures) {
-    this.measures = measures;
-  }
+	public SonarQubeMetricHistoryResponse(List<SonarQubeMetricHistory> measures) {
+		this.measures = measures;
+	}
 
-  public List<SonarQubeMetricHistory> getMeasures() {
-    return measures;
-  }
+	public List<SonarQubeMetricHistory> getMeasures() {
+		return measures;
+	}
 }
