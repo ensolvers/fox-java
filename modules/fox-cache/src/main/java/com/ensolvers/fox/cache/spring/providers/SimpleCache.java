@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.spring.providers;
 
+import com.ensolvers.fox.cache.spring.key.CustomCacheKey;
 import com.ensolvers.fox.services.logging.Logger;
 import org.springframework.cache.support.AbstractValueAdaptingCache;
 
@@ -20,11 +21,11 @@ public class SimpleCache extends AbstractValueAdaptingCache {
    }
 
    @Override
-   protected Object lookup(Object o) {
+   protected Object lookup(Object key) {
       if (Logger.isDebugEnabled(this)) {
-         Logger.debug(this, "Called lookup in cache: " + name + " for key: " + o);
+         Logger.debug(this, "Called lookup in cache: " + name + " for key: " + getFinalKey(key));
       }
-      return map.get(o);
+      return map.get(getFinalKey(key));
    }
 
    @Override
@@ -32,7 +33,7 @@ public class SimpleCache extends AbstractValueAdaptingCache {
       if (Logger.isDebugEnabled(this)) {
          Logger.debug(this, "Called get with class in cache: " + name + " for key: " + key);
       }
-      return (T) map.get(key);
+      return (T) map.get(getFinalKey(key));
    }
 
    @Override
@@ -40,7 +41,7 @@ public class SimpleCache extends AbstractValueAdaptingCache {
       if (Logger.isDebugEnabled(this)) {
          Logger.debug(this, "Called get with loader in cache: " + name + " for key: " + key);
       }
-      return (T) map.get(key);
+      return (T) map.get(getFinalKey(key));
    }
 
    @Override
@@ -48,7 +49,7 @@ public class SimpleCache extends AbstractValueAdaptingCache {
       if (Logger.isDebugEnabled(this)) {
          Logger.debug(this, "Called put in cache: " + name + " for key: " + key);
       }
-      map.put(key, value);
+      map.put(getFinalKey(key), value);
    }
 
    @Override
@@ -56,7 +57,7 @@ public class SimpleCache extends AbstractValueAdaptingCache {
       if (Logger.isDebugEnabled(this)) {
          Logger.debug(this, "Called evict in cache: " + name + " for key: " + key);
       }
-      map.remove(key);
+      map.remove(getFinalKey(key));
    }
 
    @Override
@@ -75,5 +76,25 @@ public class SimpleCache extends AbstractValueAdaptingCache {
    @Override
    public Object getNativeCache() {
       return map;
+   }
+
+   private String getFinalKey(Object key) {
+      StringBuilder finalKeyBuilder = new StringBuilder();
+      finalKeyBuilder.append(name);
+
+      if (key instanceof CustomCacheKey) {
+         if (((CustomCacheKey)key).isEmpty()) {
+            finalKeyBuilder.append("-").append("UNIQUE");
+         } else {
+            finalKeyBuilder.append("-").append(key);
+         }
+      } else if (key instanceof Iterable) {
+         var iterable = (Iterable<Object>) key;
+         iterable.forEach(o -> finalKeyBuilder.append("-").append(o));
+      } else {
+         finalKeyBuilder.append("-").append(key);
+      }
+
+      return finalKeyBuilder.toString().replace(" ", "-");
    }
 }
