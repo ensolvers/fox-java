@@ -37,289 +37,245 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 /**
- * The Chime service is used to create/join a videoconference meeting and also to send/list text
- * channels and messages
+ * The Chime service is used to create/join a videoconference meeting and also
+ * to send/list text channels and messages
  *
  * @author Facundo Garbino
  */
 public class ChimeService {
-  private static final Logger logger = LoggerFactory.getLogger(ChimeService.class);
-  private final AmazonChime amazonChime;
-  private final String appInstanceArn;
-  private final BasicAWSCredentials chattingCredentials;
-  private final Regions region;
+	private static final Logger logger = LoggerFactory.getLogger(ChimeService.class);
+	private final AmazonChime amazonChime;
+	private final String appInstanceArn;
+	private final BasicAWSCredentials chattingCredentials;
+	private final Regions region;
 
-  /**
-   * Constructs a Chime Service
-   *
-   * @param managementCredentials the AWS credentials for a user with read/write access to all chime
-   *     services
-   * @param region the AWS region
-   * @param appInstanceArn the app instance arn where the chat channels will be scoped
-   * @param chattingCredentials the AWS credentials for a user with permission to chime:connect
-   */
-  public ChimeService(
-      BasicAWSCredentials managementCredentials,
-      Regions region,
-      String appInstanceArn,
-      BasicAWSCredentials chattingCredentials) {
-    this.appInstanceArn = appInstanceArn;
-    this.amazonChime =
-        AmazonChimeClient.builder()
-            .withRegion(region)
-            .withCredentials(new AWSStaticCredentialsProvider(managementCredentials))
-            .build();
-    this.chattingCredentials = chattingCredentials;
-    this.region = region;
-  }
+	/**
+	 * Constructs a Chime Service
+	 *
+	 * @param managementCredentials the AWS credentials for a user with read/write
+	 *                              access to all chime services
+	 * @param region                the AWS region
+	 * @param appInstanceArn        the app instance arn where the chat channels
+	 *                              will be scoped
+	 * @param chattingCredentials   the AWS credentials for a user with permission
+	 *                              to chime:connect
+	 */
+	public ChimeService(BasicAWSCredentials managementCredentials, Regions region, String appInstanceArn,
+			BasicAWSCredentials chattingCredentials) {
+		this.appInstanceArn = appInstanceArn;
+		this.amazonChime = AmazonChimeClient.builder().withRegion(region)
+				.withCredentials(new AWSStaticCredentialsProvider(managementCredentials)).build();
+		this.chattingCredentials = chattingCredentials;
+		this.region = region;
+	}
 
-  public Meeting getMeeting(String meetingId) {
-    GetMeetingRequest request = new GetMeetingRequest();
-    request.setMeetingId(meetingId);
+	public Meeting getMeeting(String meetingId) {
+		GetMeetingRequest request = new GetMeetingRequest();
+		request.setMeetingId(meetingId);
 
-    return amazonChime.getMeeting(request).getMeeting();
-  }
+		return amazonChime.getMeeting(request).getMeeting();
+	}
 
-  /**
-   * Creates a video meeting
-   *
-   * @param clientRequestToken a unique identifier
-   * @return the meeting
-   */
-  public Meeting createMeeting(String clientRequestToken) {
-    CreateMeetingRequest request = new CreateMeetingRequest();
-    request.setClientRequestToken(clientRequestToken);
-    Meeting meeting = amazonChime.createMeeting(request).getMeeting();
-    logger.info("Meeting created: " + meeting);
+	/**
+	 * Creates a video meeting
+	 *
+	 * @param clientRequestToken a unique identifier
+	 * 
+	 * @return the meeting
+	 */
+	public Meeting createMeeting(String clientRequestToken) {
+		CreateMeetingRequest request = new CreateMeetingRequest();
+		request.setClientRequestToken(clientRequestToken);
+		Meeting meeting = amazonChime.createMeeting(request).getMeeting();
+		logger.info("Meeting created: " + meeting);
 
-    return meeting;
-  }
+		return meeting;
+	}
 
-  /**
-   * Creates an attendee object with the credentials to join a meeting with the specified user id
-   *
-   * @param userId the user id
-   * @param meetingId the (already created) meeting id
-   * @return the attendee object with credentials
-   * @throws NotFoundException if the meeting wasn't found
-   */
-  public Attendee joinMeeting(String userId, String meetingId) throws NotFoundException {
-    CreateAttendeeRequest request = new CreateAttendeeRequest();
-    request.setMeetingId(meetingId);
-    request.setExternalUserId(userId);
-    Attendee attendee = amazonChime.createAttendee(request).getAttendee();
-    logger.info("Attendee created: " + attendee);
+	/**
+	 * Creates an attendee object with the credentials to join a meeting with the
+	 * specified user id
+	 *
+	 * @param userId    the user id
+	 * @param meetingId the (already created) meeting id
+	 * 
+	 * @return the attendee object with credentials
+	 * 
+	 * @throws NotFoundException if the meeting wasn't found
+	 */
+	public Attendee joinMeeting(String userId, String meetingId) throws NotFoundException {
+		CreateAttendeeRequest request = new CreateAttendeeRequest();
+		request.setMeetingId(meetingId);
+		request.setExternalUserId(userId);
+		Attendee attendee = amazonChime.createAttendee(request).getAttendee();
+		logger.info("Attendee created: " + attendee);
 
-    return attendee;
-  }
+		return attendee;
+	}
 
-  /**
-   * Creates an app instance user inside the app instance to be able to be member of channels
-   *
-   * @param userId the user id
-   * @param fullName the display name
-   * @param metadata the user metadata
-   * @return the app instance user arn
-   */
-  public String createUser(String userId, String fullName, String metadata) {
-    CreateAppInstanceUserRequest userRequest =
-        new CreateAppInstanceUserRequest()
-            .withAppInstanceArn(appInstanceArn)
-            .withName(fullName)
-            .withMetadata(metadata)
-            .withAppInstanceUserId(userId);
+	/**
+	 * Creates an app instance user inside the app instance to be able to be member
+	 * of channels
+	 *
+	 * @param userId   the user id
+	 * @param fullName the display name
+	 * @param metadata the user metadata
+	 * 
+	 * @return the app instance user arn
+	 */
+	public String createUser(String userId, String fullName, String metadata) {
+		CreateAppInstanceUserRequest userRequest = new CreateAppInstanceUserRequest().withAppInstanceArn(appInstanceArn).withName(fullName)
+				.withMetadata(metadata).withAppInstanceUserId(userId);
 
-    CreateAppInstanceUserResult appInstanceUser = amazonChime.createAppInstanceUser(userRequest);
-    logger.info(String.format("User created for userId %s, arn: %s", userId, appInstanceUser));
-    return appInstanceUser.getAppInstanceUserArn();
-  }
+		CreateAppInstanceUserResult appInstanceUser = amazonChime.createAppInstanceUser(userRequest);
+		logger.info(String.format("User created for userId %s, arn: %s", userId, appInstanceUser));
+		return appInstanceUser.getAppInstanceUserArn();
+	}
 
-  /**
-   * Creates an app instance user inside the app instance to be able to be member of channels
-   *
-   * @param userId the user id
-   * @param fullName the display name
-   * @return the app instance user arn
-   */
-  public String createUser(String userId, String fullName) {
-    return this.createUser(userId, fullName, null);
-  }
+	/**
+	 * Creates an app instance user inside the app instance to be able to be member
+	 * of channels
+	 *
+	 * @param userId   the user id
+	 * @param fullName the display name
+	 * 
+	 * @return the app instance user arn
+	 */
+	public String createUser(String userId, String fullName) {
+		return this.createUser(userId, fullName, null);
+	}
 
-  public String updateUser(String userArn, String fullName, String metadata) {
-    UpdateAppInstanceUserRequest userRequest =
-        new UpdateAppInstanceUserRequest()
-            .withAppInstanceUserArn(userArn)
-            .withName(fullName)
-            .withMetadata(metadata);
+	public String updateUser(String userArn, String fullName, String metadata) {
+		UpdateAppInstanceUserRequest userRequest = new UpdateAppInstanceUserRequest().withAppInstanceUserArn(userArn).withName(fullName)
+				.withMetadata(metadata);
 
-    UpdateAppInstanceUserResult appInstanceUser = amazonChime.updateAppInstanceUser(userRequest);
-    logger.info(String.format("User with arn: %s updated", userArn));
-    return appInstanceUser.getAppInstanceUserArn();
-  }
+		UpdateAppInstanceUserResult appInstanceUser = amazonChime.updateAppInstanceUser(userRequest);
+		logger.info(String.format("User with arn: %s updated", userArn));
+		return appInstanceUser.getAppInstanceUserArn();
+	}
 
-  public void addMembersToChannel(
-      String channelArn, String channelCreatorArn, Collection<String> memberArns) {
-    BatchCreateChannelMembershipRequest request =
-        new BatchCreateChannelMembershipRequest()
-            .withChannelArn(channelArn)
-            .withChimeBearer(channelCreatorArn)
-            .withMemberArns(memberArns)
-            .withType(ChannelMembershipType.DEFAULT);
+	public void addMembersToChannel(String channelArn, String channelCreatorArn, Collection<String> memberArns) {
+		BatchCreateChannelMembershipRequest request = new BatchCreateChannelMembershipRequest().withChannelArn(channelArn)
+				.withChimeBearer(channelCreatorArn).withMemberArns(memberArns).withType(ChannelMembershipType.DEFAULT);
 
-    List<Identity> members =
-        this.amazonChime
-            .batchCreateChannelMembership(request)
-            .getBatchChannelMemberships()
-            .getMembers();
-    logger.info("Members added to channel: " + members);
-  }
+		List<Identity> members = this.amazonChime.batchCreateChannelMembership(request).getBatchChannelMemberships().getMembers();
+		logger.info("Members added to channel: " + members);
+	}
 
-  public String createChannel(String name, String creatorArn, String metadata) {
-    CreateChannelRequest createChannelRequest =
-        new CreateChannelRequest()
-            .withAppInstanceArn(appInstanceArn)
-            .withChimeBearer(creatorArn)
-            .withName(name)
-            .withMetadata(metadata)
-            .withPrivacy(ChannelPrivacy.PRIVATE);
+	public String createChannel(String name, String creatorArn, String metadata) {
+		CreateChannelRequest createChannelRequest = new CreateChannelRequest().withAppInstanceArn(appInstanceArn)
+				.withChimeBearer(creatorArn).withName(name).withMetadata(metadata).withPrivacy(ChannelPrivacy.PRIVATE);
 
-    String arn = amazonChime.createChannel(createChannelRequest).getChannelArn();
-    logger.info("Channel created: " + arn);
-    return arn;
-  }
+		String arn = amazonChime.createChannel(createChannelRequest).getChannelArn();
+		logger.info("Channel created: " + arn);
+		return arn;
+	}
 
-  public String createChannel(String name, String creatorArn) {
-    return this.createChannel(name, creatorArn, null);
-  }
+	public String createChannel(String name, String creatorArn) {
+		return this.createChannel(name, creatorArn, null);
+	}
 
-  public String updateChannel(String channelArn, String creatorArn, String name, String metadata) {
-    UpdateChannelRequest updateChannelRequest =
-        new UpdateChannelRequest()
-            .withChimeBearer(creatorArn)
-            .withChannelArn(channelArn)
-            .withName(name)
-            .withMetadata(metadata);
+	public String updateChannel(String channelArn, String creatorArn, String name, String metadata) {
+		UpdateChannelRequest updateChannelRequest = new UpdateChannelRequest().withChimeBearer(creatorArn).withChannelArn(channelArn)
+				.withName(name).withMetadata(metadata);
 
-    UpdateChannelResult updateChannelResult = amazonChime.updateChannel(updateChannelRequest);
-    logger.info(String.format("Channel with arn: %s updated", channelArn));
-    return updateChannelResult.getChannelArn();
-  }
+		UpdateChannelResult updateChannelResult = amazonChime.updateChannel(updateChannelRequest);
+		logger.info(String.format("Channel with arn: %s updated", channelArn));
+		return updateChannelResult.getChannelArn();
+	}
 
-  public void sendMessage(String userArn, String channelArn, String message, String metadata) {
-    SendChannelMessageRequest sendChannelMessageRequest =
-        new SendChannelMessageRequest()
-            .withChannelArn(channelArn)
-            .withChimeBearer(userArn)
-            .withType(ChannelMessageType.STANDARD)
-            .withPersistence(ChannelMessagePersistenceType.PERSISTENT)
-            .withContent(message)
-            .withMetadata(metadata);
+	public void sendMessage(String userArn, String channelArn, String message, String metadata) {
+		SendChannelMessageRequest sendChannelMessageRequest = new SendChannelMessageRequest().withChannelArn(channelArn)
+				.withChimeBearer(userArn).withType(ChannelMessageType.STANDARD).withPersistence(ChannelMessagePersistenceType.PERSISTENT)
+				.withContent(message).withMetadata(metadata);
 
-    this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
-  }
+		this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
+	}
 
-  public ListChannelsResult listChannels(String userArn) {
-    ListChannelsRequest request =
-        new ListChannelsRequest().withChimeBearer(userArn).withAppInstanceArn(appInstanceArn);
+	public ListChannelsResult listChannels(String userArn) {
+		ListChannelsRequest request = new ListChannelsRequest().withChimeBearer(userArn).withAppInstanceArn(appInstanceArn);
 
-    return this.amazonChime.listChannels(request);
-  }
+		return this.amazonChime.listChannels(request);
+	}
 
-  public ListChannelMessagesResult listMessages(
-      String userArn,
-      String channelArn,
-      Integer maxResults,
-      String cursor,
-      Date beforeDate,
-      Date afterDate) {
-    ListChannelMessagesRequest listChannelMessagesRequest =
-        new ListChannelMessagesRequest()
-            .withChannelArn(channelArn)
-            .withChimeBearer(userArn)
-            .withMaxResults(maxResults);
-    if (beforeDate != null) {
-      listChannelMessagesRequest.withNotAfter(beforeDate);
-    }
-    if (afterDate != null) {
-      listChannelMessagesRequest.withNotBefore(afterDate);
-    }
-    if (StringUtils.hasLength(cursor)) {
-      listChannelMessagesRequest.setNextToken(cursor);
-    }
+	public ListChannelMessagesResult listMessages(String userArn, String channelArn, Integer maxResults, String cursor, Date beforeDate,
+			Date afterDate) {
+		ListChannelMessagesRequest listChannelMessagesRequest = new ListChannelMessagesRequest().withChannelArn(channelArn)
+				.withChimeBearer(userArn).withMaxResults(maxResults);
+		if (beforeDate != null) {
+			listChannelMessagesRequest.withNotAfter(beforeDate);
+		}
+		if (afterDate != null) {
+			listChannelMessagesRequest.withNotBefore(afterDate);
+		}
+		if (StringUtils.hasLength(cursor)) {
+			listChannelMessagesRequest.setNextToken(cursor);
+		}
 
-    return this.amazonChime.listChannelMessages(listChannelMessagesRequest);
-  }
+		return this.amazonChime.listChannelMessages(listChannelMessagesRequest);
+	}
 
-  /**
-   * This method creates an app instance where a set of users and channels will exist
-   *
-   * @param name the name of the app instance
-   * @return the app instance arn
-   */
-  public String createAppInstance(String name) {
-    CreateAppInstanceRequest createAppInstanceRequest =
-        new CreateAppInstanceRequest().withName(name);
-    CreateAppInstanceResult appInstance =
-        this.amazonChime.createAppInstance(createAppInstanceRequest);
-    String appInstanceArn = appInstance.getAppInstanceArn();
-    logger.info("App instance created: " + appInstanceArn);
-    return appInstanceArn;
-  }
+	/**
+	 * This method creates an app instance where a set of users and channels will
+	 * exist
+	 *
+	 * @param name the name of the app instance
+	 * 
+	 * @return the app instance arn
+	 */
+	public String createAppInstance(String name) {
+		CreateAppInstanceRequest createAppInstanceRequest = new CreateAppInstanceRequest().withName(name);
+		CreateAppInstanceResult appInstance = this.amazonChime.createAppInstance(createAppInstanceRequest);
+		String appInstanceArn = appInstance.getAppInstanceArn();
+		logger.info("App instance created: " + appInstanceArn);
+		return appInstanceArn;
+	}
 
-  private String getMessagingSessionUrl() {
-    GetMessagingSessionEndpointRequest request = new GetMessagingSessionEndpointRequest();
-    GetMessagingSessionEndpointResult result =
-        this.amazonChime.getMessagingSessionEndpoint(request);
+	private String getMessagingSessionUrl() {
+		GetMessagingSessionEndpointRequest request = new GetMessagingSessionEndpointRequest();
+		GetMessagingSessionEndpointResult result = this.amazonChime.getMessagingSessionEndpoint(request);
 
-    return result.getEndpoint().getUrl();
-  }
+		return result.getEndpoint().getUrl();
+	}
 
-  /**
-   * Generates a websocket URL to open a wss connection to receive real-time Chime messages for a
-   * specific user
-   *
-   * @param appInstanceUserArn the user arn of the user
-   * @param dateToExpire the date when the websocket will stop being valid
-   * @return a wss url to connect
-   */
-  public String getWebSocketConnection(String appInstanceUserArn, Date dateToExpire) {
-    // Basic request (endpoint + params)
-    Request<Void> request = new DefaultRequest<>("chime"); // Request to Chime
-    request.setHttpMethod(HttpMethodName.GET);
-    request.setEndpoint(URI.create("wss://" + this.getMessagingSessionUrl()));
-    request.setResourcePath("connect");
-    request.setParameters(
-        Map.of(
-            "sessionId",
-            Collections.singletonList(UUID.randomUUID().toString()),
-            "userArn",
-            Collections.singletonList(appInstanceUserArn)));
+	/**
+	 * Generates a websocket URL to open a wss connection to receive real-time Chime
+	 * messages for a specific user
+	 *
+	 * @param appInstanceUserArn the user arn of the user
+	 * @param dateToExpire       the date when the websocket will stop being valid
+	 * 
+	 * @return a wss url to connect
+	 */
+	public String getWebSocketConnection(String appInstanceUserArn, Date dateToExpire) {
+		// Basic request (endpoint + params)
+		Request<Void> request = new DefaultRequest<>("chime"); // Request to Chime
+		request.setHttpMethod(HttpMethodName.GET);
+		request.setEndpoint(URI.create("wss://" + this.getMessagingSessionUrl()));
+		request.setResourcePath("connect");
+		request.setParameters(Map.of("sessionId", Collections.singletonList(UUID.randomUUID().toString()), "userArn",
+				Collections.singletonList(appInstanceUserArn)));
 
-    // Presign the request with HMAC-SHA-256
-    AWS4Signer signer = new AWS4Signer();
-    signer.setRegionName(region.getName());
-    signer.setServiceName("chime");
-    signer.presignRequest(request, this.chattingCredentials, dateToExpire);
+		// Presign the request with HMAC-SHA-256
+		AWS4Signer signer = new AWS4Signer();
+		signer.setRegionName(region.getName());
+		signer.setServiceName("chime");
+		signer.presignRequest(request, this.chattingCredentials, dateToExpire);
 
-    // Generate URL appending parameters
-    StringBuilder endpoint =
-        new StringBuilder(request.getEndpoint().toString())
-            .append("/")
-            .append(request.getResourcePath())
-            .append("?");
-    request
-        .getParameters()
-        .forEach(
-            (k, v) -> {
-              String value = v.get(0);
-              // These two parameters need to be encoded since they have slashes and other special
-              // characters
-              if (k.equals("X-Amz-Credential") || k.equals("userArn")) {
-                value = URLEncoder.encode(value, StandardCharsets.UTF_8);
-              }
-              endpoint.append(k).append('=').append(value).append('&');
-            });
-    // Remove the final ampersand (&)
-    return endpoint.substring(0, endpoint.length() - 1);
-  }
+		// Generate URL appending parameters
+		StringBuilder endpoint = new StringBuilder(request.getEndpoint().toString()).append("/").append(request.getResourcePath())
+				.append("?");
+		request.getParameters().forEach((k, v) -> {
+			String value = v.get(0);
+			// These two parameters need to be encoded since they have slashes and other
+			// special
+			// characters
+			if (k.equals("X-Amz-Credential") || k.equals("userArn")) {
+				value = URLEncoder.encode(value, StandardCharsets.UTF_8);
+			}
+			endpoint.append(k).append('=').append(value).append('&');
+		});
+		// Remove the final ampersand (&)
+		return endpoint.substring(0, endpoint.length() - 1);
+	}
 }

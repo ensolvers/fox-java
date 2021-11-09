@@ -18,4 +18,5 @@
  */
 package com.ensolvers.fox.location;
 
-public class IPV6NotFoundException extends Exception {}
+public class IPV6NotFoundException extends Exception {
+}

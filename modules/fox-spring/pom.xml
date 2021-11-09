@@ -15,6 +15,10 @@
 
   <name>Fox - Spring</name>
 
+  <properties>
+    <main.basedir>${project.parent.basedir}</main.basedir>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.ensolvers.fox-java</groupId>

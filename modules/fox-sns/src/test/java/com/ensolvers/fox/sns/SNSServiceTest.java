@@ -10,27 +10,23 @@ import org.junit.jupiter.api.Test;
 
 public class SNSServiceTest {
 
-  @Disabled("Real credentials need to be provided")
-  @Test
-  public void testSNS() {
-    String accessKey = "";
-    String secretKey = "";
-    Regions region = Regions.US_EAST_1;
+	@Disabled("Real credentials need to be provided")
+	@Test
+	public void testSNS() {
+		String accessKey = "";
+		String secretKey = "";
+		Regions region = Regions.US_EAST_1;
 
-    AmazonSNS client =
-        AmazonSNSClient.builder()
-            .withCredentials(
-                new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-            .withRegion(region)
-            .build();
+		AmazonSNS client = AmazonSNSClient.builder()
+				.withCredentials(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))).withRegion(region).build();
 
-    SNSService service = new SNSService(client);
+		SNSService service = new SNSService(client);
 
-    String senderId = "Ensolvers";
-    String phoneNumber = "";
-    String message = "Test SMS message";
-    double maxPrice = 0.01;
+		String senderId = "Ensolvers";
+		String phoneNumber = "";
+		String message = "Test SMS message";
+		double maxPrice = 0.01;
 
-    // TODO send message
-  }
+		// TODO send message
+	}
 }

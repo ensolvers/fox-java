@@ -17,6 +17,7 @@
     <aspectj.version>1.9.6</aspectj.version>
     <license.dir>${basedir}</license.dir>
     <slf4j.version>1.7.30</slf4j.version>
+    <main.basedir>${project.basedir}</main.basedir>
   </properties>
 
   <dependencyManagement>
@@ -224,6 +225,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.newrelic.agent.java</groupId>
+        <artifactId>newrelic-api</artifactId>
+        <version>6.2.1</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>3.8.0</version>
@@ -240,6 +247,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <version>2.0.0</version>
+
         <configuration>
           <licenseName>lgpl_v2_1</licenseName>
           <organizationName>Ensolvers</organizationName>
@@ -250,6 +258,7 @@
             <include>src/test/java/**</include>
           </includes>
         </configuration>
+
         <executions>
           <execution>
             <id>first</id>
@@ -260,6 +269,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
@@ -268,6 +278,7 @@
           <target>1.11</target>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -281,6 +292,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>  <!--   This plugin fixes MVN in order to run SpringBootTests -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -303,7 +315,25 @@
           </excludes>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <version>2.17.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>format</goal>
+            </goals>
+            <configuration>
+              <encoding>utf8</encoding>
+              <configFile>${main.basedir}/config/EnsolversFormattingProfile.xml</configFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
     <extensions>
       <extension>
         <groupId>org.kuali.maven.wagons</groupId>
@@ -311,6 +341,7 @@
         <version>1.2.1</version>
       </extension>
     </extensions>
+
   </build>
 
   <distributionManagement>
