@@ -75,10 +75,10 @@ public class MemcachedCache implements Cache {
       }
 
       for (String k: (Iterable<? extends String>) ((CustomCacheKey)key).getParams()[0]) {
-        singlePut(k, ((Map<?, ?>) value).get(k));
+        putSingle(k, ((Map<?, ?>) value).get(k));
       }
     } else {
-      singlePut(key, value);
+      putSingle(key, value);
     }
   }
 
@@ -157,7 +157,7 @@ public class MemcachedCache implements Cache {
     }
   }
 
-  private void singlePut(Object key, Object value) {
+  private void putSingle(Object key, Object value) {
     String finalKey = this.getFinalKey(key);
     try {
       String serializedObject = this.objectMapper.writeValueAsString(value);
