@@ -25,8 +25,7 @@ public class SESServiceTest {
 	public void testSES() {
 		AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
 				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
-				.withRegion(Regions.US_EAST_1)
-				.withCredentials(localstack.getDefaultCredentialsProvider()).build();
+				.withRegion(Regions.US_EAST_1).withCredentials(localstack.getDefaultCredentialsProvider()).build();
 
 		SESService service = new SESService(client);
 
@@ -35,25 +34,24 @@ public class SESServiceTest {
 		String body = "Test body";
 		String subject = "Test subject";
 
-    	service.sendEmail(from, subject, body, false, to);
-  }
+		service.sendEmail(from, subject, body, false, to);
+	}
 
-  @Test
-  public void testSESRawMessage() throws MessagingException, IOException {
-	  AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
-					  .withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
-					  .withRegion(Regions.US_EAST_1)
-					  .withCredentials(localstack.getDefaultCredentialsProvider()).build();
+	@Test
+	public void testSESRawMessage() throws MessagingException, IOException {
+		AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
+				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
+				.withRegion(Regions.US_EAST_1).withCredentials(localstack.getDefaultCredentialsProvider()).build();
 
-	  SESService service = new SESService(client);
+		SESService service = new SESService(client);
 
-	  String from = "";
-	  String[] to = { "" };
-	  String body = "Test body";
-	  String htmlBody = "Test html body";
-	  String subject = "Test subject";
-	  File file = new File("/home/...");
+		String from = "";
+		String[] to = { "" };
+		String body = "Test body";
+		String htmlBody = "Test html body";
+		String subject = "Test subject";
+		File file = new File("/home/...");
 
-	  service.sendEmail(from, subject, body, htmlBody, Collections.singletonList(file), to);
-  }
+		service.sendEmail(from, subject, body, htmlBody, Collections.singletonList(file), to);
+	}
 }
