@@ -1,74 +1,158 @@
 package com.ensolvers.fox.cache.spring;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class CacheTester {
   public static void testGet(SampleComponent sampleComponent) {
     sampleComponent.invalidateAll();
+    sampleComponent.resetStats();
 
     String time1a = sampleComponent.timeWithCache();
+    checkMissedHit(1, sampleComponent);
+
     String time1b = sampleComponent.timeWithCache();
+    checkHit(sampleComponent);
+
     assertEquals(time1a, sampleComponent.timeWithCache());
+    checkHit(sampleComponent);
     assertEquals(time1b, sampleComponent.timeWithCache());
+    checkHit(sampleComponent);
     assertEquals(time1a, time1b);
 
     String time2a = sampleComponent.timeWithCacheAndSimpleParams("time2a");
+    checkMissedHit(1, sampleComponent);
+
     String time2b = sampleComponent.timeWithCacheAndSimpleParams("time2b");
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time2a, sampleComponent.timeWithCacheAndSimpleParams("time2a"));
+    checkHit(sampleComponent);
     assertEquals(time2b, sampleComponent.timeWithCacheAndSimpleParams("time2b"));
+    checkHit(sampleComponent);
     assertNotEquals(time2a, time2b);
 
     String time3a = sampleComponent.timeWithCacheAndSimpleParams("time3a", 1);
+    checkMissedHit(1, sampleComponent);
+
     String time3b = sampleComponent.timeWithCacheAndSimpleParams("time3b", 2);
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time3a, sampleComponent.timeWithCacheAndSimpleParams("time3a", 1));
+    checkHit(sampleComponent);
     assertEquals(time3b, sampleComponent.timeWithCacheAndSimpleParams("time3b", 2));
+    checkHit(sampleComponent);
     assertNotEquals(time3a, time3b);
 
     String time4a = sampleComponent.timeWithCacheAndSimpleParams("time4a", 1, true);
+    checkMissedHit(1, sampleComponent);
+
     String time4b = sampleComponent.timeWithCacheAndSimpleParams("time4b", 2, false);
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time4a, sampleComponent.timeWithCacheAndSimpleParams("time4a", 1, true));
+    checkHit(sampleComponent);
     assertEquals(time4b, sampleComponent.timeWithCacheAndSimpleParams("time4b", 2, false));
+    checkHit(sampleComponent);
     assertNotEquals(time4a, time4b);
 
     Date date1 = new Date();
     Date date2 = new Date();
+
     String time5a = sampleComponent.timeWithCacheAndSimpleParams("time5a", 1, true, date1);
+    checkMissedHit(1, sampleComponent);
+
     String time5b = sampleComponent.timeWithCacheAndSimpleParams("time5b", 2, false, date2);
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time5a, sampleComponent.timeWithCacheAndSimpleParams("time5a", 1, true, date1));
+    checkHit(sampleComponent);
     assertEquals(time5b, sampleComponent.timeWithCacheAndSimpleParams("time5b", 2, false, date2));
+    checkHit(sampleComponent);
     assertNotEquals(time5a, time5b);
   }
 
   public static void testGetComplexObjects(SampleComponent sampleComponent) {
+    sampleComponent.resetStats();
+    sampleComponent.invalidateAll();
+
     Profile profile1 = sampleComponent.profileWithCacheAndSimpleParams("profile1");
+    checkMissedHit(1, sampleComponent);
+
     Profile profile2 = sampleComponent.profileWithCacheAndSimpleParams("profile2");
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(profile1, sampleComponent.profileWithCacheAndSimpleParams("profile1"));
+    checkHit(sampleComponent);
     assertEquals(profile2, sampleComponent.profileWithCacheAndSimpleParams("profile2"));
+    checkHit(sampleComponent);
   }
 
   public static void testBulkGetComplexObjects(SampleComponent sampleComponent) {
+    sampleComponent.resetStats();
+    sampleComponent.invalidateAll();
+
     // Test list
-    Map<String, Profile> profiles1 = sampleComponent.profilesWithCacheAndSimpleParams(List.of("profiles1a", "profiles1b"));
-    Map<String, Profile> profiles2 = sampleComponent.profilesWithCacheAndSimpleParams(List.of("profiles2a", "profiles2b"));
-    assertEquals(profiles1, sampleComponent.profilesWithCacheAndSimpleParams(List.of("profiles1a", "profiles1b")));
-    assertEquals(profiles2, sampleComponent.profilesWithCacheAndSimpleParams(List.of("profiles2a", "profiles2b")));
+    List<String> keys1 = new ArrayList<>();
+    keys1.add("profiles1a");
+    keys1.add("profiles1b");
+
+    List<String> keys2 = new ArrayList<>();
+    keys2.add("profiles2a");
+    keys2.add("profiles2b");
+
+    Map<String, Profile> profiles1 = sampleComponent.profilesWithCacheAndSimpleParams(keys1);
+    checkMissedHit(2, sampleComponent);
+
+    Map<String, Profile> profiles2 = sampleComponent.profilesWithCacheAndSimpleParams(keys2);
+    checkMissedHit(2, sampleComponent);
+
+    assertEquals(profiles1, sampleComponent.profilesWithCacheAndSimpleParams(keys1));
+    checkHit(sampleComponent);
+    assertEquals(profiles2, sampleComponent.profilesWithCacheAndSimpleParams(keys2));
+    checkHit(sampleComponent);
 
     // Test list with repeats
-    Map<String, Profile> profiles3 = sampleComponent.profilesWithCacheAndSimpleParams(List.of("profiles3a", "profiles3a", "profiles3b"));
-    assertEquals(profiles3, sampleComponent.profilesWithCacheAndSimpleParams(List.of("profiles3a", "profiles3a", "profiles3b")));
+    List<String> keys3 = new ArrayList<>();
+    keys3.add("profiles3a");
+    keys3.add("profiles3a");
+    keys3.add("profiles3b");
+
+    Map<String, Profile> profiles3 = sampleComponent.profilesWithCacheAndSimpleParams(keys3);
+    checkMissedHit(2, sampleComponent);
+
+    assertEquals(profiles3, sampleComponent.profilesWithCacheAndSimpleParams(keys3));
+    checkHit(sampleComponent);
 
     // Test set
-    Map<String, Profile> profiles4 = sampleComponent.profilesWithCacheAndSimpleParams(Set.of("profiles4a", "profiles4b"));
-    assertEquals(profiles4, sampleComponent.profilesWithCacheAndSimpleParams(Set.of("profiles4a", "profiles4b")));
+    Set<String> keys4 = new HashSet<>();
+    keys4.add("profiles4a");
+    keys4.add("profiles4b");
+
+    Map<String, Profile> profiles4 = sampleComponent.profilesWithCacheAndSimpleParams(keys4);
+    checkMissedHit(2, sampleComponent);
+
+    assertEquals(profiles4, sampleComponent.profilesWithCacheAndSimpleParams(keys4));
+    checkHit(sampleComponent);
+
+    // Test partial hit
+    keys4.add("profiles4c");
+
+    Map<String, Profile> profiles5 = sampleComponent.profilesWithCacheAndSimpleParams(keys4);
+    checkMissedHit(1, sampleComponent);
+
+    assertEquals(profiles5, sampleComponent.profilesWithCacheAndSimpleParams(keys4));
+    checkHit(sampleComponent);
   }
 
   public static void testPut(SampleComponent sampleComponent) {
+    sampleComponent.resetStats();
+    sampleComponent.invalidateAll();
+
     String stringNumber = sampleComponent.stringNumber("stringNumber1a", "stringNumber1b");
     sampleComponent.decreaseStringNumber("stringNumber1a", "stringNumber1b", stringNumber);
     String decreasedStringNumber = sampleComponent.stringNumber("stringNumber1a", "stringNumber1b");
@@ -76,56 +160,114 @@ public class CacheTester {
   }
 
   public static void testInvalidate(SampleComponent sampleComponent) {
+    sampleComponent.resetStats();
     sampleComponent.invalidateAll();
 
     String time1a = sampleComponent.timeWithCache();
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time1a, sampleComponent.timeWithCache());
+    checkHit(sampleComponent);
 
     String time2a = sampleComponent.timeWithCacheAndSimpleParams("time2a");
+    checkMissedHit(1, sampleComponent);
+
     String time2b = sampleComponent.timeWithCacheAndSimpleParams("time2b");
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time2a, sampleComponent.timeWithCacheAndSimpleParams("time2a"));
+    checkHit(sampleComponent);
     assertEquals(time2b, sampleComponent.timeWithCacheAndSimpleParams("time2b"));
+    checkHit(sampleComponent);
     assertNotEquals(time2a, time2b);
 
     String time3a = sampleComponent.timeWithCacheAndSimpleParams("time3a", 1);
+    checkMissedHit(1, sampleComponent);
+
     String time3b = sampleComponent.timeWithCacheAndSimpleParams("time3b", 2);
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time3a, sampleComponent.timeWithCacheAndSimpleParams("time3a", 1));
+    checkHit(sampleComponent);
     assertEquals(time3b, sampleComponent.timeWithCacheAndSimpleParams("time3b", 2));
+    checkHit(sampleComponent);
     assertNotEquals(time3a, time3b);
 
     String time4a = sampleComponent.timeWithCacheAndSimpleParams("time4a", 1, true);
+    checkMissedHit(1, sampleComponent);
+
     String time4b = sampleComponent.timeWithCacheAndSimpleParams("time4b", 2, false);
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time4a, sampleComponent.timeWithCacheAndSimpleParams("time4a", 1, true));
+    checkHit(sampleComponent);
     assertEquals(time4b, sampleComponent.timeWithCacheAndSimpleParams("time4b", 2, false));
+    checkHit(sampleComponent);
     assertNotEquals(time4a, time4b);
 
     Date date1 = new Date();
     Date date2 = new Date();
     String time5a = sampleComponent.timeWithCacheAndSimpleParams("time5a", 1, true, date1);
+    checkMissedHit(1, sampleComponent
+    );
     String time5b = sampleComponent.timeWithCacheAndSimpleParams("time5b", 2, false, date2);
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time5a, sampleComponent.timeWithCacheAndSimpleParams("time5a", 1, true, date1));
+    checkHit(sampleComponent);
     assertEquals(time5b, sampleComponent.timeWithCacheAndSimpleParams("time5b", 2, false, date2));
+    checkHit(sampleComponent);
     assertNotEquals(time5a, time5b);
 
     // Invalidate all
     sampleComponent.invalidateAll();
     assertNotEquals(time1a, sampleComponent.timeWithCache());
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time2a, sampleComponent.timeWithCacheAndSimpleParams("time2a"));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time2b, sampleComponent.timeWithCacheAndSimpleParams("time2b"));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time3a, sampleComponent.timeWithCacheAndSimpleParams("time3a", 1));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time3b, sampleComponent.timeWithCacheAndSimpleParams("time3b", 2));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time4a, sampleComponent.timeWithCacheAndSimpleParams("time4a", 1, true));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time4b, sampleComponent.timeWithCacheAndSimpleParams("time4b", 2, false));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time5a, sampleComponent.timeWithCacheAndSimpleParams("time5a", 1, true, date1));
+    checkMissedHit(1, sampleComponent);
     assertNotEquals(time5b, sampleComponent.timeWithCacheAndSimpleParams("time5b", 2, false, date2));
+    checkMissedHit(1, sampleComponent);
 
     // Invalidate by param
     String time6a = sampleComponent.timeWithCacheAndSimpleParams("time6a");
+    checkMissedHit(1, sampleComponent);
+
     String time6b = sampleComponent.timeWithCacheAndSimpleParams("time6b");
+    checkMissedHit(1, sampleComponent);
+
     assertEquals(time6a, sampleComponent.timeWithCacheAndSimpleParams("time6a"));
+    checkHit(sampleComponent);
     assertEquals(time6b, sampleComponent.timeWithCacheAndSimpleParams("time6b"));
+    checkHit(sampleComponent);
+
     sampleComponent.invalidateWithParam("time6a");
+
     assertNotEquals(time6a, sampleComponent.timeWithCacheAndSimpleParams("time6a"));
+    checkMissedHit(1, sampleComponent);
     assertEquals(time6b, sampleComponent.timeWithCacheAndSimpleParams("time6b"));
+    checkHit(sampleComponent);
+  }
+
+  private static void checkHit(SampleComponent sampleComponent) {
+    assertFalse(sampleComponent.isMissedHit());
+    assertEquals(0, sampleComponent.getMissedHits());
+  }
+
+  private static void checkMissedHit(int missedHits, SampleComponent sampleComponent) {
+    assertTrue(sampleComponent.isMissedHit());
+    assertEquals(missedHits, sampleComponent.getMissedHits());
+    sampleComponent.resetStats();
   }
 }

@@ -18,8 +18,8 @@ public class MemcachedCacheConfig {
   @Bean
   public CacheManager cacheManager(@Value("${cache.memcache.port}") String memcachedPort) throws IOException {
     MemcachedClient client = new MemcachedClient(new InetSocketAddress(Integer.parseInt(memcachedPort)));
-    MemcachedCache testCache = new MemcachedCache("test", client, factory -> factory.constructType(String.class), 60000, true);
-    MemcachedCache profileCache = new MemcachedCache("profile", client, factory -> factory.constructType(Profile.class), 60000, true);
+    MemcachedCache testCache = new MemcachedCache("test", client, 60000, true);
+    MemcachedCache profileCache = new MemcachedCache("profile", client, 60000, true);
 
     return new GenericCacheManager()
         .append("test", testCache)

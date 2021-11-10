@@ -7,9 +7,9 @@ public class CustomKeyGenerator implements KeyGenerator {
   @Override
   public Object generate(Object target, Method method, Object... params) {
     if (params.length == 0) {
-      return CustomCacheKey.EMPTY;
+      return new CustomCacheKey(target, method);
     } else {
-      return new CustomCacheKey(params);
+      return new CustomCacheKey(target, method, params);
     }
   }
 }

@@ -7,22 +7,26 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 
 public class CustomCacheKey implements Serializable {
-  public static final CustomCacheKey EMPTY = new CustomCacheKey();
-
+  private final Object target;
+  private final Method method;
   private final Object[] params;
   private transient int hashCode;
 
-  public CustomCacheKey(Object... elements) {
+  public CustomCacheKey(Object target, Method method, Object... elements) {
     Assert.notNull(elements, "Elements must not be null");
+    this.target = target;
+    this.method = method;
     this.params = elements.clone();
     this.hashCode = Arrays.deepHashCode(this.params);
   }
 
   public boolean isBulk() {
-    return params.length == 1 && params[0] instanceof Iterable;
+    return params.length == 1 && Collection.class.isInstance(params[0]);
   }
 
   public Object[] getParams() {
@@ -48,5 +52,13 @@ public class CustomCacheKey implements Serializable {
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
     ois.defaultReadObject();
     this.hashCode = Arrays.deepHashCode(this.params);
+  }
+
+  public Method getMethod() {
+    return method;
+  }
+
+  public Object getTarget() {
+    return target;
   }
 }

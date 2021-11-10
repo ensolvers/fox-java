@@ -11,6 +11,8 @@ import java.util.*;
 @SpringBootApplication
 @Component
 public class SampleComponent {
+    private boolean missedHit = false;
+    private int missedHits = 0;
 
     public String timeWithoutCache() {
         return java.time.LocalDateTime.now().toString();
@@ -18,31 +20,49 @@ public class SampleComponent {
 
     @Cacheable("test")
     public String timeWithCache() {
+        missedHit = true;
+        missedHits = 1;
+
         return java.time.LocalDateTime.now().toString();
     }
 
     @Cacheable("test")
     public String timeWithCacheAndSimpleParams(String param1) {
+        missedHit = true;
+        missedHits = 1;
+
         return java.time.LocalDateTime.now().toString();
     }
 
     @Cacheable("test")
     public String timeWithCacheAndSimpleParams(String param1, Integer param2) {
+        missedHit = true;
+        missedHits = 1;
+
         return java.time.LocalDateTime.now().toString();
     }
 
     @Cacheable("test")
     public String timeWithCacheAndSimpleParams(String param1, Integer param2, boolean param3) {
+        missedHit = true;
+        missedHits = 1;
+
         return java.time.LocalDateTime.now().toString();
     }
 
     @Cacheable("test")
     public String timeWithCacheAndSimpleParams(String param1, Integer param2, boolean param3, Date param4) {
+        missedHit = true;
+        missedHits = 1;
+
         return java.time.LocalDateTime.now().toString();
     }
 
     @Cacheable("profile")
     public Profile profileWithCacheAndSimpleParams(String param1) {
+        missedHit = true;
+        missedHits = 1;
+
         Media media = new Media();
         media.setId(new Random().nextLong());
         media.setTitle(UUID.randomUUID().toString());
@@ -57,6 +77,9 @@ public class SampleComponent {
 
     @Cacheable("profile")
     public Map<String, Profile> profilesWithCacheAndSimpleParams(List<String> paramList) {
+        missedHit = true;
+        missedHits = paramList.size();
+
         Map<String, Profile> result = new HashMap<>();
         for (String param: paramList) {
             Media media = new Media();
@@ -76,6 +99,9 @@ public class SampleComponent {
 
     @Cacheable("profile")
     public Map<String, Profile> profilesWithCacheAndSimpleParams(Set<String> paramList) {
+        missedHit = true;
+        missedHits = paramList.size();
+
         Map<String, Profile> result = new HashMap<>();
         for (String param: paramList) {
             Media media = new Media();
@@ -95,6 +121,9 @@ public class SampleComponent {
 
     @Cacheable("test")
     public String stringNumber(String param1, String param2) {
+        missedHit = true;
+        missedHits = 1;
+
         return "5";
     }
 
@@ -111,5 +140,18 @@ public class SampleComponent {
     @CacheEvict(value = "test")
     public void invalidateWithParam(String param1) {
 
+    }
+
+    public void resetStats() {
+        missedHit = false;
+        missedHits = 0;
+    }
+
+    public boolean isMissedHit() {
+        return missedHit;
+    }
+
+    public int getMissedHits() {
+        return missedHits;
     }
 }

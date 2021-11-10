@@ -4,36 +4,33 @@ import com.ensolvers.fox.cache.CacheInvalidArgumentException;
 import com.ensolvers.fox.cache.CacheSerializingException;
 import com.ensolvers.fox.cache.spring.key.CustomCacheKey;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.SimpleValueWrapper;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 
 public class MemcachedCache implements Cache {
-  private String name;
+  private final String name;
   private final MemcachedClient memcachedClient;
   private final ObjectMapper objectMapper;
-  private final JavaType objectType;
   private final boolean allowNullValues;
   private final int expirationTimeInSeconds;
 
   public MemcachedCache(
       String name,
       MemcachedClient memcachedClient,
-      Function<TypeFactory, JavaType> typeBuilder,
       int expirationTimeInSeconds,
       boolean allowNullValues
   ) {
     this.name = name;
     this.memcachedClient = memcachedClient;
     this.objectMapper = new ObjectMapper();
-    this.objectType = typeBuilder.apply(this.objectMapper.getTypeFactory());
     this.allowNullValues = allowNullValues;
     this.expirationTimeInSeconds = expirationTimeInSeconds;
   }
@@ -50,7 +47,8 @@ public class MemcachedCache implements Cache {
 
   @Override
   public ValueWrapper get(Object key) {
-    if (key instanceof CustomCacheKey && ((CustomCacheKey) key).isBulk()) {
+    // Check if is a bulk get or not
+    if (CustomCacheKey.class.isInstance(key) && ((CustomCacheKey) key).isBulk()) {
       return getBulk((CustomCacheKey)key);
     } else {
       return getSingle(key);
@@ -59,17 +57,19 @@ public class MemcachedCache implements Cache {
 
   @Override
   public <T> T get(Object key, Class<T> aClass) {
-    return (T) this.get(key);
+    return (T) get(key);
   }
 
   @Override
   public <T> T get(Object key, Callable<T> callable) {
-    return (T) this.get(key);
+    return (T) get(key);
   }
 
   @Override
   public void put(Object key, Object value) {
-    if (key instanceof CustomCacheKey && ((CustomCacheKey) key).isBulk()) {
+    // Check if is a bulk put or not
+    if (CustomCacheKey.class.isInstance(key) && ((CustomCacheKey) key).isBulk()) {
+      // value to store must be an instance of Map (key with his value)
       if (!(value instanceof Map)) {
         throw new CacheInvalidArgumentException("[PUT][BULK REQUEST] Expected an instance of Map class");
       }
@@ -94,65 +94,99 @@ public class MemcachedCache implements Cache {
   }
 
   private ValueWrapper getBulk(CustomCacheKey customCacheKey) {
+    // Check that return type is subclass of Map
+    if (!Map.class.isAssignableFrom(customCacheKey.getMethod().getReturnType())) {
+      throw new CacheInvalidArgumentException("[GET][BULK REQUEST] Expected an instance of Map class in return type");
+    }
+
+    // Get the collection of requested keys
+    Collection collection = (Collection<Object>) customCacheKey.getParams()[0] ;
+
     Set<String> finalKeys = new HashSet<>();
     Map<String, Object> finalKeyToOriginalKey = new HashMap<>();
-    Map<Object, Object> deserializedObjects = new HashMap<>();
+    Map<Object, Object> result = new HashMap<>();
 
-    Iterable iterable = (Iterable<Object>) customCacheKey.getParams()[0] ;
-    iterable.forEach(key -> {
+    // Convert key to final key
+    collection.forEach(key -> {
       String finalKey = getFinalKey(key);
       finalKeys.add(finalKey);
       finalKeyToOriginalKey.put(finalKey, key);
     });
 
-    Map<String, Object> serializedObjects = this.memcachedClient.getBulk(finalKeys);
+    // Get cached objects
+    Map<String, Object> hits = this.memcachedClient.getBulk(finalKeys);
 
-    if (finalKeys.size() == serializedObjects.size()) {
-      serializedObjects.forEach((finalKey, value) -> {
-        try {
-          Object deserializedObject = this.objectMapper.readValue((String)value, objectType);
-          deserializedObjects.put(
-              finalKeyToOriginalKey.get(finalKey),
-              deserializedObject
-          );
-        } catch (JsonProcessingException e) {
-          throw new CacheSerializingException(
-              "Error when trying to deserialize object with "
-                  + "key ["
-                  + finalKey
-                  + "], "
-                  + "type: ["
-                  + objectType.getTypeName()
-                  + "]",
-              e);
-        }
-      });
-      return new SimpleValueWrapper(deserializedObjects);
-    } else {
-      return null;
+    // Get the type of the serialized object
+    Type type = ((ParameterizedType)customCacheKey.getMethod().getGenericReturnType()).getActualTypeArguments()[1];
+
+    // Deserialize cached objects
+    hits.forEach((finalKey, hit) -> {
+      try {
+        // Deserialize the object
+        Object deserializedObject = this.objectMapper.readValue((String)hit, objectMapper.getTypeFactory().constructType(type));
+        result.put(
+            finalKeyToOriginalKey.get(finalKey),
+            deserializedObject
+        );
+        finalKeyToOriginalKey.remove(finalKey);
+      } catch (JsonProcessingException e) {
+        throw new CacheSerializingException(
+            "Error when trying to deserialize object with "
+                + "key [" + finalKey + "], "
+                + "type: [" + type.getTypeName() + "]",
+            e);
+      }
+    });
+
+    // Check missed hits
+    if (!finalKeyToOriginalKey.isEmpty()) {
+      try {
+        // Create a new instance of the collection class and collect the missed keys to pass it to the annotated method
+        var missedKeys = (Collection)customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
+        missedKeys.addAll(finalKeyToOriginalKey.values());
+
+        // Execute the method to retrieve the missed hits
+        var missedHits = (Map)customCacheKey.getMethod().invoke(customCacheKey.getTarget(), missedKeys);
+
+        // Cache the missed hits
+        missedHits.forEach(this::putSingle);
+
+        // Add the missed hits to the result
+        result.putAll(missedHits);
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        throw new CacheInvalidArgumentException(
+            "Error trying to generate a copy of the passed collection. Invalid collection type "
+                + customCacheKey.getParams()[0].getClass().getName(),
+            e);
+      }
     }
+
+    // Return the result
+    return new SimpleValueWrapper(result);
   }
 
   private ValueWrapper getSingle(Object key) {
+    // Get cached object
     String finalKey = getFinalKey(key);
     String serializedObject = (String) memcachedClient.get(finalKey);
 
+    // Missed hit
     if (serializedObject == null) {
       return null;
     }
 
+    // Get the type of the serialized object
+    Type type = ((CustomCacheKey)key).getMethod().getGenericReturnType();
+
     try {
-      Object deserializedObject = this.objectMapper.readValue(serializedObject, objectType);
+      // Deserialize the object
+      Object deserializedObject = this.objectMapper.readValue(serializedObject, objectMapper.getTypeFactory().constructType(type));
       return new SimpleValueWrapper(deserializedObject);
     } catch (JsonProcessingException e) {
       throw new CacheSerializingException(
           "Error when trying to deserialize object with "
-              + "key ["
-              + finalKey
-              + "], "
-              + "type: ["
-              + objectType.getTypeName()
-              + "]",
+              + "key [" + finalKey + "], "
+              + "type: [" + type.getTypeName() + "]",
           e);
     }
   }
@@ -169,12 +203,17 @@ public class MemcachedCache implements Cache {
               + finalKey
               + "], "
               + "type: ["
-              + objectType.getTypeName()
+              + value.getClass().getTypeName()
               + "]",
           e);
     }
   }
 
+  /**
+   * Build the final key to use in the cache
+   * @param key the key of the object
+   * @return the final key (a string conformed with the name of the cache and the params of the method)
+   */
   private String getFinalKey(Object key) {
     StringBuilder finalKeyBuilder = new StringBuilder();
     finalKeyBuilder.append(name);
@@ -185,9 +224,8 @@ public class MemcachedCache implements Cache {
       } else {
         finalKeyBuilder.append("-").append(key);
       }
-    } else if (key instanceof Iterable) {
-      var iterable = (Iterable<Object>) key;
-      iterable.forEach(o -> finalKeyBuilder.append("-").append(o));
+    } else if (key instanceof Collection) {
+      ((Collection)key).forEach(o -> finalKeyBuilder.append("-").append(o));
     } else {
       finalKeyBuilder.append("-").append(key);
     }
