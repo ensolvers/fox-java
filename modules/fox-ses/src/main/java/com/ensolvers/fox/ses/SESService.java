@@ -40,6 +40,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * The SES service takes care of sending emails using AWS SES
@@ -94,12 +95,32 @@ public class SESService {
 	 * @param subject     the email subject
 	 * @param bodyText    the email body for clients not supporting HTML
 	 * @param bodyHTML    the email body (in HTML)
-	 * @param attachments the list of attachments
+	 * @param attachments the list of attachments (files)
 	 * @param toEmails    an array of email addresses to send the email to
 	 * @return the message id of the result
 	 */
 	public String sendEmail(String fromEmail, String subject, String bodyText, String bodyHTML, List<File> attachments, String... toEmails)
 			throws MessagingException, IOException {
+		return sendEmail(fromEmail, subject,
+						attachments.stream().map(a -> new EmailAttachment(a, a.getName())).collect(Collectors.toList()),
+						bodyText, bodyHTML,
+						toEmails);
+	}
+
+	/**
+	 * Sends an email with the specified parameters
+	 *
+	 * @param fromEmail   the email to sent it from (must be from a validated
+	 *                    domain)
+	 * @param subject     the email subject
+	 * @param attachments the list of attachments
+	 * @param bodyText    the email body for clients not supporting HTML
+	 * @param bodyHTML    the email body (in HTML)
+	 * @param toEmails    an array of email addresses to send the email to
+	 * @return the message id of the result
+	 */
+	public String sendEmail(String fromEmail, String subject, List<EmailAttachment> attachments, String bodyText, String bodyHTML, String... toEmails)
+					throws MessagingException, IOException {
 
 		Session session = Session.getDefaultInstance(new Properties());
 
@@ -149,12 +170,12 @@ public class SESService {
 		// Add the multipart/alternative part to the message.
 		msg.addBodyPart(wrap);
 
-		for (File attachment : attachments) {
+		for (EmailAttachment attachment : attachments) {
 			// Define the attachment
 			MimeBodyPart att = new MimeBodyPart();
-			DataSource fds = new FileDataSource(attachment);
+			DataSource fds = new FileDataSource(attachment.getFile());
 			att.setDataHandler(new DataHandler(fds));
-			att.setFileName(fds.getName());
+			att.setFileName(attachment.getName());
 
 			// Add the attachment to the message.
 			msg.addBodyPart(att);
