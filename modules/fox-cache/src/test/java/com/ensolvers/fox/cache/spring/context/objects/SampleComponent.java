@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.spring;
+package com.ensolvers.fox.cache.spring.context.objects;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.CacheEvict;

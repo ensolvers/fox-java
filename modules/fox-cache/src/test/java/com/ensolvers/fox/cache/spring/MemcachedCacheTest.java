@@ -1,6 +1,7 @@
 package com.ensolvers.fox.cache.spring;
 
 import com.ensolvers.fox.cache.spring.context.config.MemcachedCacheConfig;
+import com.ensolvers.fox.cache.spring.context.objects.SampleComponent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,9 +12,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
 @ContextConfiguration(classes = {MemcachedCacheConfig.class, SampleComponent.class})

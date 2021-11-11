@@ -1,5 +1,8 @@
 package com.ensolvers.fox.cache.spring;
 
+import com.ensolvers.fox.cache.spring.context.objects.Profile;
+import com.ensolvers.fox.cache.spring.context.objects.SampleComponent;
+
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

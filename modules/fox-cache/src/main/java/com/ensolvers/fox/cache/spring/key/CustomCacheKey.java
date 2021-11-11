@@ -38,7 +38,8 @@ public class CustomCacheKey implements Serializable {
   }
 
   public boolean equals(@Nullable Object other) {
-    return this == other || other instanceof CustomCacheKey && Arrays.deepEquals(this.params, ((CustomCacheKey)other).params);
+    return this == other
+           || (other instanceof CustomCacheKey && Arrays.deepEquals(this.params, ((CustomCacheKey)other).params));
   }
 
   public final int hashCode() {
