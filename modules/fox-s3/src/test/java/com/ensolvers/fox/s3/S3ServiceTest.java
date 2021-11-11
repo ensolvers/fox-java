@@ -39,66 +39,61 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public class S3ServiceTest {
 
-  @Container
-  public LocalStackContainer localstack =
-      new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
-          .withServices(LocalStackContainer.Service.S3);
+	@Container
+	public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
+			.withServices(LocalStackContainer.Service.S3);
 
-  @Test
-  public void testS3() throws Exception {
-    String bucket = "foxtest";
-    String testData = "this is a sample test data";
-    String key = "t1";
-    String folderName = "f1";
+	@Test
+	public void testS3() throws Exception {
+		String bucket = "foxtest";
+		String testData = "this is a sample test data";
+		String key = "t1";
+		String folderName = "f1";
 
-    AmazonS3Client client =
-        (AmazonS3Client)
-            AmazonS3ClientBuilder.standard()
-                .withEndpointConfiguration(
-                    localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
-                .withCredentials(localstack.getDefaultCredentialsProvider())
-                .build();
+		AmazonS3Client client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
+				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
+				.withCredentials(localstack.getDefaultCredentialsProvider()).build();
 
-    S3Service service = new S3Service(client);
-    // prepares the bucket
-    client.createBucket(bucket);
+		S3Service service = new S3Service(client);
+		// prepares the bucket
+		client.createBucket(bucket);
 
-    // read non existent file
-    File file = service.get(bucket, key);
-    assertNull(file);
+		// read non existent file
+		File file = service.get(bucket, key);
+		assertNull(file);
 
-    // no fail
-    service.delete(bucket, key);
+		// no fail
+		service.delete(bucket, key);
 
-    // write file in1 root context
-    File f = File.createTempFile("ensolversfox", ".txt");
-    FileUtils.writeStringToFile(f, testData, "UTF8");
-    service.put(bucket, key, f);
-    f.delete();
+		// write file in1 root context
+		File f = File.createTempFile("ensolversfox", ".txt");
+		FileUtils.writeStringToFile(f, testData, "UTF8");
+		service.put(bucket, key, f);
+		f.delete();
 
-    // read existant file
-    file = service.get(bucket, key);
-    assertNotNull(file);
-    String contents = FileUtils.readFileToString(file, "UTF8");
-    assertEquals(testData, contents);
+		// read existant file
+		file = service.get(bucket, key);
+		assertNotNull(file);
+		String contents = FileUtils.readFileToString(file, "UTF8");
+		assertEquals(testData, contents);
 
-    // no fail
-    service.delete(bucket, key);
+		// no fail
+		service.delete(bucket, key);
 
-    file = service.get(bucket, key);
-    assertNull(file);
+		file = service.get(bucket, key);
+		assertNull(file);
 
-    List<String> keys = service.list(bucket, folderName);
-    assertTrue(keys.isEmpty());
+		List<String> keys = service.list(bucket, folderName);
+		assertTrue(keys.isEmpty());
 
-    // write file in folder
-    f = File.createTempFile("ensolversfox", ".txt");
-    FileUtils.writeStringToFile(f, testData, "UTF8");
-    service.put(bucket, folderName + "/" + key, f);
-    f.delete();
+		// write file in folder
+		f = File.createTempFile("ensolversfox", ".txt");
+		FileUtils.writeStringToFile(f, testData, "UTF8");
+		service.put(bucket, folderName + "/" + key, f);
+		f.delete();
 
-    // now folder shouldn't be empty
-    keys = service.list(bucket, folderName);
-    assertFalse(keys.isEmpty());
-  }
+		// now folder shouldn't be empty
+		keys = service.list(bucket, folderName);
+		assertFalse(keys.isEmpty());
+	}
 }

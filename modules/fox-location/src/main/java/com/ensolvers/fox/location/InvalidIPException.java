@@ -18,4 +18,5 @@
  */
 package com.ensolvers.fox.location;
 
-public class InvalidIPException extends Exception {}
+public class InvalidIPException extends Exception {
+}

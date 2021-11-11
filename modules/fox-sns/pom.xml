@@ -15,6 +15,10 @@
 
     <name>Fox - SNS</name>
 
+    <properties>
+        <main.basedir>${project.parent.basedir}</main.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>

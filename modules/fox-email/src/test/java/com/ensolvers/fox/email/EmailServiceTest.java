@@ -28,11 +28,10 @@ import org.junit.jupiter.api.Test;
  */
 public class EmailServiceTest {
 
-  @Test
-  @Disabled
-  public void testEmail() throws Exception {
-    EmailService service =
-        new EmailService("host", 465, "username", "password", "info@ensolvers.com");
-    service.sendMailTo("esteban.roblesluna@gmail.com", "hola", "Hola esteban como estas?");
-  }
+	@Test
+	@Disabled
+	public void testEmail() throws Exception {
+		EmailService service = new EmailService("host", 465, "username", "password", "info@ensolvers.com");
+		service.sendMailTo("esteban.roblesluna@gmail.com", "hola", "Hola esteban como estas?");
+	}
 }

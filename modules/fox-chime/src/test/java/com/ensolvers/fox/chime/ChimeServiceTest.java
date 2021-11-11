@@ -27,28 +27,24 @@ import org.junit.jupiter.api.Test;
 
 public class ChimeServiceTest {
 
-  // NOTE: test disabled since Localstack Chime integration is not available
-  @Test
-  @Disabled
-  public void testChime() {
-    String accessKey = "";
-    String secretKey = "";
-    Regions region = Regions.US_EAST_1;
-    String chatAccessKey = "";
-    String chatSecretKey = "";
-    String appArn = "";
+	// NOTE: test disabled since Localstack Chime integration is not available
+	@Test
+	@Disabled
+	public void testChime() {
+		String accessKey = "";
+		String secretKey = "";
+		Regions region = Regions.US_EAST_1;
+		String chatAccessKey = "";
+		String chatSecretKey = "";
+		String appArn = "";
 
-    ChimeService service =
-        new ChimeService(
-            new BasicAWSCredentials(accessKey, secretKey),
-            region,
-            appArn,
-            new BasicAWSCredentials(chatAccessKey, chatSecretKey));
+		ChimeService service = new ChimeService(new BasicAWSCredentials(accessKey, secretKey), region, appArn,
+				new BasicAWSCredentials(chatAccessKey, chatSecretKey));
 
-    service.listChannels("userArn");
-    Meeting meeting = service.createMeeting("token");
-    service.getMeeting(meeting.getMeetingId());
-    Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
-    service.listChannels("userArn");
-  }
+		service.listChannels("userArn");
+		Meeting meeting = service.createMeeting("token");
+		service.getMeeting(meeting.getMeetingId());
+		Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
+		service.listChannels("userArn");
+	}
 }

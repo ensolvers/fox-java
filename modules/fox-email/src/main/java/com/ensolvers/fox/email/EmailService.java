@@ -34,68 +34,70 @@ import org.slf4j.LoggerFactory;
  */
 public class EmailService {
 
-  private static Logger logger = LoggerFactory.getLogger(EmailService.class);
+	private static Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-  private String from;
-  private String smtpUsername;
-  private String smtpPassword;
-  private String host;
-  private int port = 587;
+	private String from;
+	private String smtpUsername;
+	private String smtpPassword;
+	private String host;
+	private int port = 587;
 
-  public EmailService(
-      String host, int port, String smptUsername, String smtpPassword, String fromMail) {
-    this.from = fromMail;
-    this.smtpUsername = smptUsername;
-    this.smtpPassword = smtpPassword;
-    this.host = host;
-    this.port = port;
-  }
+	public EmailService(String host, int port, String smptUsername, String smtpPassword, String fromMail) {
+		this.from = fromMail;
+		this.smtpUsername = smptUsername;
+		this.smtpPassword = smtpPassword;
+		this.host = host;
+		this.port = port;
+	}
 
-  /**
-   * Sends a transactional email from the configured account to mailTo
-   *
-   * @param mailTo the to of the email
-   * @param subject the subject
-   * @param body the body
-   * @throws Exception
-   */
-  public void sendMailTo(String mailTo, String subject, String body) throws Exception {
-    // Create a Properties object to contain connection configuration information.
-    Properties props = System.getProperties();
-    props.put("mail.transport.protocol", "smtp");
-    props.put("mail.smtp.port", this.port);
-    props.put("mail.smtp.starttls.enable", "true");
-    props.put("mail.smtp.auth", "true");
+	/**
+	 * Sends a transactional email from the configured account to mailTo
+	 *
+	 * @param mailTo  the to of the email
+	 * @param subject the subject
+	 * @param body    the body
+	 * 
+	 * @throws Exception
+	 */
+	public void sendMailTo(String mailTo, String subject, String body) throws Exception {
+		// Create a Properties object to contain connection configuration information.
+		Properties props = System.getProperties();
+		props.put("mail.transport.protocol", "smtp");
+		props.put("mail.smtp.port", this.port);
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.auth", "true");
 
-    // Create a Session object to represent a mail session with the specified properties.
-    Session session = Session.getDefaultInstance(props);
+		// Create a Session object to represent a mail session with the specified
+		// properties.
+		Session session = Session.getDefaultInstance(props);
 
-    // Create a message with the specified information.
-    MimeMessage msg = new MimeMessage(session);
-    msg.setFrom(new InternetAddress(this.from, this.from));
-    msg.setRecipient(Message.RecipientType.TO, new InternetAddress(mailTo));
-    msg.setSubject(subject);
-    msg.setContent(body, "text/html");
+		// Create a message with the specified information.
+		MimeMessage msg = new MimeMessage(session);
+		msg.setFrom(new InternetAddress(this.from, this.from));
+		msg.setRecipient(Message.RecipientType.TO, new InternetAddress(mailTo));
+		msg.setSubject(subject);
+		msg.setContent(body, "text/html");
 
-    // Create a transport.
-    Transport transport = session.getTransport();
+		// Create a transport.
+		Transport transport = session.getTransport();
 
-    // Send the message.
-    try {
-      logger.info("Sending email...");
+		// Send the message.
+		try {
+			logger.info("Sending email...");
 
-      // Connect to Amazon SES using the SMTP username and password you specified above.
-      transport.connect(this.host, this.smtpUsername, this.smtpPassword);
+			// Connect to Amazon SES using the SMTP username and password you specified
+			// above.
+			transport.connect(this.host, this.smtpUsername, this.smtpPassword);
 
-      // Send the email.
-      transport.sendMessage(msg, msg.getAllRecipients());
+			// Send the email.
+			transport.sendMessage(msg, msg.getAllRecipients());
 
-      logger.info("Email sent!");
-    } catch (Exception e) {
-      logger.error("The email was not sent", e);
-    } finally {
-      // Close and terminate the connection.
-      transport.close();
-    }
-  }
+			logger.info("Email sent!");
+		} catch (Exception e) {
+			logger.error("The email was not sent", e);
+		} finally {
+			// Close and terminate the connection.
+			transport.close();
+		}
+	}
 }
