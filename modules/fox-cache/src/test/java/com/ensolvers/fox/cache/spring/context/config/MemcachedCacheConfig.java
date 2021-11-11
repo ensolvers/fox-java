@@ -28,18 +28,20 @@ public class MemcachedCacheConfig extends CachingConfigurerSupport {
   @Bean
   @Override
   public CacheManager cacheManager() {
-    MemcachedClient client = null;
+    MemcachedClient client;
     try {
       client = new MemcachedClient(new InetSocketAddress(Integer.parseInt(memcachedPort)));
     } catch (IOException e) {
       throw new RuntimeException("Error trying to instantiate memcached bean", e);
     }
 
-    MemcachedCache testCache = new MemcachedCache("test", client, 60000, true);
-    MemcachedCache profileCache = new MemcachedCache("profile", client, 60000, true);
+    MemcachedCache testCache = new MemcachedCache("test", client, 60000, false);
+    MemcachedCache profileCache = new MemcachedCache("profile", client, 60000, false);
+    MemcachedCache profileCacheNullable = new MemcachedCache("profileNullable", client, 60000, true);
 
     return new GenericCacheManager()
         .append("test", testCache)
-        .append("profile", profileCache);
+        .append("profile", profileCache)
+        .append("profileNullable", profileCacheNullable);
   }
 }

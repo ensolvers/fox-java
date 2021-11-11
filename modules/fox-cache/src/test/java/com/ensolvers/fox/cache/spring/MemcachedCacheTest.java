@@ -45,6 +45,11 @@ class MemcachedCacheTest {
     }
 
     @Test
+    void testNullValues() {
+        CacheTester.testNullValues(sampleComponent);
+    }
+
+    @Test
     void testPut() {
         CacheTester.testPut(sampleComponent);
     }

@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.spring.providers;
 
+import com.ensolvers.fox.cache.CacheExecutionException;
 import com.ensolvers.fox.cache.CacheInvalidArgumentException;
 import com.ensolvers.fox.cache.CacheSerializingException;
 import com.ensolvers.fox.cache.spring.key.CustomCacheKey;
@@ -18,6 +19,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MemcachedCache implements Cache {
+  private static final String NULL_STRING = "null";
+
   private final String name;
   private final MemcachedClient memcachedClient;
   private final ObjectMapper objectMapper;
@@ -140,9 +143,18 @@ public class MemcachedCache implements Cache {
   }
 
   private void putSingle(Object key, Object value) {
+    // Check null value
+    if ((!allowNullValues) && value == null) {
+      throw new CacheInvalidArgumentException("[PUT] Cache '" + name + "' is configured to not allow null values but null was provided");
+    }
+
     String finalKey = getMemcachedKey(key);
     try {
-      memcachedClient.set(finalKey, expirationTimeInSeconds, objectMapper.writeValueAsString(value));
+      String serializedValue = NULL_STRING;
+      if (value != null) {
+        serializedValue = objectMapper.writeValueAsString(value);
+      }
+      memcachedClient.set(finalKey, expirationTimeInSeconds, serializedValue);
     } catch (JsonProcessingException e) {
       throw CacheSerializingException.with(finalKey, value.getClass(), e);
     }
@@ -156,6 +168,10 @@ public class MemcachedCache implements Cache {
     // Missed hit
     if (hit == null) {
       return null;
+    }
+
+    if (hit.equals(NULL_STRING)) {
+      return new SimpleValueWrapper(null);
     }
 
     Object deserializedObject = deserializeUsingReturnType((CustomCacheKey) key, memcachedKey, hit);
@@ -181,29 +197,38 @@ public class MemcachedCache implements Cache {
 
     // Deserialize cached objects
     hits.forEach((memcachedKey, hit) -> {
-      Object deserializedObject = deserializeUsingMapArgumentType(customCacheKey, memcachedKey, (String) hit);
+      Object deserializedObject = null;
+      if (!hit.equals(NULL_STRING)) {
+        deserializedObject = deserializeUsingMapArgumentType(customCacheKey, memcachedKey, (String) hit);
+      }
       result.put(memcachedKeyToOriginalKey.get(memcachedKey), deserializedObject);
       memcachedKeyToOriginalKey.remove(memcachedKey);
     });
 
     // Check missed hits
     if (!memcachedKeyToOriginalKey.isEmpty()) {
+      // Create a new instance of the collection class and collect the missed keys to pass it to the annotated method
+      Collection missedKeys;
       try {
-        // Create a new instance of the collection class and collect the missed keys to pass it to the annotated method
-        var missedKeys = (Collection)customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
+        missedKeys = (Collection)customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
         missedKeys.addAll(memcachedKeyToOriginalKey.values());
-
-        // Execute the method to retrieve the missed hits
-        var missedHits = (Map)customCacheKey.getMethod().invoke(customCacheKey.getTarget(), missedKeys);
-
-        // Cache the missed hits
-        missedHits.forEach(this::putSingle);
-
-        // Add the missed hits to the result
-        result.putAll(missedHits);
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw CacheInvalidArgumentException.collectionError(customCacheKey.getParams()[0].getClass(), e);
       }
+
+      // Execute the method to retrieve the missed hits
+      Map missedHits;
+      try {
+        missedHits = (Map)customCacheKey.getMethod().invoke(customCacheKey.getTarget(), missedKeys);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new CacheExecutionException("Error trying to execute annotated method. Check stack trace for more information.", e);
+      }
+
+      // Cache the missed hits and add to the result
+      missedKeys.forEach(missedKey -> {
+        this.putSingle(missedKey, missedHits.get(missedKey));
+        result.put(missedKey, missedHits.get(missedKey));
+      });
     }
 
     // Return the result

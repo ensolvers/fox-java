@@ -119,6 +119,52 @@ public class SampleComponent {
         return result;
     }
 
+    @Cacheable("profile")
+    public Map<String, Profile> profilesWithNullAndCacheNotNullable(List<String> paramList) {
+        missedHit = true;
+        missedHits = paramList.size();
+
+        Map<String, Profile> result = new HashMap<>();
+        for (String param: paramList) {
+            Media media = new Media();
+            media.setId(new Random().nextLong());
+            media.setTitle(UUID.randomUUID().toString());
+
+            Profile profile = new Profile();
+            profile.setId(new Random().nextLong());
+            profile.setName(UUID.randomUUID().toString());
+            profile.setMedia(media);
+
+            result.put(param, profile);
+        }
+        result.remove(paramList.get(Math.min(1, paramList.size() - 1)));
+
+        return result;
+    }
+
+    @Cacheable("profileNullable")
+    public Map<String, Profile> profilesWithNullAndCacheNullable(List<String> paramList) {
+        missedHit = true;
+        missedHits = paramList.size();
+
+        Map<String, Profile> result = new HashMap<>();
+        for (String param: paramList) {
+            Media media = new Media();
+            media.setId(new Random().nextLong());
+            media.setTitle(UUID.randomUUID().toString());
+
+            Profile profile = new Profile();
+            profile.setId(new Random().nextLong());
+            profile.setName(UUID.randomUUID().toString());
+            profile.setMedia(media);
+
+            result.put(param, profile);
+        }
+        result.remove(paramList.get(Math.min(1, paramList.size() - 1)));
+
+        return result;
+    }
+
     @Cacheable("test")
     public String stringNumber(String param1, String param2) {
         missedHit = true;

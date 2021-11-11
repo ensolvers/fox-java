@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.spring;
 
+import com.ensolvers.fox.cache.CacheInvalidArgumentException;
 import com.ensolvers.fox.cache.spring.context.objects.Profile;
 import com.ensolvers.fox.cache.spring.context.objects.SampleComponent;
 
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CacheTester {
   public static void testGet(SampleComponent sampleComponent) {
@@ -150,6 +152,57 @@ public class CacheTester {
 
     assertEquals(profiles5, sampleComponent.profilesWithCacheAndSimpleParams(keys4));
     checkHit(sampleComponent);
+
+    // Test empty key list
+    sampleComponent.profilesWithCacheAndSimpleParams(new ArrayList<>());
+    checkHit(sampleComponent);
+  }
+
+  public static void testNullValues(SampleComponent sampleComponent) {
+    sampleComponent.resetStats();
+    sampleComponent.invalidateAll();
+
+    List<String> keys1 = new ArrayList<>();
+    keys1.add("profiles1a");
+    keys1.add("profiles1b");
+
+    List<String> keys2 = new ArrayList<>();
+    keys2.add("profiles2a");
+    keys2.add("profiles2b");
+
+    Map<String, Profile> profiles1 = sampleComponent.profilesWithNullAndCacheNullable(keys1);
+    checkMissedHit(2, sampleComponent);
+
+    Map<String, Profile> profiles2 = sampleComponent.profilesWithNullAndCacheNullable(keys2);
+    checkMissedHit(2, sampleComponent);
+
+    assertEquals(profiles1, sampleComponent.profilesWithNullAndCacheNullable(keys1));
+    checkHit(sampleComponent);
+    assertEquals(profiles2, sampleComponent.profilesWithNullAndCacheNullable(keys2));
+    checkHit(sampleComponent);
+
+    // Test list with repeats
+    List<String> keys3 = new ArrayList<>();
+    keys3.add("profiles3a");
+    keys3.add("profiles3a");
+    keys3.add("profiles3b");
+
+    Map<String, Profile> profiles3 = sampleComponent.profilesWithNullAndCacheNullable(keys3);
+    checkMissedHit(2, sampleComponent);
+
+    assertEquals(profiles3, sampleComponent.profilesWithNullAndCacheNullable(keys3));
+    checkHit(sampleComponent);
+
+    // Test partial hit
+    keys3.add("profiles4c");
+
+    Map<String, Profile> profiles4 = sampleComponent.profilesWithNullAndCacheNullable(keys3);
+    checkMissedHit(1, sampleComponent);
+
+    assertEquals(profiles4, sampleComponent.profilesWithNullAndCacheNullable(keys3));
+    checkHit(sampleComponent);
+
+    assertThrows(CacheInvalidArgumentException.class, () -> sampleComponent.profilesWithNullAndCacheNotNullable(keys3));
   }
 
   public static void testPut(SampleComponent sampleComponent) {
