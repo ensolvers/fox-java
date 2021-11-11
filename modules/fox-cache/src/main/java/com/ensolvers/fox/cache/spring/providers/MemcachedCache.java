@@ -18,6 +18,10 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Memcached implementation.
+ * Instances of this class must be passed to the cache manager.
+ */
 public class MemcachedCache implements Cache {
   private static final String NULL_STRING = "null";
 
@@ -27,6 +31,12 @@ public class MemcachedCache implements Cache {
   private final boolean allowNullValues;
   private final int expirationTimeInSeconds;
 
+  /**
+   * @param name an identifier for the cache
+   * @param memcachedClient the client to do the request to memcached service
+   * @param expirationTimeInSeconds expiration time of the entries saved in memcached
+   * @param allowNullValues if null values are allowed (if true throws a {@link CacheInvalidArgumentException} when a null value is detected)
+   */
   public MemcachedCache(
       String name,
       MemcachedClient memcachedClient,
@@ -50,6 +60,13 @@ public class MemcachedCache implements Cache {
     return memcachedClient;
   }
 
+  /**
+   * Get operation.
+   * Because spring do not provide support for bulk operations we distinguish it checking the return type and the amount and type of parameters
+   * For bulk request: return type must be a Map and only one parameter of type Collection must be provided (check {@link CustomCacheKey#isBulk()})
+   * @param key The type of this parameter can be a {@link CustomCacheKey}, List or a "simple" type (String, Integer, etc)
+   * @return null if no hit, ValueWrapper otherwise
+   */
   @Override
   public ValueWrapper get(Object key) {
     // Check if is a bulk get or not
@@ -70,13 +87,20 @@ public class MemcachedCache implements Cache {
     return (T) get(key);
   }
 
+  /**
+   * Put operation
+   * Because spring do not provide support for bulk operations we distinguish it checking the return type and the amount and type of parameters
+   * For bulk request: return type must be a Map and only one parameter of type Collection must be provided (check {@link CustomCacheKey#isBulk()})
+   * @param key The type of this parameter can be a {@link CustomCacheKey}, List or a "simple" type (String, Integer, etc)
+   * @param value value to store in the cache
+   */
   @Override
   public void put(Object key, Object value) {
     // Check if is a bulk put or not
     if (CustomCacheKey.class.isInstance(key) && ((CustomCacheKey) key).isBulk()) {
       // value to store must be an instance of Map (key with his value)
       if (!(value instanceof Map)) {
-        throw new CacheInvalidArgumentException("[PUT][BULK REQUEST] Expected an instance of Map class in param type");
+        throw new CacheInvalidArgumentException("Expected an instance of Map class in param type");
       }
 
       for (String k: (Collection<? extends String>) ((CustomCacheKey)key).getParams()[0]) {
@@ -87,12 +111,20 @@ public class MemcachedCache implements Cache {
     }
   }
 
+  /**
+   * Delete operation. Remove a specific key from the cache
+   * @param key the key to remove
+   */
   @Override
   public void evict(Object key) {
     String finalKey = getMemcachedKey(key);
     memcachedClient.delete(finalKey);
   }
 
+  /**
+   * Delete all entries in the cache
+   * Note that this will delete all entries in memcached service (global)
+   */
   @Override
   public void clear() {
     memcachedClient.flush();
@@ -145,7 +177,7 @@ public class MemcachedCache implements Cache {
   private void putSingle(Object key, Object value) {
     // Check null value
     if ((!allowNullValues) && value == null) {
-      throw new CacheInvalidArgumentException("[PUT] Cache '" + name + "' is configured to not allow null values but null was provided");
+      throw new CacheInvalidArgumentException("Cache '" + name + "' is configured to not allow null values but null was provided");
     }
 
     String finalKey = getMemcachedKey(key);
@@ -181,7 +213,7 @@ public class MemcachedCache implements Cache {
   private ValueWrapper getBulk(CustomCacheKey customCacheKey) {
     // Check that return type is subclass of Map
     if (!Map.class.isAssignableFrom(customCacheKey.getMethod().getReturnType())) {
-      throw new CacheInvalidArgumentException("[GET][BULK REQUEST] Expected an instance of Map class in return type");
+      throw new CacheInvalidArgumentException("Expected an instance of Map class in return type");
     }
 
     // Get the collection of requested keys

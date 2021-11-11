@@ -11,6 +11,13 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * The instances of this class are created in {@link CustomKeyGenerator}
+ * The purpose of this class is to replace default wrapper {@link org.springframework.cache.interceptor.SimpleKey} provided by spring
+ * and wrap all necessary data about the annotated method invoked and his context.
+ * Spring passes the created instances of this class to the corresponding cache (declared in the cache manager)
+ * which will use this data to build a key to retrieve or save the corresponding data in the cache.
+ */
 public class CustomCacheKey implements Serializable {
   private final Object target;
   private final Method method;

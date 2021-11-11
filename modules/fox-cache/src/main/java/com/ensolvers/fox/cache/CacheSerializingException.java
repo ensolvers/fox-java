@@ -12,7 +12,7 @@ public class CacheSerializingException extends CacheException {
   public static CacheSerializingException with(String key, String type, Throwable e) {
     return new CacheSerializingException(
         "Error when trying to deserialize object with "
-            + "key [" + key + "], "
+            + "key: [" + key + "], "
             + "type: [" + type + "]",
         e);
   }
