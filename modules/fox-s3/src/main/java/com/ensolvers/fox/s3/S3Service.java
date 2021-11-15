@@ -67,7 +67,8 @@ public class S3Service {
 		generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
 		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
-		logger.info(LOG_PREFIX + "[END] Generating a presigned URL");
+
+		logger.info(LOG_PREFIX + "[END] Generating a presigned URL: " + url);
 		return url.toString();
 	}
 

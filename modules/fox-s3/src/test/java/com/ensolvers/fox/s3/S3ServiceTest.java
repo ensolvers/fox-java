@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,10 @@ import org.testcontainers.utility.DockerImageName;
  */
 @Testcontainers
 public class S3ServiceTest {
+	// Test constants
+	private final String BUCKET_NAME = "foxtest";
+	private final String KEY = "t1";
+	private final String FILENAME = "ensolversfox";
 
 	@Container
 	public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
@@ -45,10 +50,9 @@ public class S3ServiceTest {
 
 	@Test
 	public void testS3() throws Exception {
-		String bucket = "foxtest";
 		String testData = "this is a sample test data";
-		String key = "t1";
 		String folderName = "f1";
+		String fileSuffix = ".txt";
 
 		AmazonS3Client client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
 				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
@@ -56,53 +60,50 @@ public class S3ServiceTest {
 
 		S3Service service = new S3Service(client);
 		// prepares the bucket
-		client.createBucket(bucket);
+		client.createBucket(BUCKET_NAME);
 
 		// read non existent file
-		File file = service.get(bucket, key);
+		File file = service.get(BUCKET_NAME, KEY);
 		assertNull(file);
 
 		// no fail
-		service.delete(bucket, key);
+		service.delete(BUCKET_NAME, KEY);
 
 		// write file in1 root context
-		File f = File.createTempFile("ensolversfox", ".txt");
-		FileUtils.writeStringToFile(f, testData, "UTF8");
-		service.put(bucket, key, f);
+		File f = File.createTempFile(FILENAME, fileSuffix);
+		FileUtils.writeStringToFile(f, testData, StandardCharsets.UTF_8);
+		service.put(BUCKET_NAME, KEY, f);
 		f.delete();
 
-		// read existant file
-		file = service.get(bucket, key);
+		// read existent file
+		file = service.get(BUCKET_NAME, KEY);
 		assertNotNull(file);
-		String contents = FileUtils.readFileToString(file, "UTF8");
+		String contents = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 		assertEquals(testData, contents);
 
 		// no fail
-		service.delete(bucket, key);
+		service.delete(BUCKET_NAME, KEY);
 
-		file = service.get(bucket, key);
+		file = service.get(BUCKET_NAME, KEY);
 		assertNull(file);
 
-		List<String> keys = service.list(bucket, folderName);
+		List<String> keys = service.list(BUCKET_NAME, folderName);
 		assertTrue(keys.isEmpty());
 
 		// write file in folder
-		f = File.createTempFile("ensolversfox", ".txt");
-		FileUtils.writeStringToFile(f, testData, "UTF8");
-		service.put(bucket, folderName + "/" + key, f);
+		f = File.createTempFile(FILENAME, fileSuffix);
+		FileUtils.writeStringToFile(f, testData, StandardCharsets.UTF_8);
+		service.put(BUCKET_NAME, folderName + "/" + KEY, f);
 		f.delete();
 
 		// now folder shouldn't be empty
-		keys = service.list(bucket, folderName);
+		keys = service.list(BUCKET_NAME, folderName);
 		assertFalse(keys.isEmpty());
 	}
 
 	@Test
 	public void shouldGeneratePresignedUrl() {
-		String bucketName = "foxtest";
-		String keyName = "t1";
-		Long secondsToExpire = 20L;
-		String fileName = "f1";
+		Long secondsToExpire = 60L;
 
 		AmazonS3Client client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
 				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
@@ -110,13 +111,10 @@ public class S3ServiceTest {
 
 		S3Service service = new S3Service(client);
 
-		String presignedUrl = service.generatePresignedUrl(bucketName, keyName, secondsToExpire, fileName);
+		String presignedUrl = service.generatePresignedUrl(BUCKET_NAME, KEY, secondsToExpire, FILENAME);
 
 		assertNotNull(presignedUrl);
 		assertFalse(presignedUrl.isEmpty());
 		assertFalse(presignedUrl.isBlank());
-
-		System.out.print("\n\npresignedUrl: " + presignedUrl + "\n\n");
-
 	}
 }
