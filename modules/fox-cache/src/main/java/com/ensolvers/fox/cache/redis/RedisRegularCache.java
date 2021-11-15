@@ -1,13 +1,13 @@
 package com.ensolvers.fox.cache.redis;
 
-import com.ensolvers.fox.cache.CacheSerializingException;
-import com.ensolvers.fox.cache.CheckedFunction;
+import com.ensolvers.fox.cache.common.GenericCache;
+import com.ensolvers.fox.cache.exception.CacheSerializingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.io.IOException;
 
-public class RedisRegularCache<V> extends RedisCache<V> {
+public class RedisRegularCache<V> extends RedisCache<V> implements GenericCache<V> {
 
 	public RedisRegularCache(RedisCommands<String, String> redis, String name, int expirationTime, Class<V> valueClass,
 			CheckedFunction<V, String> customSerializer, CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {
@@ -44,5 +44,10 @@ public class RedisRegularCache<V> extends RedisCache<V> {
 		} catch (JsonProcessingException e) {
 			throw new CacheSerializingException("There was a problem during serialization", e);
 		}
+	}
+
+	@Override
+	public void put(String key, V object) throws Exception {
+		this.set(key, object);
 	}
 }

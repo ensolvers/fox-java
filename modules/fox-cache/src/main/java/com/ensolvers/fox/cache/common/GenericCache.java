@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.guava;
+package com.ensolvers.fox.cache.common;
 
 /**
  * Generic cache interface to abstract underlying implementation
@@ -21,7 +21,7 @@ public interface GenericCache<T> {
 	 *
 	 * @param key
 	 */
-	void refresh(String key) throws Exception;
+	void invalidate(String key) throws Exception;
 
 	/**
 	 * Stores an item in the cache

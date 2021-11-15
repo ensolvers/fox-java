@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache;
+package com.ensolvers.fox.cache.exception;
 
 public class CacheInvalidArgumentException extends CacheException {
   public CacheInvalidArgumentException(String message) {

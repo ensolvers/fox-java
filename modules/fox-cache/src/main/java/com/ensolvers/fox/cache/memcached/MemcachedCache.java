@@ -18,6 +18,7 @@
  */
 package com.ensolvers.fox.cache.memcached;
 
+import com.ensolvers.fox.cache.common.GenericCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author José Matías Rivero (jose.matias.rivero@gmail.com)
  */
-public class MemcachedCache<T> {
+public class MemcachedCache<T> implements GenericCache<T> {
 	Logger logger = LoggerFactory.getLogger(MemcachedCache.class);
 
 	protected final MemcachedClient memcachedClient;
@@ -131,6 +132,7 @@ public class MemcachedCache<T> {
 	 * 
 	 * @return the object
 	 */
+	@Override
 	public T get(String key) {
 		String computedKey = this.computeKey(key);
 		String serializedObject = (String) this.memcachedClient.get(computedKey);
@@ -148,7 +150,9 @@ public class MemcachedCache<T> {
 		// cache miss, go get the object
 		T freshObject = fetchFunction.apply(key);
 
-		return this.put(key, freshObject);
+		this.put(key, freshObject);
+
+		return freshObject;
 	}
 
 	/**
@@ -173,7 +177,8 @@ public class MemcachedCache<T> {
 	 * 
 	 * @return the object
 	 */
-	public T put(String key, T freshObject) {
+	@Override
+	public void put(String key, T freshObject) {
 		try {
 			this.memcachedClient.add(this.computeKey(key), this.expirationTimeInSeconds, this.convertToString(freshObject));
 		} catch (JsonProcessingException e) {
@@ -181,8 +186,12 @@ public class MemcachedCache<T> {
 					"Error when trying to serialize object with " + "key [" + key + "], " + "type: [" + this.objectType.getTypeName() + "]",
 					e);
 		}
+	}
 
-		return freshObject;
+	@Override
+	public void invalidate(String key) {
+		String finalKey = this.computeKey(key);
+		this.memcachedClient.delete(finalKey);
 	}
 
 	protected String convertToString(T object) throws JsonProcessingException {
@@ -203,11 +212,6 @@ public class MemcachedCache<T> {
 
 		// ... otherwise, use Jackson
 		return this.objectMapper.readValue(serializedObject, this.objectType);
-	}
-
-	public void invalidate(String key) {
-		String finalKey = this.computeKey(key);
-		this.memcachedClient.delete(finalKey);
 	}
 
 	protected String computeKey(String key) {

@@ -1,11 +1,10 @@
 package com.ensolvers.fox.cache.redis;
 
-import com.ensolvers.fox.cache.CheckedFunction;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.util.Collection;
 import java.util.Collections;
 
-public class RedisLimitedCache<V> extends RedisListCache<V> implements RedisCollection<V> {
+public class RedisLimitedCache<V> extends RedisListCache<V> {
 
 	public RedisLimitedCache(RedisCommands<String, String> redis, String name, int expirationTime, Class<V> valueClass,
 			CheckedFunction<V, String> customSerializer, CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {

@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache;
+package com.ensolvers.fox.cache.redis;
 
 import java.util.function.Function;
 

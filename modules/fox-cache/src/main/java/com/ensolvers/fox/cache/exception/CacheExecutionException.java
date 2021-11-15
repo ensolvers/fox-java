@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache;
+package com.ensolvers.fox.cache.exception;
 
 public class CacheExecutionException extends CacheException {
   public CacheExecutionException(String message) {

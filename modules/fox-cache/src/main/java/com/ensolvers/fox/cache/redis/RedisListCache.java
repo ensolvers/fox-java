@@ -1,7 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
-import com.ensolvers.fox.cache.CacheSerializingException;
-import com.ensolvers.fox.cache.CheckedFunction;
+import com.ensolvers.fox.cache.exception.CacheSerializingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.io.IOException;

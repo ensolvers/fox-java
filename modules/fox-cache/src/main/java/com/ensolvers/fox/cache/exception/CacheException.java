@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache;
+package com.ensolvers.fox.cache.exception;
 
 public abstract class CacheException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

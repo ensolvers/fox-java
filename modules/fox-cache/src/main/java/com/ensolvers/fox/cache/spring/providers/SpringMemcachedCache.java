@@ -1,8 +1,8 @@
 package com.ensolvers.fox.cache.spring.providers;
 
-import com.ensolvers.fox.cache.CacheExecutionException;
-import com.ensolvers.fox.cache.CacheInvalidArgumentException;
-import com.ensolvers.fox.cache.CacheSerializingException;
+import com.ensolvers.fox.cache.exception.CacheExecutionException;
+import com.ensolvers.fox.cache.exception.CacheInvalidArgumentException;
+import com.ensolvers.fox.cache.exception.CacheSerializingException;
 import com.ensolvers.fox.cache.spring.key.CustomCacheKey;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * Memcached implementation.
  * Instances of this class must be passed to the cache manager.
  */
-public class MemcachedCache implements Cache {
+public class SpringMemcachedCache implements Cache {
   private static final String NULL_STRING = "null";
 
   private final String name;
@@ -37,7 +37,7 @@ public class MemcachedCache implements Cache {
    * @param expirationTimeInSeconds expiration time of the entries saved in memcached
    * @param allowNullValues if null values are allowed (if true throws a {@link CacheInvalidArgumentException} when a null value is detected)
    */
-  public MemcachedCache(
+  public SpringMemcachedCache(
       String name,
       MemcachedClient memcachedClient,
       int expirationTimeInSeconds,
@@ -79,12 +79,14 @@ public class MemcachedCache implements Cache {
 
   @Override
   public <T> T get(Object key, Class<T> aClass) {
-    return (T) get(key);
+    ValueWrapper wrapper = this.get(key);
+    return wrapper == null ? null : (T) wrapper.get();
   }
 
   @Override
   public <T> T get(Object key, Callable<T> callable) {
-    return (T) get(key);
+    ValueWrapper wrapper = this.get(key);
+    return wrapper == null ? null : (T) wrapper.get();
   }
 
   /**

@@ -1,6 +1,7 @@
 package com.ensolvers.fox.cache.spring;
 
 import com.ensolvers.fox.cache.spring.context.config.MemcachedCacheConfig;
+import com.ensolvers.fox.cache.spring.context.config.RedisCacheConfig;
 import com.ensolvers.fox.cache.spring.context.objects.SampleComponent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,19 +15,19 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
-@ContextConfiguration(classes = {MemcachedCacheConfig.class, SampleComponent.class})
+@ContextConfiguration(classes = {RedisCacheConfig.class, SampleComponent.class})
 @Testcontainers
-class MemcachedCacheTest {
+class SpringRedisCacheTest {
     @Autowired
     SampleComponent sampleComponent;
 
     @Container
-    public static GenericContainer<?> memcachedContainer =
-        new GenericContainer<>(DockerImageName.parse("memcached:1.6.10")).withExposedPorts(11211);
+    public static GenericContainer<?> redisContainer =
+        new GenericContainer<>(DockerImageName.parse("redis:6.2.5")).withExposedPorts(6379);
 
     @DynamicPropertySource
     public static void overrideProps(DynamicPropertyRegistry registry) {
-        registry.add("cache.memcache.port", () -> memcachedContainer.getFirstMappedPort());
+        registry.add("cache.redis.port", () -> redisContainer.getFirstMappedPort());
     }
 
     @Test
@@ -46,7 +47,7 @@ class MemcachedCacheTest {
 
     @Test
     void testNullValues() {
-        CacheTester.testNullValues(sampleComponent);
+        CacheTester.testNullValuesInBulkGet(sampleComponent);
     }
 
     @Test

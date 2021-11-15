@@ -1,16 +1,12 @@
 package com.ensolvers.fox.cache.spring;
 
-import com.ensolvers.fox.cache.CacheInvalidArgumentException;
+import com.ensolvers.fox.cache.exception.CacheInvalidArgumentException;
 import com.ensolvers.fox.cache.spring.context.objects.Profile;
 import com.ensolvers.fox.cache.spring.context.objects.SampleComponent;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheTester {
   public static void testGet(SampleComponent sampleComponent) {
@@ -159,6 +155,27 @@ public class CacheTester {
   }
 
   public static void testNullValues(SampleComponent sampleComponent) {
+    sampleComponent.resetStats();
+    sampleComponent.invalidateAll();
+
+    Profile profile1 = sampleComponent.getNullFromCacheNullable("profile1");
+    checkMissedHit(1, sampleComponent);
+
+    Profile profile2 = sampleComponent.getNullFromCacheNullable("profile2");
+    checkMissedHit(1, sampleComponent);
+
+    assertEquals(profile1, sampleComponent.getNullFromCacheNullable("profile1"));
+    checkHit(sampleComponent);
+    assertEquals(profile2, sampleComponent.getNullFromCacheNullable("profile2"));
+    checkHit(sampleComponent);
+
+    assertNull(profile1);
+    assertNull(profile2);
+
+    assertThrows(CacheInvalidArgumentException.class, () -> sampleComponent.getNullFromCacheNotNullable("profile3"));
+  }
+
+  public static void testNullValuesInBulkGet(SampleComponent sampleComponent) {
     sampleComponent.resetStats();
     sampleComponent.invalidateAll();
 

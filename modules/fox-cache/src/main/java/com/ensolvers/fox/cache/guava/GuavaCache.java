@@ -1,5 +1,7 @@
 package com.ensolvers.fox.cache.guava;
 
+import com.ensolvers.fox.cache.common.GenericCache;
+import com.ensolvers.fox.cache.exception.CacheExecutionException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -26,16 +28,16 @@ public class GuavaCache<T> implements GenericCache<T> {
 	}
 
 	@Override
-	public T get(String key) throws CacheException {
+	public T get(String key) {
 		try {
 			return this.cache.get(key);
 		} catch (ExecutionException e) {
-			throw new CacheException("Error when trying to get an item from the cache", e, this);
+			throw new CacheExecutionException("Error when trying to get an item from the cache", e);
 		}
 	}
 
 	@Override
-	public void refresh(String key) {
+	public void invalidate(String key) {
 		this.cache.refresh(key);
 	}
 

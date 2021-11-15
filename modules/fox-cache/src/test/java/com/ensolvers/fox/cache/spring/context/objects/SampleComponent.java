@@ -120,6 +120,20 @@ public class SampleComponent {
     }
 
     @Cacheable("profile")
+    public Profile getNullFromCacheNotNullable(String param1) {
+        missedHit = true;
+        missedHits = 1;
+        return null;
+    }
+
+    @Cacheable("profileNullable")
+    public Profile getNullFromCacheNullable(String param1) {
+        missedHit = true;
+        missedHits = 1;
+        return null;
+    }
+
+    @Cacheable("profile")
     public Map<String, Profile> profilesWithNullAndCacheNotNullable(List<String> paramList) {
         missedHit = true;
         missedHits = paramList.size();
@@ -178,7 +192,7 @@ public class SampleComponent {
         return String.valueOf(Integer.parseInt(stringNumber) - 1);
     }
 
-    @CacheEvict(value = "test", allEntries=true)
+    @CacheEvict(value = {"test", "profile", "profileNullable"}, allEntries=true)
     public void invalidateAll() {
 
     }

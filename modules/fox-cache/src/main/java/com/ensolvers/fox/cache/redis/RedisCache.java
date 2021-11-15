@@ -1,6 +1,5 @@
 package com.ensolvers.fox.cache.redis;
 
-import com.ensolvers.fox.cache.CheckedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -3,6 +3,8 @@ package com.ensolvers.fox.cache.spring.context.config;
 import com.ensolvers.fox.cache.spring.GenericCacheManager;
 import com.ensolvers.fox.cache.spring.key.CustomKeyGenerator;
 import com.ensolvers.fox.cache.spring.providers.SpringMemcachedCache;
+import com.ensolvers.fox.cache.spring.providers.SpringRedisCache;
+import io.lettuce.core.RedisClient;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -15,9 +17,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 @EnableCaching
-public class MemcachedCacheConfig extends CachingConfigurerSupport {
-  @Value("${cache.memcache.port}")
-  private String memcachedPort;
+public class RedisCacheConfig extends CachingConfigurerSupport {
+  @Value("${cache.redis.port}")
+  private String redisPort;
 
   @Bean
   @Override
@@ -28,16 +30,12 @@ public class MemcachedCacheConfig extends CachingConfigurerSupport {
   @Bean
   @Override
   public CacheManager cacheManager() {
-    MemcachedClient client;
-    try {
-      client = new MemcachedClient(new InetSocketAddress(Integer.parseInt(memcachedPort)));
-    } catch (IOException e) {
-      throw new RuntimeException("Error trying to instantiate memcached bean", e);
-    }
+    var client = RedisClient.create("redis://localhost:" + redisPort + "/0").connect().sync();
 
-    SpringMemcachedCache testCache = new SpringMemcachedCache("test", client, 60000, false);
-    SpringMemcachedCache profileCache = new SpringMemcachedCache("profile", client, 60000, false);
-    SpringMemcachedCache profileCacheNullable = new SpringMemcachedCache("profileNullable", client, 60000, true);
+
+    SpringRedisCache testCache = new SpringRedisCache("test", client, 60000, false);
+    SpringRedisCache profileCache = new SpringRedisCache("profile", client, 60000, false);
+    SpringRedisCache profileCacheNullable = new SpringRedisCache("profileNullable", client, 60000, true);
 
     return new GenericCacheManager()
         .append("test", testCache)

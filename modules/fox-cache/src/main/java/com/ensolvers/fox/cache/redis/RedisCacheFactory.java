@@ -1,7 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
-import com.ensolvers.fox.cache.CacheInitializationException;
-import com.ensolvers.fox.cache.CheckedFunction;
+import com.ensolvers.fox.cache.exception.CacheInitializationException;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
