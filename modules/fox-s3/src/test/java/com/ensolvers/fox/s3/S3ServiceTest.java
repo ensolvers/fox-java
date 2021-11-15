@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -53,6 +52,7 @@ public class S3ServiceTest {
 		String testData = "this is a sample test data";
 		String folderName = "f1";
 		String fileSuffix = ".txt";
+		String charset = "UTF8";
 
 		AmazonS3Client client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
 				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
@@ -71,14 +71,14 @@ public class S3ServiceTest {
 
 		// write file in1 root context
 		File f = File.createTempFile(FILENAME, fileSuffix);
-		FileUtils.writeStringToFile(f, testData, StandardCharsets.UTF_8);
+		FileUtils.writeStringToFile(f, testData, charset);
 		service.put(BUCKET_NAME, KEY, f);
 		f.delete();
 
 		// read existent file
 		file = service.get(BUCKET_NAME, KEY);
 		assertNotNull(file);
-		String contents = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+		String contents = FileUtils.readFileToString(file, charset);
 		assertEquals(testData, contents);
 
 		// no fail
@@ -92,7 +92,7 @@ public class S3ServiceTest {
 
 		// write file in folder
 		f = File.createTempFile(FILENAME, fileSuffix);
-		FileUtils.writeStringToFile(f, testData, StandardCharsets.UTF_8);
+		FileUtils.writeStringToFile(f, testData, charset);
 		service.put(BUCKET_NAME, folderName + "/" + KEY, f);
 		f.delete();
 
