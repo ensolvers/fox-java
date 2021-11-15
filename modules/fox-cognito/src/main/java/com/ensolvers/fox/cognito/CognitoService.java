@@ -23,6 +23,24 @@ public class CognitoService {
 	}
 
 	/**
+	 *
+	 * @param groupName	Group's name
+	 * @param description	(Optional) Group description
+	 * @param role Role of the Users included in the group
+	 * @param precedence If user belongs to several Groups, determines which one has permission's priority
+	 */
+	public CreateGroupResponse createGroup(String groupName, String description, String role, Integer precedence) {
+		CreateGroupRequest createGroupRequest =
+						CreateGroupRequest.builder()
+										.userPoolId(this.userPoolId)
+										.groupName(groupName)
+										.description(description)
+										.roleArn(role)
+										.precedence(precedence).build();
+
+		return this.cognitoIdentityProviderClient.createGroup(createGroupRequest);
+	}
+	/**
 	 * Add a user to a cognito group, the group and the user must exist in cognito
 	 * or else it will fail
 	 *
@@ -32,12 +50,29 @@ public class CognitoService {
 	 * @return An object with all the response data
 	 */
 	public AdminAddUserToGroupResponse addUserToGroup(String username, String group) {
-		var adminAddUserToGroupRequest = AdminAddUserToGroupRequest.builder().userPoolId(userPoolId).username(username).groupName(group)
-				.build();
+		var adminAddUserToGroupRequest =
+						AdminAddUserToGroupRequest.builder().userPoolId(this.userPoolId).username(username).groupName(group).build();
 
-		return cognitoIdentityProviderClient.adminAddUserToGroup(adminAddUserToGroupRequest);
+		return this.cognitoIdentityProviderClient.adminAddUserToGroup(adminAddUserToGroupRequest);
 	}
 
+	/**
+	 * Removes the user from a specific user pool's group.
+	 *
+	 * @param username User to be removed
+	 * @param groupName Group the user will be removed from
+	 * @return {@link AdminRemoveUserFromGroupResponse}
+	 */
+	public AdminRemoveUserFromGroupResponse removeUserFromGroup(String username, String groupName) {
+		AdminRemoveUserFromGroupRequest adminRemoveUserFromGroupRequest =
+						AdminRemoveUserFromGroupRequest.builder()
+										.userPoolId(this.userPoolId)
+										.groupName(groupName)
+										.username(username)
+										.build();
+
+		return this.cognitoIdentityProviderClient.adminRemoveUserFromGroup(adminRemoveUserFromGroupRequest);
+	}
 	/**
 	 * Create a user with some password, this method is used for pools that use
 	 * username/password authentication
@@ -51,7 +86,7 @@ public class CognitoService {
 	 * @return An object with all the response data
 	 */
 	public AdminCreateUserResponse createUserWithPassword(String username, String password, boolean sendConfirmation) {
-		var request = AdminCreateUserRequest.builder().username(username).userPoolId(userPoolId).temporaryPassword(password);
+		var request = AdminCreateUserRequest.builder().username(username).userPoolId(this.userPoolId).temporaryPassword(password);
 
 		if (!sendConfirmation) {
 			request.messageAction(MessageActionType.SUPPRESS);
@@ -77,7 +112,7 @@ public class CognitoService {
 		authParams.put("PASSWORD", password);
 
 		var adminInitiateAuthRequest = AdminInitiateAuthRequest.builder().authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
-				.authParameters(authParams).userPoolId(userPoolId).clientId(clientId).build();
+				.authParameters(authParams).userPoolId(this.userPoolId).clientId(this.clientId).build();
 
 		return cognitoIdentityProviderClient.adminInitiateAuth(adminInitiateAuthRequest);
 	}
@@ -99,9 +134,9 @@ public class CognitoService {
 
 		var adminRespondToAuthChallengeRequest = AdminRespondToAuthChallengeRequest.builder()
 				.challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED).challengeResponses(authParams).userPoolId(userPoolId)
-				.session(challengeSession).clientId(clientId).build();
+				.session(challengeSession).clientId(this.clientId).build();
 
-		return cognitoIdentityProviderClient.adminRespondToAuthChallenge(adminRespondToAuthChallengeRequest);
+		return this.cognitoIdentityProviderClient.adminRespondToAuthChallenge(adminRespondToAuthChallengeRequest);
 	}
 
 	/**
@@ -114,9 +149,9 @@ public class CognitoService {
 	 */
 	public AdminSetUserPasswordResponse resetPassword(String username, String newPassword) {
 		var adminSetUserPasswordRequest = AdminSetUserPasswordRequest.builder().username(username).password(newPassword)
-				.userPoolId(userPoolId).permanent(true).build();
+				.userPoolId(this.userPoolId).permanent(true).build();
 
-		return cognitoIdentityProviderClient.adminSetUserPassword(adminSetUserPasswordRequest);
+		return this.cognitoIdentityProviderClient.adminSetUserPassword(adminSetUserPasswordRequest);
 	}
 
 	/**
@@ -132,8 +167,8 @@ public class CognitoService {
 		authParams.put("REFRESH_TOKEN", refreshToken);
 
 		var adminInitiateAuthRequest = AdminInitiateAuthRequest.builder().authFlow(AuthFlowType.REFRESH_TOKEN_AUTH)
-				.authParameters(authParams).userPoolId(userPoolId).clientId(clientId).build();
+				.authParameters(authParams).userPoolId(this.userPoolId).clientId(this.clientId).build();
 
-		return cognitoIdentityProviderClient.adminInitiateAuth(adminInitiateAuthRequest);
+		return this.cognitoIdentityProviderClient.adminInitiateAuth(adminInitiateAuthRequest);
 	}
 }
