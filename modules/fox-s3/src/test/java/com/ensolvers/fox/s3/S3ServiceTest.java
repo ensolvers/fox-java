@@ -96,4 +96,27 @@ public class S3ServiceTest {
 		keys = service.list(bucket, folderName);
 		assertFalse(keys.isEmpty());
 	}
+
+	@Test
+	public void shouldGeneratePresignedUrl() {
+		String bucketName = "foxtest";
+		String keyName = "t1";
+		Long secondsToExpire = 20L;
+		String fileName = "f1";
+
+		AmazonS3Client client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
+				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.S3))
+				.withCredentials(localstack.getDefaultCredentialsProvider()).build();
+
+		S3Service service = new S3Service(client);
+
+		String presignedUrl = service.generatePresignedUrl(bucketName, keyName, secondsToExpire, fileName);
+
+		assertNotNull(presignedUrl);
+		assertFalse(presignedUrl.isEmpty());
+		assertFalse(presignedUrl.isBlank());
+
+		System.out.print("\n\npresignedUrl: " + presignedUrl + "\n\n");
+
+	}
 }
