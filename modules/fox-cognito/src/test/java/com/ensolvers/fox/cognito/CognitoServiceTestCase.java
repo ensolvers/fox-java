@@ -11,9 +11,9 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CognitoServiceTestCase {
   private static String AWS_USER_POOL_ID;
-  private static String AWS_COGNITO_CLIENT_SECRET;
   private static String AWS_COGNITO_CLIENT_ID;
-  private static String AWS_COGNITO_POOL_ACCESS;
+  private static String AWS_ACCESS_KEY_SECRET;
+  private static String AWS_ACCESS_KEY_ID;
 
   private static CognitoService cognitoService;
 
@@ -29,7 +29,7 @@ public class CognitoServiceTestCase {
    * In order for configuration to work properly, please create a properties file including the following entries:
    *  - aws.user.pool.id
    *  - aws.cognito.client.id
-   *  - aws.cognito.client.secret
+   *  - aws.access.key.secret
    *  - aws.access.key.id
    *
    * @throws ConfigurationException If configuration cannot be loaded
@@ -41,14 +41,14 @@ public class CognitoServiceTestCase {
 
     AWS_USER_POOL_ID = configuration.getString("aws.user.pool.id");
     AWS_COGNITO_CLIENT_ID = configuration.getString("aws.cognito.client.id");
-    AWS_COGNITO_CLIENT_SECRET = configuration.getString("aws.cognito.client.secret");
-    AWS_COGNITO_POOL_ACCESS = configuration.getString("aws.access.key.id");
+    AWS_ACCESS_KEY_SECRET = configuration.getString("aws.access.key.secret");
+    AWS_ACCESS_KEY_ID = configuration.getString("aws.access.key.id");
 
     cognitoService = new CognitoService(
             AWS_USER_POOL_ID,
             AWS_COGNITO_CLIENT_ID,
-            AWS_COGNITO_POOL_ACCESS,
-            AWS_COGNITO_CLIENT_SECRET);
+            AWS_ACCESS_KEY_ID,
+            AWS_ACCESS_KEY_SECRET);
   }
 
 
