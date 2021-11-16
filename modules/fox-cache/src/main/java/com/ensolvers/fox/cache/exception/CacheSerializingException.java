@@ -16,4 +16,13 @@ public class CacheSerializingException extends CacheException {
             + "type: [" + type + "]",
         e);
   }
+
+  public static CacheSerializingException with(String key, String type, String content, Throwable e) {
+    return new CacheSerializingException(
+        "Error when trying to deserialize object with "
+            + "key: [" + key + "], "
+            + "type: [" + type + "], "
+            + "content: [" + content + "]",
+        e);
+  }
 }

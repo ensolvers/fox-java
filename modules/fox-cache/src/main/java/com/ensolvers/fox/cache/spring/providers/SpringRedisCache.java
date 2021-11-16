@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.spring.providers;
 
+import com.ensolvers.fox.cache.common.CacheString;
 import com.ensolvers.fox.cache.exception.CacheExecutionException;
 import com.ensolvers.fox.cache.exception.CacheInvalidArgumentException;
 import com.ensolvers.fox.cache.exception.CacheSerializingException;
@@ -22,7 +23,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SpringRedisCache implements Cache {
-  private static final String NULL_STRING = "null";
   private static final int KEY_SCAN_MAX_LIMIT = 1000;
 
   private final String name;
@@ -157,7 +157,7 @@ public class SpringRedisCache implements Cache {
 
     String finalKey = getRedisKey(key);
     try {
-      String serializedValue = NULL_STRING;
+      String serializedValue = CacheString.NULL_STRING;
       if (value != null) {
         serializedValue = objectMapper.writeValueAsString(value);
       }
@@ -177,7 +177,7 @@ public class SpringRedisCache implements Cache {
       return null;
     }
 
-    if (hit.equals(NULL_STRING)) {
+    if (hit.equals(CacheString.NULL_STRING)) {
       return new SimpleValueWrapper(null);
     }
 
@@ -212,7 +212,7 @@ public class SpringRedisCache implements Cache {
     // Deserialize cached objects
     hits.forEach((memcachedKey, hit) -> {
       Object deserializedObject = null;
-      if (!hit.equals(NULL_STRING)) {
+      if (!hit.equals(CacheString.NULL_STRING)) {
         deserializedObject = deserializeUsingMapArgumentType(customCacheKey, memcachedKey, (String) hit);
       }
       result.put(redisKeyToOriginalKey.get(memcachedKey), deserializedObject);

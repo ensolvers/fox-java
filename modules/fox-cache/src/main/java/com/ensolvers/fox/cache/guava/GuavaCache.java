@@ -6,6 +6,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -16,15 +17,18 @@ import java.util.function.Function;
 public class GuavaCache<T> implements GenericCache<T> {
 
 	private final LoadingCache<String, T> cache;
+	private final String keyPrefix;
 
-	public GuavaCache(Function<String, T> fetchingFunction) {
-		this.cache = CacheBuilder.newBuilder().build(new CacheLoader<String, T>() {
-
-			@Override
-			public T load(String key) throws Exception {
-				return fetchingFunction.apply(key);
-			}
-		});
+	public GuavaCache(Function<String, T> fetchingFunction, String keyPrefix, int expirationTimeInSeconds) {
+		this.keyPrefix = keyPrefix;
+		this.cache = CacheBuilder.newBuilder()
+				.expireAfterAccess(expirationTimeInSeconds, TimeUnit.SECONDS)
+				.build(new CacheLoader<>() {
+					@Override
+					public T load(String key) {
+						return fetchingFunction.apply(key);
+					}
+				});
 	}
 
 	@Override

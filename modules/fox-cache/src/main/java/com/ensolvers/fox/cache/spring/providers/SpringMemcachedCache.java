@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.spring.providers;
 
+import com.ensolvers.fox.cache.common.CacheString;
 import com.ensolvers.fox.cache.exception.CacheExecutionException;
 import com.ensolvers.fox.cache.exception.CacheInvalidArgumentException;
 import com.ensolvers.fox.cache.exception.CacheSerializingException;
@@ -23,8 +24,6 @@ import java.util.stream.Collectors;
  * Instances of this class must be passed to the cache manager.
  */
 public class SpringMemcachedCache implements Cache {
-  private static final String NULL_STRING = "null";
-
   private final String name;
   private final MemcachedClient memcachedClient;
   private final ObjectMapper objectMapper;
@@ -184,7 +183,7 @@ public class SpringMemcachedCache implements Cache {
 
     String finalKey = getMemcachedKey(key);
     try {
-      String serializedValue = NULL_STRING;
+      String serializedValue = CacheString.NULL_STRING;
       if (value != null) {
         serializedValue = objectMapper.writeValueAsString(value);
       }
@@ -204,7 +203,7 @@ public class SpringMemcachedCache implements Cache {
       return null;
     }
 
-    if (hit.equals(NULL_STRING)) {
+    if (hit.equals(CacheString.NULL_STRING)) {
       return new SimpleValueWrapper(null);
     }
 
@@ -232,7 +231,7 @@ public class SpringMemcachedCache implements Cache {
     // Deserialize cached objects
     hits.forEach((memcachedKey, hit) -> {
       Object deserializedObject = null;
-      if (!hit.equals(NULL_STRING)) {
+      if (!hit.equals(CacheString.NULL_STRING)) {
         deserializedObject = deserializeUsingMapArgumentType(customCacheKey, memcachedKey, (String) hit);
       }
       result.put(memcachedKeyToOriginalKey.get(memcachedKey), deserializedObject);

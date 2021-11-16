@@ -47,7 +47,7 @@ public class RedisRegularCache<V> extends RedisCache<V> implements GenericCache<
 	}
 
 	@Override
-	public void put(String key, V object) throws Exception {
+	public void put(String key, V object) {
 		this.set(key, object);
 	}
 }

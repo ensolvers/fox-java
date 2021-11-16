@@ -18,7 +18,10 @@
  */
 package com.ensolvers.fox.cache.memcached;
 
+import com.ensolvers.fox.cache.common.CacheString;
 import com.ensolvers.fox.cache.common.GenericCache;
+import com.ensolvers.fox.cache.exception.CacheInvalidArgumentException;
+import com.ensolvers.fox.cache.exception.CacheSerializingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,13 +47,28 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	protected final String keyPrefix;
 	protected final JavaType objectType;
 	protected final int expirationTimeInSeconds;
+	private final boolean allowNullValues;
 
 	private final ObjectMapper objectMapper;
 	private Function<T, String> customSerializer;
 	private Function<String, T> customDeserializer;
 
+	public MemcachedCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, String keyPrefix,
+												Function<TypeFactory, JavaType> objectTypeFactory, int expirationTimeInSeconds, boolean allowNullValues,
+											  Function<T, String> customSerializer, Function<String, T> customDeserializer) {
+		this.memcachedClient = memcachedClient;
+		this.fetchFunction = fetchFunction;
+		this.keyPrefix = keyPrefix;
+		this.objectMapper = new ObjectMapper();
+		this.objectType = objectTypeFactory.apply(this.objectMapper.getTypeFactory());
+		this.expirationTimeInSeconds = expirationTimeInSeconds;
+		this.allowNullValues = allowNullValues;
+		this.customSerializer = customSerializer;
+		this.customDeserializer = customDeserializer;
+	}
+
 	/**
-	 * Creates a cache instance that allows to store single objects
+	 * Adds custom serializer/deserializer
 	 *
 	 * @param memcachedClient         the memcached client used to store the objects
 	 * @param fetchFunction           the function to fetch the underlying object if
@@ -62,15 +80,14 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	 * @param objectClass             type of objects that will be stored in the
 	 *                                cache
 	 * @param expirationTimeInSeconds the item expiration time in seconds
+	 * @param customSerializer        serializer that will be use
+	 * @param customDeserializer      custom deserializer.
 	 */
-	public MemcachedCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, String keyPrefix, Class<T> objectClass,
-			int expirationTimeInSeconds) {
-		this.memcachedClient = memcachedClient;
-		this.fetchFunction = fetchFunction;
-		this.keyPrefix = keyPrefix;
-		this.objectMapper = new ObjectMapper();
-		this.objectType = this.objectMapper.getTypeFactory().constructType(objectClass);
-		this.expirationTimeInSeconds = expirationTimeInSeconds;
+	public MemcachedCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, String keyPrefix,
+												Class<T> objectClass, int expirationTimeInSeconds, boolean allowNullValues,
+												Function<T, String> customSerializer, Function<String, T> customDeserializer) {
+
+		this(memcachedClient, fetchFunction, keyPrefix, f -> f.constructType(objectClass), expirationTimeInSeconds, allowNullValues, customSerializer, customDeserializer);
 	}
 
 	/**
@@ -92,17 +109,12 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	 * @param expirationTimeInSeconds the item expiration time in seconds
 	 */
 	public MemcachedCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, String keyPrefix,
-			Function<TypeFactory, JavaType> objectTypeFactory, int expirationTimeInSeconds) {
-		this.memcachedClient = memcachedClient;
-		this.fetchFunction = fetchFunction;
-		this.keyPrefix = keyPrefix;
-		this.objectMapper = new ObjectMapper();
-		this.objectType = objectTypeFactory.apply(this.objectMapper.getTypeFactory());
-		this.expirationTimeInSeconds = expirationTimeInSeconds;
+			Function<TypeFactory, JavaType> objectTypeFactory, int expirationTimeInSeconds, boolean allowNullValues) {
+		this(memcachedClient, fetchFunction, keyPrefix, objectTypeFactory, expirationTimeInSeconds, allowNullValues, null, null);
 	}
 
 	/**
-	 * Adds custom serializer/deserializer
+	 * Creates a cache instance that allows to store single objects
 	 *
 	 * @param memcachedClient         the memcached client used to store the objects
 	 * @param fetchFunction           the function to fetch the underlying object if
@@ -114,15 +126,10 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	 * @param objectClass             type of objects that will be stored in the
 	 *                                cache
 	 * @param expirationTimeInSeconds the item expiration time in seconds
-	 * @param customSerializer        serializer that will be use
-	 * @param customDeserializer      custom deserializer.
 	 */
-	public MemcachedCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, String keyPrefix, Class<T> objectClass,
-			int expirationTimeInSeconds, Function<T, String> customSerializer, Function<String, T> customDeserializer) {
-
-		this(memcachedClient, fetchFunction, keyPrefix, objectClass, expirationTimeInSeconds);
-		this.customSerializer = customSerializer;
-		this.customDeserializer = customDeserializer;
+	public MemcachedCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, String keyPrefix,
+												Class<T> objectClass, int expirationTimeInSeconds, boolean allowNullValues) {
+		this(memcachedClient, fetchFunction, keyPrefix, f -> f.constructType(objectClass), expirationTimeInSeconds, allowNullValues, null, null);
 	}
 
 	/**
@@ -141,9 +148,8 @@ public class MemcachedCache<T> implements GenericCache<T> {
 		if (serializedObject != null) {
 			try {
 				return this.convertToObject(serializedObject);
-			} catch (Exception e) {
-				logger.error("Error when trying to parse object with " + "key: [" + computedKey + "], " + "type: ["
-						+ this.objectType.getTypeName() + "], " + "content: [" + serializedObject + "]", e);
+			} catch (IOException e) {
+				throw CacheSerializingException.with(keyPrefix, objectType.getTypeName(), serializedObject, e);
 			}
 		}
 
@@ -152,20 +158,6 @@ public class MemcachedCache<T> implements GenericCache<T> {
 
 		this.put(key, freshObject);
 
-		return freshObject;
-	}
-
-	/**
-	 * Refreshes
-	 *
-	 * @param key         The key of the object
-	 * @param freshObject the object
-	 * 
-	 * @return the object
-	 */
-	public T refresh(String key, T freshObject) {
-		this.invalidate(key);
-		this.put(key, freshObject);
 		return freshObject;
 	}
 
@@ -179,12 +171,15 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	 */
 	@Override
 	public void put(String key, T freshObject) {
+		// Check null value
+		if ((!allowNullValues) && freshObject == null) {
+			throw new CacheInvalidArgumentException("Cache with prefix '" + keyPrefix + "' is configured to not allow null values but null was provided");
+		}
+
 		try {
-			this.memcachedClient.add(this.computeKey(key), this.expirationTimeInSeconds, this.convertToString(freshObject));
+			this.memcachedClient.set(this.computeKey(key), this.expirationTimeInSeconds, this.convertToString(freshObject));
 		} catch (JsonProcessingException e) {
-			logger.error(
-					"Error when trying to serialize object with " + "key [" + key + "], " + "type: [" + this.objectType.getTypeName() + "]",
-					e);
+			throw CacheSerializingException.with(this.computeKey(key), freshObject.getClass(), e);
 		}
 	}
 
@@ -195,6 +190,10 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	}
 
 	protected String convertToString(T object) throws JsonProcessingException {
+		if (object == null) {
+			return CacheString.NULL_STRING;
+		}
+
 		// If custom serializer has been provided, use it...
 		if (this.customSerializer != null) {
 			return this.customSerializer.apply(object);
@@ -205,6 +204,10 @@ public class MemcachedCache<T> implements GenericCache<T> {
 	}
 
 	protected T convertToObject(String serializedObject) throws IOException {
+		if (serializedObject.equals(CacheString.NULL_STRING)) {
+			return null;
+		}
+
 		// If custom deserializer has been provided, use it...
 		if (this.customDeserializer != null) {
 			return this.customDeserializer.apply(serializedObject);
