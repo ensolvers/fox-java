@@ -23,7 +23,7 @@
     <dependency>
       <groupId>com.ensolvers.fox-java</groupId>
       <artifactId>fox-services</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.aspectj</groupId>
