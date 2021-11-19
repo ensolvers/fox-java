@@ -38,180 +38,212 @@ import org.slf4j.LoggerFactory;
  */
 public class S3Service {
 
-	private static Logger logger = LoggerFactory.getLogger(S3Service.class);
-	private static String LOG_PREFIX = "[AWS-S3-STORAGE]";
+  private static Logger logger = LoggerFactory.getLogger(S3Service.class);
+  private static String LOG_PREFIX = "[AWS-S3-STORAGE]";
 
-	private final AmazonS3Client s3Client;
+  private final AmazonS3Client s3Client;
 
-	public S3Service(AmazonS3Client s3Client) {
-		this.s3Client = s3Client;
-	}
+  public S3Service(AmazonS3Client s3Client) {
+    this.s3Client = s3Client;
+  }
 
-	/**
-	 * Generates a temporary URL to download a file from a private S3 bucket
-	 *
-	 * @param bucketName      the bucket
-	 * @param keyName         the path to the file
-	 * @param secondsToExpire the expiration time (in seconds)
-	 * @param fileName        the filename to be downloaded with
-	 * 
-	 * @return the temporary URL to download the object
-	 */
-	public String generatePresignedUrl(String bucketName, String keyName, Long secondsToExpire, String fileName) {
-		logger.info(LOG_PREFIX + "[START] Generating a presigned URL");
-		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, keyName)
-				.withExpiration(new Date(new Date().getTime() + secondsToExpire * 1000));
-		// Generates a header with the name for the file to be downloaded with
-		ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
-		responseHeaders.setContentDisposition("attachment; filename =\"" + fileName + "\"");
-		generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
+  /**
+   * Generates a temporary URL to download a file from a private S3 bucket
+   *
+   * @param bucketName the bucket
+   * @param keyName the path to the file
+   * @param secondsToExpire the expiration time (in seconds)
+   * @param fileName the filename to be downloaded with
+   * @return the temporary URL to download the object
+   */
+  public String generatePresignedUrl(
+      String bucketName, String keyName, Long secondsToExpire, String fileName) {
+    logger.info(LOG_PREFIX + "[START] Generating a presigned URL");
+    GeneratePresignedUrlRequest generatePresignedUrlRequest =
+        new GeneratePresignedUrlRequest(bucketName, keyName)
+            .withExpiration(new Date(new Date().getTime() + secondsToExpire * 1000));
+    // Generates a header with the name for the file to be downloaded with
+    ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
+    responseHeaders.setContentDisposition("attachment; filename =\"" + fileName + "\"");
+    generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
-		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
-		logger.info(LOG_PREFIX + "[END] Generating a presigned URL");
-		return url.toString();
-	}
+    URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
 
-	/**
-	 * Sets the contents of file into the bucketName/keyName
-	 *
-	 * @param bucketName the bucket
-	 * @param keyName    the path to the file
-	 * @param file       the file to be uploaded
-	 */
-	public void put(String bucketName, String keyName, File file) {
-		try {
-			logger.info(LOG_PREFIX + "[START] Uploading a new object to S3 from a file");
+    logger.info(LOG_PREFIX + "[END] Generating a presigned URL: " + url);
+    return url.toString();
+  }
 
-			PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, keyName, file);
-			s3Client.putObject(putObjectRequest);
+  /**
+   * Sets the contents of file into the bucketName/keyName
+   *
+   * @param bucketName the bucket
+   * @param keyName the path to the file
+   * @param file the file to be uploaded
+   */
+  public void put(String bucketName, String keyName, File file) {
+    try {
+      logger.info(LOG_PREFIX + "[START] Uploading a new object to S3 from a file");
 
-			logger.info(LOG_PREFIX + "[END] Uploading a new object to S3 from a file");
-		} catch (AmazonServiceException ase) {
-			logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " + "means your request made it "
-					+ "to Amazon S3, but was rejected with an error response" + " for some reason.", ase);
-		} catch (AmazonClientException ace) {
-			logger.error(LOG_PREFIX + " Caught an AmazonClientException, which " + "means the client encountered "
-					+ "an internal error while trying to " + "communicate with S3, " + "such as not being able to access the network.",
-					ace);
-		}
-	}
+      PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, keyName, file);
+      s3Client.putObject(putObjectRequest);
 
-	/**
-	 * Sets the contents of the MultipartFile into the bucketName/keyName This
-	 * overload of the put method simplifies the image uploading process to S3
-	 *
-	 * @param bucketName the bucket
-	 * @param keyName    the path to the file
-	 */
-	public String put(String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead) {
-		logger.info("{}[START] Uploading a new object to S3 from a file", LOG_PREFIX);
+      logger.info(LOG_PREFIX + "[END] Uploading a new object to S3 from a file");
+    } catch (AmazonServiceException ase) {
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonServiceException, which "
+              + "means your request made it "
+              + "to Amazon S3, but was rejected with an error response"
+              + " for some reason.",
+          ase);
+    } catch (AmazonClientException ace) {
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonClientException, which "
+              + "means the client encountered "
+              + "an internal error while trying to "
+              + "communicate with S3, "
+              + "such as not being able to access the network.",
+          ace);
+    }
+  }
 
-		var objectMetadata = new ObjectMetadata();
-		objectMetadata.setContentLength(size);
-		var request = new PutObjectRequest(bucketName, keyName, inputStream, objectMetadata);
+  /**
+   * Sets the contents of the MultipartFile into the bucketName/keyName This overload of the put
+   * method simplifies the image uploading process to S3
+   *
+   * @param bucketName the bucket
+   * @param keyName the path to the file
+   */
+  public String put(
+      String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead) {
+    logger.info("{}[START] Uploading a new object to S3 from a file", LOG_PREFIX);
 
-		if (isPublicRead) {
-			request.setCannedAcl(CannedAccessControlList.PublicRead);
-		}
+    var objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentLength(size);
+    var request = new PutObjectRequest(bucketName, keyName, inputStream, objectMetadata);
 
-		s3Client.putObject(request);
+    if (isPublicRead) {
+      request.setCannedAcl(CannedAccessControlList.PublicRead);
+    }
 
-		logger.info("{}[END] Uploading a new object to S3 from a file", LOG_PREFIX);
+    s3Client.putObject(request);
 
-		return String.format("https://%s.s3.amazonaws.com/%s", bucketName, keyName);
-	}
+    logger.info("{}[END] Uploading a new object to S3 from a file", LOG_PREFIX);
 
-	/**
-	 * Gets the contents of the file in bucketName/keyName
-	 *
-	 * @param bucketName the bucketName
-	 * @param keyName    the keyName
-	 * 
-	 * @return returns a local copy of the file in a temp directory
-	 */
-	public File get(String bucketName, String keyName) {
-		try {
-			logger.info(LOG_PREFIX + "[START] Getting data of object of S3");
+    return String.format("https://%s.s3.amazonaws.com/%s", bucketName, keyName);
+  }
 
-			GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, keyName);
-			S3Object s3Object = s3Client.getObject(getObjectRequest);
+  /**
+   * Gets the contents of the file in bucketName/keyName
+   *
+   * @param bucketName the bucketName
+   * @param keyName the keyName
+   * @return returns a local copy of the file in a temp directory
+   */
+  public File get(String bucketName, String keyName) {
+    try {
+      logger.info(LOG_PREFIX + "[START] Getting data of object of S3");
 
-			logger.info(LOG_PREFIX + "[END] Getting data of object of S3");
+      GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, keyName);
+      S3Object s3Object = s3Client.getObject(getObjectRequest);
 
-			File tmpFile = File.createTempFile("fox", "s3");
-			S3ObjectInputStream inputStream = s3Object.getObjectContent();
-			FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
+      logger.info(LOG_PREFIX + "[END] Getting data of object of S3");
 
-			IOUtils.copy(inputStream, fileOutputStream);
-			IOUtils.closeQuietly(inputStream, null);
-			IOUtils.closeQuietly(fileOutputStream, null);
+      File tmpFile = File.createTempFile("fox", "s3");
+      S3ObjectInputStream inputStream = s3Object.getObjectContent();
+      FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
 
-			return tmpFile;
-		} catch (AmazonServiceException ase) {
-			logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " + "means your request made it "
-					+ "to Amazon S3, but was rejected with an error response" + " for some reason.", ase);
-		} catch (AmazonClientException ace) {
-			logger.error(LOG_PREFIX + " Caught an AmazonClientException, which " + "means the client encountered "
-					+ "an internal error while trying to " + "communicate with S3, " + "such as not being able to access the network.",
-					ace);
-		} catch (FileNotFoundException e) {
-			logger.error(LOG_PREFIX + " not found", e);
-		} catch (IOException e) {
-			logger.error(LOG_PREFIX + " io error", e);
-		}
+      IOUtils.copy(inputStream, fileOutputStream);
+      IOUtils.closeQuietly(inputStream, null);
+      IOUtils.closeQuietly(fileOutputStream, null);
 
-		return null;
-	}
+      return tmpFile;
+    } catch (AmazonServiceException ase) {
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonServiceException, which "
+              + "means your request made it "
+              + "to Amazon S3, but was rejected with an error response"
+              + " for some reason.",
+          ase);
+    } catch (AmazonClientException ace) {
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonClientException, which "
+              + "means the client encountered "
+              + "an internal error while trying to "
+              + "communicate with S3, "
+              + "such as not being able to access the network.",
+          ace);
+    } catch (FileNotFoundException e) {
+      logger.error(LOG_PREFIX + " not found", e);
+    } catch (IOException e) {
+      logger.error(LOG_PREFIX + " io error", e);
+    }
 
-	/**
-	 * Delete the object in bucketName/keyName
-	 *
-	 * @param bucketName the bucketName
-	 * @param keyName    the keyName
-	 */
-	public void delete(String bucketName, String keyName) {
-		logger.info(LOG_PREFIX + "[START] Deleting a object of S3");
+    return null;
+  }
 
-		try {
-			DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, keyName);
-			s3Client.deleteObject(deleteObjectRequest);
+  /**
+   * Delete the object in bucketName/keyName
+   *
+   * @param bucketName the bucketName
+   * @param keyName the keyName
+   */
+  public void delete(String bucketName, String keyName) {
+    logger.info(LOG_PREFIX + "[START] Deleting a object of S3");
 
-			logger.info(LOG_PREFIX + "[END] Deleting a object of S3");
-		} catch (AmazonServiceException ase) {
-			logger.error(LOG_PREFIX + " Caught an AmazonServiceException." + "Error Message:    " + ase.getMessage() + "HTTP Status Code: "
-					+ ase.getStatusCode() + "AWS Error Code:   " + ase.getErrorCode() + "Error Type:       " + ase.getErrorType()
-					+ "Request ID:       " + ase.getRequestId());
-		} catch (AmazonClientException ace) {
-			logger.error(LOG_PREFIX + " Caught an AmazonClientException." + "Error Message: " + ace.getMessage());
-		}
-	}
+    try {
+      DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, keyName);
+      s3Client.deleteObject(deleteObjectRequest);
 
-	/**
-	 * List all the files in buckey under the folderKey, returning the list of file
-	 * names
-	 *
-	 * @param bucket    the name of the buckey
-	 * @param folderKey the name of the container
-	 * 
-	 * @return the list of file names
-	 */
-	public List<String> list(String bucket, String folderKey) {
-		ListObjectsV2Request request = new ListObjectsV2Request().withBucketName(bucket).withPrefix(folderKey);
+      logger.info(LOG_PREFIX + "[END] Deleting a object of S3");
+    } catch (AmazonServiceException ase) {
+      logger.error(
+          LOG_PREFIX
+              + " Caught an AmazonServiceException."
+              + "Error Message:    "
+              + ase.getMessage()
+              + "HTTP Status Code: "
+              + ase.getStatusCode()
+              + "AWS Error Code:   "
+              + ase.getErrorCode()
+              + "Error Type:       "
+              + ase.getErrorType()
+              + "Request ID:       "
+              + ase.getRequestId());
+    } catch (AmazonClientException ace) {
+      logger.error(
+          LOG_PREFIX + " Caught an AmazonClientException." + "Error Message: " + ace.getMessage());
+    }
+  }
 
-		ListObjectsV2Result result;
-		List<String> keys = new ArrayList<>();
-		do {
-			result = this.s3Client.listObjectsV2(request);
+  /**
+   * List all the files in buckey under the folderKey, returning the list of file names
+   *
+   * @param bucket the name of the buckey
+   * @param folderKey the name of the container
+   * @return the list of file names
+   */
+  public List<String> list(String bucket, String folderKey) {
+    ListObjectsV2Request request =
+        new ListObjectsV2Request().withBucketName(bucket).withPrefix(folderKey);
 
-			for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
-				keys.add(objectSummary.getKey());
-			}
+    ListObjectsV2Result result;
+    List<String> keys = new ArrayList<>();
+    do {
+      result = this.s3Client.listObjectsV2(request);
 
-			String token = result.getNextContinuationToken();
-			request.setContinuationToken(token);
+      for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
+        keys.add(objectSummary.getKey());
+      }
 
-		} while (result.isTruncated());
+      String token = result.getNextContinuationToken();
+      request.setContinuationToken(token);
 
-		return keys;
-	}
+    } while (result.isTruncated());
+
+    return keys;
+  }
 }
