@@ -1,10 +1,9 @@
 name: '[fox-java] SonarCloud QA analysis'
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: [ "[fox-java] Publish package to the Maven Central Repository" ]
+    types:
+      - completed
 jobs:
   build:
     name: Build
