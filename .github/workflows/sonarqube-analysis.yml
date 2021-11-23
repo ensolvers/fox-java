@@ -1,14 +1,8 @@
 name: 'SonarCloud QA analysis'
 on:
-  workflow_run:
-    workflows: [ 'Publish package to the Maven Central Repository' ]
-    branches: [ master ]
-    types:
-      - completed
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
+
 jobs:
   build:
     name: Build
