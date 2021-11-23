@@ -1,4 +1,4 @@
-name: 'Publish'
+name: 'Publish Maven Ensolvers Repository'
 on:
   push:
     branches: [ master ]
