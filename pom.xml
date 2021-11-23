@@ -19,7 +19,9 @@
     <slf4j.version>1.7.30</slf4j.version>
     <sonar.organization>ensolvers-public</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.language>java</sonar.language>
+    <sonar.coverage.jacoco.xmlReportPaths>sonar.coverage.jacoco.xmlReportPaths</sonar.coverage.jacoco.xmlReportPaths>
     <main.basedir>${project.basedir}</main.basedir>
   </properties>
 
@@ -240,6 +242,12 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.6</version>
+      </dependency>
+
     </dependencies>
 
   </dependencyManagement>
@@ -334,7 +342,6 @@
             <id>prepare-and-report</id>
             <goals>
               <goal>prepare-agent</goal>
-              <goal>report</goal>
             </goals>
           </execution>
           <execution>
@@ -348,6 +355,17 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.9.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.1.0</version>
       </plugin>
 
       <plugin>
