@@ -1,10 +1,8 @@
-name: '[fox-java] Publish package to the Maven Central Repository'
+name: 'Publish Maven Ensolvers Repository'
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
-    
+
 jobs:
   publish:
     runs-on: ubuntu-latest 
@@ -17,13 +15,13 @@ jobs:
         with:
           ref: 'master'
         
-      - name: '[fox-java] Set up Java for publishing to Maven Central Repository'
+      - name: Set up Java
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
           
-      - name: Publish to the Maven Central Repository
+      - name: Publish
         run: ./deploy.sh
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
