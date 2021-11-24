@@ -16,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-public class RedisCacheTest {
+class RedisCacheTest {
 
 	@Container
 	public GenericContainer<?> redisContainer = new GenericContainer<>(DockerImageName.parse("redis:6.2.5")).withExposedPorts(6379);
@@ -38,7 +38,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisRegularCacheTestCase() {
+	void redisRegularCacheTestCase() {
 		RedisRegularCache<String> cache = this.factory.getRegularCache("testRegularCacheString", 5, String.class);
 		RedisRegularCache<String> cache2 = this.factory.getRegularCache("testRegularCacheString2", 5, String.class);
 
@@ -69,7 +69,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisListCacheTestCase() {
+	void redisListCacheTestCase() {
 		RedisListCache<String> cache = this.factory.getListCache("testListCacheString", 1, String.class);
 		RedisListCache<String> cache2 = this.factory.getListCache("testListCacheString2", 3, String.class);
 
@@ -83,12 +83,12 @@ public class RedisCacheTest {
 		cache2List.add("repeatedValue-1");
 		cache2List.add("repeatedValue-1");
 		cache2.push("testKey-1", cache2List);
-
+		List<String> emptyList = new ArrayList<>();
 		// Neither the key nor the value can be null nor empty
 		assertThrows(IllegalArgumentException.class, () -> cache.push("shouldRaiseException", (String) null));
 		assertThrows(IllegalArgumentException.class, () -> cache.push(null, (String) null));
 		assertThrows(IllegalArgumentException.class, () -> cache.push(null, "shouldRaiseException"));
-		assertThrows(IllegalArgumentException.class, () -> cache.push(null, new ArrayList<>()));
+		assertThrows(IllegalArgumentException.class, () -> cache.push(null, emptyList));
 
 		assertEquals(2, cache.get("testKey-1").size());
 		assertEquals(3, cache.get("testKey-2").size());
@@ -103,7 +103,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisSetCacheTestCase() {
+	void redisSetCacheTestCase() {
 		RedisSetCache<String> cache = this.factory.getSetCache("testSetCacheString", 1, String.class);
 		RedisSetCache<String> cache2 = this.factory.getSetCache("testSetCacheString2", 2, String.class);
 		Set<String> cache2set = new HashSet<>(Collections.emptySet());
@@ -119,12 +119,12 @@ public class RedisCacheTest {
 		cache2List.add("repeatedValue-1");
 		cache2List.add("repeatedValue-1");
 		cache2.push("testKey-1", cache2List);
-
+		List<String> emptyList = new ArrayList<>();
 		// Neither the key nor the value can be null nor empty
 		assertThrows(IllegalArgumentException.class, () -> cache.push("shouldRaiseException", (String) null));
 		assertThrows(IllegalArgumentException.class, () -> cache.push(null, (String) null));
 		assertThrows(IllegalArgumentException.class, () -> cache.push(null, "shouldRaiseException"));
-		assertThrows(IllegalArgumentException.class, () -> cache.push(null, new ArrayList<>()));
+		assertThrows(IllegalArgumentException.class, () -> cache.push(null, emptyList));
 
 		assertEquals(2, cache.get("testKey-1").size());
 		assertEquals(3, cache.get("testKey-2").size());
@@ -140,7 +140,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void testMaxEntriesPerBlockLimitingCorrectly() {
+	void testMaxEntriesPerBlockLimitingCorrectly() {
 		RedisLimitedCache<String> cache = this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
 
 		cache.push("testKey-1", "testValue-1");
@@ -157,7 +157,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void testLimitedCacheReplacingOldElementsOnLimitReached() {
+	void testLimitedCacheReplacingOldElementsOnLimitReached() {
 		RedisLimitedCache<String> cache = this.factory.getLimitedListCache("testListCacheString", 0, String.class, 3);
 
 		cache.push("testKey-1", "testValue-1");
@@ -181,7 +181,7 @@ public class RedisCacheTest {
 
 	// Dummy custom deserializer test that adds dummy data to the DTO
 	@Test
-	public void testCustomSerializer() {
+	void testCustomSerializer() {
 		RedisListCache<TestClass> cache = this.factory.getListCache("testListCache", 100, TestClass.class, objectMapper::writeValueAsString,
 				(string) -> {
 					TestClass testClass = objectMapper.readValue(string, TestClass.class);
@@ -207,7 +207,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void testRedisCachePropagatesSerializingException() {
+	void testRedisCachePropagatesSerializingException() {
 		RedisListCache<TestClass> cache = this.factory.getListCache("testListCache", 100, TestClass.class, objectMapper::writeValueAsString,
 				(string) -> objectMapper.readValue(string, TestClass.class));
 
@@ -219,9 +219,9 @@ public class RedisCacheTest {
 		this.factory.removeCacheFromList("testListCache");
 
 		cache = this.factory.getListCache("testListCache", 100, TestClass.class, (o) -> {
-			throw new Exception();
+			throw new NoSuchElementException();
 		}, (s) -> {
-			throw new Exception();
+			throw new NoSuchElementException();
 		});
 
 		RedisListCache<TestClass> finalCache = cache;
@@ -233,7 +233,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisTypesTestCase() {
+	void redisTypesTestCase() {
 		RedisRegularCache<Long> longCache;
 		RedisRegularCache<Integer> integerCache;
 		RedisRegularCache<Character> characterCache;
@@ -266,7 +266,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisTimeoutTestCase() throws InterruptedException {
+	void redisTimeoutTestCase() throws InterruptedException {
 		RedisRegularCache<String> regularCache;
 		RedisListCache<String> listCache;
 		RedisSetCache<String> setCache;
@@ -317,7 +317,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisCustomClassCacheTestCase() {
+	void redisCustomClassCacheTestCase() {
 		RedisRegularCache<TestClass> cache;
 		cache = this.factory.getRegularCache("testRegularCacheTestClass", 3, TestClass.class);
 
@@ -329,7 +329,7 @@ public class RedisCacheTest {
 	}
 
 	@Test
-	public void redisCustomSerializerTestCase() {
+	void redisCustomSerializerTestCase() {
 		RedisRegularCache<TestClass> cache;
 		cache = this.factory.getRegularCache("testRegularCacheTestClass", 3, TestClass.class,
 				// serialize the object using static field order and "|" as a separator

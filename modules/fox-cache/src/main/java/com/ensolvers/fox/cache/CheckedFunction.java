@@ -1,4 +1,6 @@
-package com.ensolvers.fox.cache;
+package com.ensolvers.fox.cache;;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.function.Function;
 
@@ -9,9 +11,9 @@ public interface CheckedFunction<T, R> extends Function<T, R> {
 		try {
 			return applyThrows(t);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new CacheExecutionException("CheckedFunction apply failed", e);
 		}
 	}
 
-	R applyThrows(T elem) throws Exception;
+	R applyThrows(T elem) throws CacheException, JsonProcessingException;
 }

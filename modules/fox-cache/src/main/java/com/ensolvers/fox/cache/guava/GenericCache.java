@@ -14,14 +14,14 @@ public interface GenericCache<T> {
 	 * 
 	 * @return the cached element
 	 */
-	T get(String key) throws Exception;
+	T get(String key) throws CacheException;
 
 	/**
 	 * Removes the entry matching with {@code key} in the cache
 	 *
 	 * @param key
 	 */
-	void refresh(String key) throws Exception;
+	void refresh(String key) throws CacheException;
 
 	/**
 	 * Stores an item in the cache
@@ -29,5 +29,5 @@ public interface GenericCache<T> {
 	 * @param key    the key under which the item will be stored
 	 * @param object the item to be stored
 	 */
-	void put(String key, T object) throws Exception;
+	void put(String key, T object) throws CacheException;
 }

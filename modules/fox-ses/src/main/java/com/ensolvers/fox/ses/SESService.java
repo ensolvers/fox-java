@@ -51,6 +51,7 @@ public class SESService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SESService.class);
 	private static final String LOG_PREFIX = "[AWS-SES]";
+	private static final String UTF_8 = "UTF-8";
 
 	private final AmazonSimpleEmailService client;
 
@@ -72,18 +73,19 @@ public class SESService {
 	public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String... toEmails) {
 		Body body = new Body();
 		if (isHTML) {
-			body.withHtml(new Content().withCharset("UTF-8").withData(bodyText));
+			body.withHtml(new Content().withCharset(UTF_8).withData(bodyText));
 		} else {
-			body.withText(new Content().withCharset("UTF-8").withData(bodyText));
+			body.withText(new Content().withCharset(UTF_8).withData(bodyText));
 		}
 
 		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(toEmails))
 				.withMessage(new com.amazonaws.services.simpleemail.model.Message().withBody(body)
-						.withSubject(new Content().withCharset("UTF-8").withData(subject)))
+						.withSubject(new Content().withCharset(UTF_8).withData(subject)))
 				.withSource(fromEmail);
 
 		SendEmailResult sendEmailResult = client.sendEmail(request);
-		logger.info(String.format("%s Email sent to %s, result: %s", LOG_PREFIX, Arrays.toString(toEmails), sendEmailResult));
+		String emailList = Arrays.toString(toEmails);
+		logger.info("{} Email sent to {}, result: {}", LOG_PREFIX, emailList, sendEmailResult);
 		return sendEmailResult.getMessageId();
 	}
 
@@ -128,7 +130,7 @@ public class SESService {
 		MimeMessage message = new MimeMessage(session);
 
 		// Add subject, from and to lines.
-		message.setSubject(subject, "UTF-8");
+		message.setSubject(subject, UTF_8);
 		message.setFrom(new InternetAddress(fromEmail));
 
 		InternetAddress[] addresses = new InternetAddress[toEmails.length];
@@ -189,7 +191,9 @@ public class SESService {
 		SendRawEmailRequest rawEmailRequest = new SendRawEmailRequest(rawMessage).withDestinations(toEmails);
 
 		SendRawEmailResult sendRawEmailResult = client.sendRawEmail(rawEmailRequest);
-		logger.info(String.format("%s Email sent to %s, result: %s", LOG_PREFIX, Arrays.toString(toEmails), sendRawEmailResult));
+		String emailList = Arrays.toString(toEmails);
+		logger.info("{} Email sent to {}, result: {}",
+						LOG_PREFIX, emailList, sendRawEmailResult);
 
 		return sendRawEmailResult.getMessageId();
 	}

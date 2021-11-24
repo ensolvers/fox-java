@@ -20,6 +20,7 @@ package com.ensolvers.fox.location;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -31,6 +32,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +52,9 @@ public class IP2LocationService {
 
 	private static final String TEST_FILE = "IP2LOCATION-test.csv";
 	private static final Boolean EUROPEAN_IP_DEFAULT_VALUE = false;
-	private static Logger logger = LoggerFactory.getLogger(IP2LocationService.class);
+	private static final Logger logger = LoggerFactory.getLogger(IP2LocationService.class);
 
-	private static volatile IP2LocationService INSTANCE;
+	private static IP2LocationService instance;
 	private Map<String, String> countryToContinentMap;
 	private static String resourceFile = "IP2LOCATION-LITE-DB5.tar.gz";
 
@@ -74,27 +76,27 @@ public class IP2LocationService {
 	 */
 	public static IP2LocationService getInstance(Boolean ip2LocationServiceEnabled) {
 
-		if (INSTANCE == null) {
+		if (instance == null) {
 
-			if (!ip2LocationServiceEnabled) {
+			if (Boolean.FALSE.equals(ip2LocationServiceEnabled)) {
 				useTestResource();
 			}
 
 			synchronized (IP2LocationService.class) {
-				if (INSTANCE == null) {
-					INSTANCE = IP2LocationService.build();
+
+					instance = IP2LocationService.build();
 
 					new Thread() {
 						@Override
 						public void run() {
-							INSTANCE.read();
+							instance.read();
 						}
 					}.start();
-				}
+
 			}
 		}
 
-		return INSTANCE;
+		return instance;
 	}
 
 	/** Use the test csv. */
@@ -114,8 +116,9 @@ public class IP2LocationService {
 			IP2LocationInfo info = this.getInfoFor(ip);
 
 			if (StringUtils.isEmpty(info.getContinentCode())) {
-				logger.warn(FoxStringUtils.concat("[IP2LOCATION] Failed to find continent for info: ", info.getCountryName(), ", ",
-						info.getCityName()));
+				logger.warn("[IP2LOCATION] Failed to find continent for info: {}, {}",
+								info.getCountryName(),
+								info.getCityName());
 				return EUROPEAN_IP_DEFAULT_VALUE;
 			}
 
@@ -161,9 +164,9 @@ public class IP2LocationService {
 	 * @throws IOException
 	 */
 	private Map<String, String> createMapFromFile() throws IOException {
-		String resourceFile = "country-continent-mapping.txt";
-		InputStream io = IP2LocationService.class.getClassLoader().getResourceAsStream(resourceFile);
-		List<String> lines = Arrays.asList(IOUtils.toString(io).split("\\r?\\n"));
+		String fileToMap = "country-continent-mapping.txt";
+		InputStream io = IP2LocationService.class.getClassLoader().getResourceAsStream(fileToMap);
+		String[] lines = IOUtils.toString(io, StandardCharsets.UTF_8).split("\\r?\\n");
 
 		Map<String, String> map = new HashMap<>();
 
@@ -180,7 +183,7 @@ public class IP2LocationService {
 	// The list of sorted IPs obtained from the CSV
 	private List<IP2LocationInfo> infos;
 	// loading lock to avoid blocking when obtaining the instance
-	private volatile ReentrantLock loadingLock;
+	private ReentrantLock loadingLock;
 
 	private volatile boolean hasLoaded;
 
@@ -196,18 +199,16 @@ public class IP2LocationService {
 
 	public void read() {
 		this.loadingLock.lock();
-		this.infos = new ArrayList<IP2LocationInfo>(4000000);
+		this.infos = new ArrayList<>(4000000);
 		this.readFromTarGZ(this.csvIO);
 	}
 
-	private void basicRead(InputStream io) {
-		CSVParser parser;
+	private void basicRead(InputStream io) throws IOException {
 		Iterator<CSVRecord> iterator;
-		Reader reader = null;
+		Reader reader = new InputStreamReader(io);
+		CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
 
 		try {
-			reader = new InputStreamReader(io);
-			parser = new CSVParser(reader, CSVFormat.DEFAULT);
 			iterator = parser.iterator();
 
 			int i = 0;
@@ -221,8 +222,7 @@ public class IP2LocationService {
 				i++;
 
 				if (i % 10000 == 0) {
-					logger.info("Read " + i + " rows");
-					// System.out.println("Read " + i + " rows");
+					logger.info("Read {} rows", i);
 				}
 			}
 
@@ -230,8 +230,8 @@ public class IP2LocationService {
 		} catch (IOException e) {
 			logger.error("Error working with stream", e);
 		} finally {
-			IOUtils.closeQuietly(reader);
-			IOUtils.closeQuietly(this.csvIO);
+			IOUtils.close(reader);
+			IOUtils.close(this.csvIO);
 			this.hasLoaded = true;
 			this.loadingLock.unlock();
 		}
@@ -257,15 +257,15 @@ public class IP2LocationService {
 		}
 	}
 
-	private IP2LocationInfo parse(CSVRecord record) throws IOException {
-		long fromIP = Long.valueOf(record.get(0)).longValue();
-		long toIP = Long.valueOf(record.get(1)).longValue();
-		String countryCode = record.get(2);
-		String countryName = record.get(3);
-		String regionName = record.get(4);
-		String cityName = record.get(5);
-		double lat = Double.valueOf(record.get(6)).doubleValue();
-		double lng = Double.valueOf(record.get(7)).doubleValue();
+	private IP2LocationInfo parse(CSVRecord csvRecord) throws IOException {
+		long fromIP = Long.parseLong(csvRecord.get(0));
+		long toIP = Long.parseLong(csvRecord.get(1));
+		String countryCode = csvRecord.get(2);
+		String countryName = csvRecord.get(3);
+		String regionName = csvRecord.get(4);
+		String cityName = csvRecord.get(5);
+		double lat = Double.parseDouble(csvRecord.get(6));
+		double lng = Double.parseDouble(csvRecord.get(7));
 
 		IP2LocationInfo info = new IP2LocationInfo();
 		info.setFromIP(fromIP);
@@ -369,16 +369,16 @@ public class IP2LocationService {
 	 *
 	 * @param addr the ipv6 address
 	 * 
-	 * @return
+	 * @return ipv6 in BigInteger format
 	 */
-	// TODO test this method
+	@Disabled("Currently out of use because of Mock approach")
 	private BigInteger ipv6ToNumber(String addr) {
 		int startIndex = addr.indexOf("::");
 		if (startIndex != -1) {
 			String firstStr = addr.substring(0, startIndex);
 			String secondStr = addr.substring(startIndex + 2, addr.length());
-			BigInteger first = new BigInteger("0");
-			BigInteger second = new BigInteger("0");
+			BigInteger first = BigInteger.valueOf(0);
+			BigInteger second = BigInteger.valueOf(0);
 			if (!firstStr.equals("")) {
 				int x = this.countChar(addr, ':');
 				first = ipv6ToNumber(firstStr).shiftLeft(16 * (7 - x));
@@ -392,8 +392,8 @@ public class IP2LocationService {
 
 		String[] strArr = addr.split(":");
 		BigInteger retValue = BigInteger.valueOf(0);
-		for (int i = 0; i < strArr.length; i++) {
-			BigInteger bi = new BigInteger(strArr[i], 16);
+		for (String s : strArr) {
+			BigInteger bi = new BigInteger(s, 16);
 			retValue = retValue.shiftLeft(16).add(bi);
 		}
 		return retValue;
@@ -405,7 +405,6 @@ public class IP2LocationService {
 		for (int i = 0; i < ch.length; ++i) {
 			if (ch[i] == reg) {
 				if (ch[i + 1] == reg) {
-					++i;
 					break;
 				}
 				++count;

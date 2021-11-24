@@ -37,14 +37,14 @@ import org.testcontainers.utility.DockerImageName;
  * @author Esteban Robles Luna
  */
 @Testcontainers
-public class S3ServiceTest {
+class S3ServiceTest {
 
 	@Container
 	public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
 			.withServices(LocalStackContainer.Service.S3);
 
 	@Test
-	public void testS3() throws Exception {
+	void testS3() throws Exception {
 		String bucket = "foxtest";
 		String testData = "this is a sample test data";
 		String key = "t1";

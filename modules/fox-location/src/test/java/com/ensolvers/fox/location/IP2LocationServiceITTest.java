@@ -20,14 +20,17 @@ package com.ensolvers.fox.location;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 
-public class IP2LocationServiceIT {
+class IP2LocationServiceITTest {
 
 	@Test
-	@Disabled // Test performance
-	public void testLocation() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
+	@Disabled("")
+	void testLocation() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
 		IP2LocationService service = IP2LocationService.getInstance(true);
 		Thread.sleep(100);
 
@@ -38,8 +41,8 @@ public class IP2LocationServiceIT {
 		assertNotNull(info.getCountryCode());
 		assertNotNull(info.getCountryName());
 		assertNotNull(info.getCityName());
-		assertTrue(info.getLat() != 0);
-		assertTrue(info.getLng() != 0);
+		assertNotEquals(0, info.getLat());
+		assertNotEquals(0, info.getLng());
 		System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
 
 		fromTime = System.currentTimeMillis();
@@ -49,8 +52,8 @@ public class IP2LocationServiceIT {
 		assertNotNull(info.getCountryCode());
 		assertNotNull(info.getCountryName());
 		assertNotNull(info.getCityName());
-		assertTrue(info.getLat() != 0);
-		assertTrue(info.getLng() != 0);
+		assertNotEquals(0, info.getLat());
+		assertNotEquals(0, info.getLng());
 		System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
 		assertTrue(toTime - fromTime < 5);
 
@@ -61,8 +64,8 @@ public class IP2LocationServiceIT {
 		assertNotNull(info.getCountryCode());
 		assertNotNull(info.getCountryName());
 		assertNotNull(info.getCityName());
-		assertTrue(info.getLat() != 0);
-		assertTrue(info.getLng() != 0);
+		assertNotEquals(0, info.getLat());
+		assertNotEquals(0, info.getLng());
 		System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
 		assertTrue(toTime - fromTime < 5);
 
@@ -75,14 +78,14 @@ public class IP2LocationServiceIT {
 		assertNotNull(info.getCountryCode());
 		assertNotNull(info.getCountryName());
 		assertNotNull(info.getCityName());
-		assertTrue(info.getLat() != 0);
-		assertTrue(info.getLng() != 0);
+		assertNotEquals(0, info.getLat());
+		assertNotEquals(0, info.getLng());
 		System.out.println("Perf:" + (toTime - fromTime) + " (millis)");
 		assertTrue(toTime - fromTime < 30000); // this may fail depending on the machine
 	}
 
 	@Test
-	public void testIsEU() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
+	void testIsEU() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
 		IP2LocationService service = IP2LocationService.getInstance(false);
 		Thread.sleep(100);
 
@@ -103,7 +106,7 @@ public class IP2LocationServiceIT {
 	}
 
 	@Test
-	public void testValidIp() {
+	void testValidIp() {
 		// IPv4
 		assertTrue(NetworkUtils.isValidIPv4Address("69.89.31.226"));
 		assertTrue(NetworkUtils.isValidIPv4Address("0.0.0.0"));
@@ -129,5 +132,17 @@ public class IP2LocationServiceIT {
 		assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB8:1001:0000:1001::1428:57ab:AC43"));
 		assertFalse(NetworkUtils.isValidIPv6Address("2001:0DB8:1428:57ab:AC43"));
 		assertFalse(NetworkUtils.isValidIPv6Address("2001:DB8:::1400:57ab:AC43"));
+	}
+
+	/**
+	 * Should turn an IPv6 Address to a number.
+	 * Fn is not implemented on the IP2LocationService
+	 *
+	 */
+	@Disabled("Functionality currently out of use")
+	@Test
+	void shouldTurnIpv6ToNumber() {
+		IP2LocationService service = IP2LocationService.getInstance(true);
+		Assertions.assertTrue(true);
 	}
 }

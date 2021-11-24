@@ -28,7 +28,7 @@ public abstract class RedisCache<V> {
 	private final ObjectMapper objectMapper;
 	protected final Integer maxEntriesPerBlock;
 
-	public RedisCache(RedisCommands<String, String> redis, String cacheName, int expirationTime, Class<V> valueClass,
+	protected RedisCache(RedisCommands<String, String> redis, String cacheName, int expirationTime, Class<V> valueClass,
 			CheckedFunction<V, String> customSerializer, CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {
 		this.redis = redis;
 		this.cacheName = cacheName;
@@ -117,10 +117,10 @@ public abstract class RedisCache<V> {
 		KeyScanCursor<String> cursor;
 		do {
 			cursor = redis.scan(ScanArgs.Builder.limit(KEY_SCAN_MAX_LIMIT).match(this.cacheName + KEY_SEPARATOR + "*"));
-			if (cursor.getKeys() != null && cursor.getKeys().size() > 0) {
+			if (cursor.getKeys() != null && !cursor.getKeys().isEmpty()) {
 				this.redis.del(cursor.getKeys().toArray(new String[0]));
 			}
-		} while (!cursor.isFinished() && cursor.getKeys() != null && cursor.getKeys().size() > 0);
+		} while (!cursor.isFinished() && cursor.getKeys() != null && !cursor.getKeys().isEmpty());
 	}
 
 	/**
@@ -158,13 +158,12 @@ public abstract class RedisCache<V> {
 		} catch (Exception e) {
 			logger.error("[REDIS_CACHE] There was an error when executing the transaction", e);
 			this.redis.discard();
-			throw new RuntimeException(e);
 		}
 	}
 
 	// Validators - for internal use
-	protected void notEmpty(Collection collection) {
-		if (collection == null || collection.size() == 0) {
+	protected void notEmpty(Collection<?> collection) {
+		if (collection == null || collection.isEmpty()) {
 			throw new IllegalArgumentException("The validated collection is empty");
 		}
 	}

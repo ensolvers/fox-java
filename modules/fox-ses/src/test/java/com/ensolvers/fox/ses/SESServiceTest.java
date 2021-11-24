@@ -3,6 +3,7 @@ package com.ensolvers.fox.ses;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -15,14 +16,14 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Testcontainers
-public class SESServiceTest {
+class SESServiceTest {
 
 	@Container
 	public LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.3"))
 			.withServices(LocalStackContainer.Service.SES);
 
 	@Test
-	public void testSES() {
+	void testSES() {
 		AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
 				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
 				.withRegion(Regions.US_EAST_1).withCredentials(localstack.getDefaultCredentialsProvider()).build();
@@ -34,11 +35,13 @@ public class SESServiceTest {
 		String body = "Test body";
 		String subject = "Test subject";
 
-		service.sendEmail(from, subject, body, false, to);
+		String sendId = service.sendEmail(from, subject, body, false, to);
+
+		Assertions.assertFalse(sendId.isEmpty());
 	}
 
 	@Test
-	public void testSESRawMessage() throws MessagingException, IOException {
+	void testSESRawMessage() throws MessagingException, IOException {
 		AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
 				.withEndpointConfiguration(localstack.getEndpointConfiguration(LocalStackContainer.Service.SES))
 				.withRegion(Regions.US_EAST_1).withCredentials(localstack.getDefaultCredentialsProvider()).build();
@@ -52,6 +55,7 @@ public class SESServiceTest {
 		String subject = "Test subject";
 		File file = new File("/home/...");
 
-		service.sendEmail(from, subject, body, htmlBody, Collections.singletonList(file), to);
+		String sendId = service.sendEmail(from, subject, body, htmlBody, Collections.singletonList(file), to);
+		Assertions.assertFalse(sendId.isEmpty());
 	}
 }

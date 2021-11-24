@@ -1,6 +1,10 @@
 package com.ensolvers.fox.location;
 
+import java.util.Arrays;
+
 public class FoxStringUtils {
+
+	private FoxStringUtils() {}
 
 	public static String concat(String... strings) {
 		if (strings == null) {
@@ -19,6 +23,6 @@ public class FoxStringUtils {
 			}
 		}
 
-		return strings.toString();
+		return Arrays.toString(strings);
 	}
 }

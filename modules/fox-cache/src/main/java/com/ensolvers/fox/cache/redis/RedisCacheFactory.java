@@ -121,7 +121,7 @@ public class RedisCacheFactory {
 	 */
 	public <V> RedisSetCache<V> getSetCache(String name, int expireTime, Class<V> valueClass, CheckedFunction<V, String> customSerializer,
 			CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {
-		return this.getCache(name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer, null);
+		return this.getCache(name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer, maxEntriesPerBlock);
 	}
 
 	/**

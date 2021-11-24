@@ -5,14 +5,15 @@ import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClient;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class SNSServiceTest {
+class SNSServiceTest {
 
 	@Disabled("Real credentials need to be provided")
 	@Test
-	public void testSNS() {
+	void testSNS() {
 		String accessKey = "";
 		String secretKey = "";
 		Regions region = Regions.US_EAST_1;
@@ -27,6 +28,7 @@ public class SNSServiceTest {
 		String message = "Test SMS message";
 		double maxPrice = 0.01;
 
-		// TODO send message
+		String smsId = service.sendSMSMessage(senderId, phoneNumber, message, false, maxPrice);
+		Assertions.assertFalse(smsId.isEmpty());
 	}
 }

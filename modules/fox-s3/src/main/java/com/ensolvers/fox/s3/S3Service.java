@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
  */
 public class S3Service {
 
-	private static Logger logger = LoggerFactory.getLogger(S3Service.class);
-	private static String LOG_PREFIX = "[AWS-S3-STORAGE]";
+	private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
+	private static final String LOG_PREFIX = "[AWS-S3-STORAGE]";
 
 	private final AmazonS3Client s3Client;
 
@@ -58,7 +58,7 @@ public class S3Service {
 	 * @return the temporary URL to download the object
 	 */
 	public String generatePresignedUrl(String bucketName, String keyName, Long secondsToExpire, String fileName) {
-		logger.info(LOG_PREFIX + "[START] Generating a presigned URL");
+		logger.info("{} [START] Generating a presigned URL", LOG_PREFIX);
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, keyName)
 				.withExpiration(new Date(new Date().getTime() + secondsToExpire * 1000));
 		// Generates a header with the name for the file to be downloaded with
@@ -67,7 +67,7 @@ public class S3Service {
 		generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
 		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
-		logger.info(LOG_PREFIX + "[END] Generating a presigned URL");
+		logger.info("{} [END] Generating a presigned URL", LOG_PREFIX);
 		return url.toString();
 	}
 
@@ -80,12 +80,12 @@ public class S3Service {
 	 */
 	public void put(String bucketName, String keyName, File file) {
 		try {
-			logger.info(LOG_PREFIX + "[START] Uploading a new object to S3 from a file");
+			logger.info("{} [START] Uploading a new object to S3 from a file", LOG_PREFIX);
 
 			PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, keyName, file);
 			s3Client.putObject(putObjectRequest);
 
-			logger.info(LOG_PREFIX + "[END] Uploading a new object to S3 from a file");
+			logger.info("{} [END] Uploading a new object to S3 from a file", LOG_PREFIX);
 		} catch (AmazonServiceException ase) {
 			logger.error(LOG_PREFIX + " Caught an AmazonServiceException, which " + "means your request made it "
 					+ "to Amazon S3, but was rejected with an error response" + " for some reason.", ase);
@@ -129,18 +129,18 @@ public class S3Service {
 	 * 
 	 * @return returns a local copy of the file in a temp directory
 	 */
-	public File get(String bucketName, String keyName) {
-		try {
-			logger.info(LOG_PREFIX + "[START] Getting data of object of S3");
+	public File get(String bucketName, String keyName) throws IOException {
+		File tmpFile = File.createTempFile("fox", "s3");
+
+		try(FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
+			logger.info("{} [START] Getting data of object of S3", LOG_PREFIX);
 
 			GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, keyName);
 			S3Object s3Object = s3Client.getObject(getObjectRequest);
 
-			logger.info(LOG_PREFIX + "[END] Getting data of object of S3");
+			logger.info("{} [END] Getting data of object of S3", LOG_PREFIX);
 
-			File tmpFile = File.createTempFile("fox", "s3");
 			S3ObjectInputStream inputStream = s3Object.getObjectContent();
-			FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
 
 			IOUtils.copy(inputStream, fileOutputStream);
 			IOUtils.closeQuietly(inputStream, null);
@@ -170,19 +170,19 @@ public class S3Service {
 	 * @param keyName    the keyName
 	 */
 	public void delete(String bucketName, String keyName) {
-		logger.info(LOG_PREFIX + "[START] Deleting a object of S3");
+		logger.info("{} [START] Deleting a object of S3", LOG_PREFIX);
 
 		try {
 			DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, keyName);
 			s3Client.deleteObject(deleteObjectRequest);
 
-			logger.info(LOG_PREFIX + "[END] Deleting a object of S3");
+			logger.info("{} [END] Deleting a object of S3", LOG_PREFIX);
 		} catch (AmazonServiceException ase) {
-			logger.error(LOG_PREFIX + " Caught an AmazonServiceException." + "Error Message:    " + ase.getMessage() + "HTTP Status Code: "
-					+ ase.getStatusCode() + "AWS Error Code:   " + ase.getErrorCode() + "Error Type:       " + ase.getErrorType()
-					+ "Request ID:       " + ase.getRequestId());
+			logger.error("{} Caught an AmazonServiceException. Error Message: {} HTTP Status Code: {} " +
+							"AWS Error Code: {} Error Type: {} Request ID: {}", LOG_PREFIX, ase.getMessage(),
+							ase.getStatusCode(), ase.getErrorCode(), ase.getErrorType(), ase.getRequestId());
 		} catch (AmazonClientException ace) {
-			logger.error(LOG_PREFIX + " Caught an AmazonClientException." + "Error Message: " + ace.getMessage());
+			logger.error("{} Caught an AmazonClientException. Error Message: {}", LOG_PREFIX, ace.getMessage());
 		}
 	}
 
