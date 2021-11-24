@@ -78,10 +78,12 @@ public class SESService {
 			body.withText(new Content().withCharset(UTF_8).withData(bodyText));
 		}
 
-		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(toEmails))
-				.withMessage(new com.amazonaws.services.simpleemail.model.Message().withBody(body)
-						.withSubject(new Content().withCharset(UTF_8).withData(subject)))
-				.withSource(fromEmail);
+		SendEmailRequest request = new SendEmailRequest()
+						.withDestination(new Destination().withToAddresses(toEmails))
+						.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+										.withBody(body)
+										.withSubject(new Content().withCharset(UTF_8).withData(subject)))
+						.withSource(fromEmail);
 
 		SendEmailResult sendEmailResult = client.sendEmail(request);
 		String emailList = Arrays.toString(toEmails);

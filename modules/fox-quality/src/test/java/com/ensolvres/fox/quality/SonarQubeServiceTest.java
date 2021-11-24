@@ -47,6 +47,6 @@ class SonarQubeServiceTest {
 	void isoDateParsing() throws Exception {
 		Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse("2021-07-19T01:06:13+0200");
 
-		assertEquals("2021", date.toString().substring(0,4));
+		assertEquals("Sun", date.toString().substring(0,3));
 	}
 }

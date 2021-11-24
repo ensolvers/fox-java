@@ -24,15 +24,17 @@ public class NetworkUtils {
 		for (int i = 0; i < ip.length(); i++) {
 			if (ip.charAt(i) == ':') {
 					// check ip ip part is valid
+				if (hexadecimalValue.length() > 0) {
 					if (Boolean.FALSE.equals(checkIfHexadecimalValueIsValid(hexadecimalValue.toString()))) {
 						return false;
 					} else {
 						partCounter = partCounter + 1;
 						hexadecimalValue.setLength(0);
-						if (ip.length() > (i + 1) && (ip.charAt(i + 1) == ':')) {
-							simplification = simplification + 1;
-						}
 					}
+				}
+				if (ip.length() > (i + 1) && (ip.charAt(i + 1) == ':')) {
+					simplification = simplification + 1;
+				}
 			} else {
 				hexadecimalValue.append(ip.charAt(i));
 			}
@@ -50,9 +52,8 @@ public class NetworkUtils {
 		}
 		// PartCounter should be 8 without simplification
 		// Or less than 8 with 1 simplification
-
-		// Invalidate case with no :: and more or less than 8 parts
-		return (simplification != 0) && (partCounter == 8);
+		return ((simplification == 1 && partCounter < 8)
+						|| (simplification == 0 && partCounter == 8));
 	}
 
 	private static Boolean checkIfHexadecimalValueIsValid(String hexadecimal) {
