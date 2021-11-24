@@ -315,7 +315,7 @@ public class IP2LocationService {
 		}
 
 		// Ipv6 logic
-		if (NetworkUtils.isValidIPv6Address(ip)) {
+		if (Boolean.TRUE.equals(NetworkUtils.isValidIPv6Address(ip))) {
 			return getInfoForIpv6(ip);
 		}
 

@@ -1,17 +1,11 @@
 package com.ensolvers.fox.location;
 
-import java.util.Arrays;
-
 public class FoxStringUtils {
 
 	private FoxStringUtils() {}
 
 	public static String concat(String... strings) {
-		if (strings == null) {
-			return "";
-		}
-
-		if (strings.length == 0) {
+		if (strings == null || strings.length == 0) {
 			return "";
 		}
 
@@ -23,6 +17,6 @@ public class FoxStringUtils {
 			}
 		}
 
-		return Arrays.toString(strings);
+		return builder.toString();
 	}
 }
