@@ -11,9 +11,9 @@ public interface CheckedFunction<T, R> extends Function<T, R> {
 		try {
 			return applyThrows(t);
 		} catch (Exception e) {
-			throw new CacheExecutionException("CheckedFunction apply failed", e);
+			throw new CacheExecutionException("CheckedFunction failed", e);
 		}
 	}
 
-	R applyThrows(T elem) throws CacheException, JsonProcessingException;
+	R applyThrows(T elem) throws CacheExecutionException, JsonProcessingException;
 }

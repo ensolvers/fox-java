@@ -2,6 +2,8 @@ package com.ensolvers.fox.cache.redis;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.ensolvers.fox.cache.CacheExecutionException;
+import com.ensolvers.fox.cache.CacheSerializingException;
 import com.ensolvers.fox.cache.TestClass;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
@@ -208,8 +210,12 @@ class RedisCacheTest {
 
 	@Test
 	void testRedisCachePropagatesSerializingException() {
-		RedisListCache<TestClass> cache = this.factory.getListCache("testListCache", 100, TestClass.class, objectMapper::writeValueAsString,
-				(string) -> objectMapper.readValue(string, TestClass.class));
+		RedisListCache<TestClass> cache = this.factory.getListCache(
+						"testListCache",
+						100,
+						TestClass.class,
+						objectMapper::writeValueAsString,
+						(string) -> objectMapper.readValue(string, TestClass.class));
 
 		cache.push("123", new TestClass());
 		cache.get("123");
@@ -218,16 +224,19 @@ class RedisCacheTest {
 
 		this.factory.removeCacheFromList("testListCache");
 
-		cache = this.factory.getListCache("testListCache", 100, TestClass.class, (o) -> {
-			throw new NoSuchElementException();
-		}, (s) -> {
-			throw new NoSuchElementException();
-		});
+		cache = this.factory.getListCache(
+						"testListCache",
+						100,
+						TestClass.class,
+						(o) -> { throw new CacheExecutionException("Redis Test Case"); },
+						(s) -> { throw new CacheExecutionException("Redis Test Case"); });
 
 		RedisListCache<TestClass> finalCache = cache;
-		assertThrows(Exception.class, () -> finalCache.push("123", new TestClass()));
-		assertThrows(Exception.class, () -> finalCache.get("123"));
-		assertThrows(Exception.class, () -> finalCache.push("abc", new TestClass()));
+
+		assertThrows(CacheSerializingException.class, () -> finalCache.get("123"));
+
+		assertThrows(CacheExecutionException.class, () -> finalCache.push("123", new TestClass()));
+		assertThrows(CacheExecutionException.class, () -> finalCache.push("abc", new TestClass()));
 
 		cache.invalidateAll();
 	}

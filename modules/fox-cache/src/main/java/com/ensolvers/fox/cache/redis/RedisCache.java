@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.redis;
 
+import com.ensolvers.fox.cache.CacheExecutionException;
 import com.ensolvers.fox.cache.CheckedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
@@ -54,7 +55,7 @@ public abstract class RedisCache<V> {
 	}
 
 	/**
-	 * Serializes a value instance so it can be stored in the cache.
+	 * Serializes a value instance, so it can be stored in the cache.
 	 *
 	 * @param value The value to be serialized.
 	 * 
@@ -156,8 +157,8 @@ public abstract class RedisCache<V> {
 			callable.call();
 			this.redis.exec();
 		} catch (Exception e) {
-			logger.error("[REDIS_CACHE] There was an error when executing the transaction", e);
 			this.redis.discard();
+			throw new CacheExecutionException(e.getMessage());
 		}
 	}
 

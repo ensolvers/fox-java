@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.stream.Collectors;
 
-class RedisCacheFactoryTest extends RedisCacheFactory {
+public class RedisCacheFactoryTest extends RedisCacheFactory {
 	public RedisCacheFactoryTest(RedisClient client) {
 		super(client);
 	}
@@ -15,9 +15,4 @@ class RedisCacheFactoryTest extends RedisCacheFactory {
 		this.caches = this.caches.stream().filter(name -> !name.equals(cacheName)).collect(Collectors.toList());
 	}
 
-	@Test
-	void shouldGetRegularCache() {
-		getRegularCache("testCache", 30000, String.class);
-		Assertions.assertTrue(true);
-	}
 }
