@@ -1,8 +1,11 @@
 package com.ensolvers.fox.alerts;
 
 import com.slack.api.Slack;
+import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.model.Attachment;
+
+import java.io.IOException;
 import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +48,7 @@ public class SlackService {
 	 * @throws Exception if an error or unexpected situation occurs when trying to
 	 *                   send the message
 	 */
-	public ChatPostMessageResponse sendMessage(String channelId, String message) throws Exception {
+	public ChatPostMessageResponse sendMessage(String channelId, String message) throws SlackApiException, IOException {
 		return this.instance.methods(this.token).chatPostMessage(req -> req.channel(channelId).mrkdwn(true).text(message));
 	}
 
@@ -61,7 +64,7 @@ public class SlackService {
 	 * @throws Exception if an error or unexpected situation occurs when trying to
 	 *                   send the message
 	 */
-	public ChatPostMessageResponse sendMessageWithColor(String message, String color) throws Exception {
+	public ChatPostMessageResponse sendMessageWithColor(String message, String color) throws SlackApiException, IOException {
 		return this.instance.methods(this.token).chatPostMessage(req -> req.channel(this.defaultChannel)
 				.attachments(Collections.singletonList(Attachment.builder().color(color).text(message).build())));
 	}
@@ -76,7 +79,7 @@ public class SlackService {
 	 * @throws Exception if an error or unexpected situation occurs when trying to
 	 *                   send the message
 	 */
-	public ChatPostMessageResponse sendMessageToDefaultChannel(String message) throws Exception {
+	public ChatPostMessageResponse sendMessageToDefaultChannel(String message) throws SlackApiException, IOException {
 		return this.sendMessage(this.defaultChannel, message);
 	}
 }

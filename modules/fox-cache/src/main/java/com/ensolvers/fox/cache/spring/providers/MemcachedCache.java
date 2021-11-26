@@ -70,7 +70,7 @@ public class MemcachedCache implements Cache {
   @Override
   public ValueWrapper get(Object key) {
     // Check if is a bulk get or not
-    if (CustomCacheKey.class.isInstance(key) && ((CustomCacheKey) key).isBulk()) {
+    if (key instanceof CustomCacheKey && ((CustomCacheKey) key).isBulk()) {
       return getBulk((CustomCacheKey)key);
     } else {
       return getSingle(key);
@@ -97,7 +97,7 @@ public class MemcachedCache implements Cache {
   @Override
   public void put(Object key, Object value) {
     // Check if is a bulk put or not
-    if (CustomCacheKey.class.isInstance(key) && ((CustomCacheKey) key).isBulk()) {
+    if (key instanceof CustomCacheKey && ((CustomCacheKey) key).isBulk()) {
       // value to store must be an instance of Map (key with his value)
       if (!(value instanceof Map)) {
         throw new CacheInvalidArgumentException("Expected an instance of Map class in param type");
@@ -240,16 +240,16 @@ public class MemcachedCache implements Cache {
     // Check missed hits
     if (!memcachedKeyToOriginalKey.isEmpty()) {
       // Create a new instance of the collection class and collect the missed keys to pass it to the annotated method
-      Collection missedKeys;
+      Collection<Object> missedKeys;
       try {
-        missedKeys = (Collection)customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
+        missedKeys = (Collection<Object>) customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
         missedKeys.addAll(memcachedKeyToOriginalKey.values());
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw CacheInvalidArgumentException.collectionError(customCacheKey.getParams()[0].getClass(), e);
       }
 
       // Execute the method to retrieve the missed hits
-      Map missedHits;
+      Map<?,?> missedHits;
       try {
         missedHits = (Map)customCacheKey.getMethod().invoke(customCacheKey.getTarget(), missedKeys);
       } catch (IllegalAccessException | InvocationTargetException e) {

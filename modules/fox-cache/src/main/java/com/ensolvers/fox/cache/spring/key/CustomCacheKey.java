@@ -19,9 +19,9 @@ import java.util.Collection;
  * which will use this data to build a key to retrieve or save the corresponding data in the cache.
  */
 public class CustomCacheKey implements Serializable {
-  private final Object target;
-  private final Method method;
-  private final Object[] params;
+  private final transient Object target;
+  private final transient Method method;
+  private final transient Object[] params;
   private transient int hashCode;
 
   public CustomCacheKey(Object target, Method method, Object... elements) {
@@ -33,7 +33,7 @@ public class CustomCacheKey implements Serializable {
   }
 
   public boolean isBulk() {
-    return params.length == 1 && Collection.class.isInstance(params[0]);
+    return params.length == 1 && params[0] instanceof Collection;
   }
 
   public Object[] getParams() {

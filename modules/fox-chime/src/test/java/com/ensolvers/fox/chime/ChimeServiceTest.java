@@ -22,15 +22,19 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.chime.model.Attendee;
 import com.amazonaws.services.chime.model.Meeting;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class ChimeServiceTest {
+class ChimeServiceTest {
 
-	// NOTE: test disabled since Localstack Chime integration is not available
+	/**
+	 * NOTE: test disabled since Localstack Chime integration is not available
+ 	 */
+
 	@Test
-	@Disabled
-	public void testChime() {
+	@Disabled("Integration not available")
+	void testChime() {
 		String accessKey = "";
 		String secretKey = "";
 		Regions region = Regions.US_EAST_1;
@@ -46,5 +50,6 @@ public class ChimeServiceTest {
 		service.getMeeting(meeting.getMeetingId());
 		Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
 		service.listChannels("userArn");
+		Assertions.assertSame(service.getMeeting(meeting.getMeetingId()), meeting);
 	}
 }

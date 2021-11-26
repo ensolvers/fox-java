@@ -18,8 +18,10 @@
  */
 package com.ensolvers.fox.email;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -59,7 +61,7 @@ public class EmailService {
 	 * 
 	 * @throws Exception
 	 */
-	public void sendMailTo(String mailTo, String subject, String body) throws Exception {
+	public void sendMailTo(String mailTo, String subject, String body) throws UnsupportedEncodingException, MessagingException {
 		// Create a Properties object to contain connection configuration information.
 		Properties props = System.getProperties();
 		props.put("mail.transport.protocol", "smtp");

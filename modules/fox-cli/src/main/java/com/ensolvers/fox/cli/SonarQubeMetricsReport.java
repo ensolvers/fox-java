@@ -6,6 +6,7 @@ import com.ensolvers.fox.quality.model.SonarQubeMetricHistoryResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
+import java.lang.System.Logger;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
 
@@ -56,8 +57,8 @@ public class SonarQubeMetricsReport implements Callable<Integer> {
 
 			slackService.sendMessageWithColor(message, "#CCCCCC");
 		} catch (Exception e) {
-			System.out.printf("Error when trying to execute SonarQube publishing\n");
-			e.printStackTrace();
+			System.getLogger("SonarQubeMetricsReport")
+							.log(Logger.Level.ERROR, "Error when trying to execute SonarQube publishing%n " + e.getMessage());
 		}
 
 		return 1;

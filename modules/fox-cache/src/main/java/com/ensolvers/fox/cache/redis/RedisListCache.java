@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<V> {
+	private static final String SERIALIZATION_PROBLEM = "There was a problem during serialization";
 
 	public RedisListCache(RedisCommands<String, String> redis, String name, int expirationTime, Class<V> valueClass,
 			CheckedFunction<V, String> customSerializer, CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {
@@ -27,7 +28,7 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
 			}
 			return result;
 		} catch (Exception e) {
-			throw new CacheSerializingException("There was a problem during serialization", e);
+			throw new CacheSerializingException(SERIALIZATION_PROBLEM, e);
 		}
 	}
 
@@ -42,7 +43,7 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
 		try {
 			return this.deserializeValue(this.redis.lpop(this.computeKey(key)));
 		} catch (IOException e) {
-			throw new CacheSerializingException("There was a problem during serialization", e);
+			throw new CacheSerializingException(SERIALIZATION_PROBLEM, e);
 		}
 	}
 
@@ -51,7 +52,7 @@ public class RedisListCache<V> extends RedisCache<V> implements RedisCollection<
 		try {
 			this.redis.lrem(this.computeKey(key), 0, this.serializeValue(value));
 		} catch (JsonProcessingException e) {
-			throw new CacheSerializingException("There was a problem during serialization", e);
+			throw new CacheSerializingException(SERIALIZATION_PROBLEM, e);
 		}
 	}
 

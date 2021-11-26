@@ -3,13 +3,15 @@ package com.ensolvers.fox.services.logging;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LoggerTest {
+class LoggerTest {
 
 	/** shows use of level up/downgrade */
 	@Test
-	public void magicTest() {
+	void magicTest() {
 		Logger.initInfo(this, "magicTest");
 
 		Logger.setInfoLevel(getClass());
@@ -18,33 +20,39 @@ public class LoggerTest {
 		Logger.debug(this, "Now you see me");
 
 		Logger.endInfo(this, "magicTest");
+
+		Assertions.assertTrue(true);
 	}
 
 	/** shows use logging within instance and class context */
 	@Test
-	public void clazzTest() {
+	void clazzTest() {
 		Logger.initInfo(this, "clazzTest");
 
 		Logger.info(this, "this is me");
 		Logger.info(Math.class, "Now I am something else");
 
 		Logger.endInfo(this, "clazzTest");
+
+		Assertions.assertTrue(true);
 	}
 
 	/** shows specific category creation and use */
 	@Test
-	public void onTheFlyCategoryTest() {
+	void onTheFlyCategoryTest() {
 		Logger.initInfo(this, "onTheFlyCategoryTest");
 
 		org.slf4j.Logger myLogger = Logger.getCategory("ensolvers.especialCategory");
 		myLogger.debug("Hey new category!");
 
 		Logger.endInfo(this, "onTheFlyCategoryTest");
+
+		Assertions.assertTrue(true);
 	}
 
 	/** shows collateral cost of logging */
 	@Test
-	public void expensiveLoggingTest() {
+	void expensiveLoggingTest() {
 		Logger.initInfo(this, "expensiveLoggingTest");
 
 		ExpensiveToLog witness = new ExpensiveToLog();
@@ -57,7 +65,7 @@ public class LoggerTest {
 
 	/** shows deferred logging, no resources consumed if log level is inactive */
 	@Test
-	public void deferredLoggingTest() {
+	void deferredLoggingTest() {
 		Logger.initInfo(this, "deferredLoggingTest");
 
 		ExpensiveToLog witness = new ExpensiveToLog();

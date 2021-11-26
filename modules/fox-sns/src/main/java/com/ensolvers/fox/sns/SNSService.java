@@ -77,7 +77,7 @@ public class SNSService {
 		PublishResult result = this.client
 				.publish(new PublishRequest().withMessage(message).withPhoneNumber(phoneNumber).withMessageAttributes(smsAttributes));
 
-		logger.info(String.format("%s SMS sent to %s, result: %s", LOG_PREFIX, phoneNumber, result));
+		logger.info("{} SMS sent to {}, result: {}", LOG_PREFIX, phoneNumber, result);
 		return result.getMessageId();
 	}
 }

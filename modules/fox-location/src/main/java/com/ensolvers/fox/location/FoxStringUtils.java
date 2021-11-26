@@ -2,12 +2,10 @@ package com.ensolvers.fox.location;
 
 public class FoxStringUtils {
 
-	public static String concat(String... strings) {
-		if (strings == null) {
-			return "";
-		}
+	private FoxStringUtils() {}
 
-		if (strings.length == 0) {
+	public static String concat(String... strings) {
+		if (strings == null || strings.length == 0) {
 			return "";
 		}
 
@@ -19,6 +17,6 @@ public class FoxStringUtils {
 			}
 		}
 
-		return strings.toString();
+		return builder.toString();
 	}
 }

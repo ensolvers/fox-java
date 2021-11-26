@@ -359,7 +359,7 @@ public class NewRelicLogger implements Logger {
 	public Date timeElapsed(String msg, Date since) {
 		Date now = new Date();
 		long elapsed = now.getTime() - since.getTime();
-		this.logger.info(msg + " elapsed ms: " + elapsed + " (" + TimeUnit.MILLISECONDS.toSeconds(elapsed) + "sec)");
+		this.logger.info("{} elapsed ms: {} ( {} sec)", msg, elapsed, TimeUnit.MILLISECONDS.toSeconds(elapsed));
 		return now;
 	}
 
