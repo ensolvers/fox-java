@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.spring;
+package com.ensolvers.fox.cache.spring.providers;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.support.AbstractValueAdaptingCache;
 
 /**
- * Spring Cache compatible implementation using Guava as ahe underlying
+ * Spring Cache compatible implementation using Guava as the underlying
  * in-memory cache
  *
  * @param <CacheType> the type of objects that are going to be cached

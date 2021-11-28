@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
@@ -21,10 +22,15 @@ public class GenericCacheManager implements CacheManager {
 				Arrays.stream(caches).collect(Collectors.toMap(CacheSpec::getCacheName, CacheSpec::getCache)));
 	}
 
-	@Override
-	public Cache getCache(String name) {
-		return this.cacheMap.get(name);
-	}
+  public GenericCacheManager append(String key, Cache cache) {
+    cacheMap.put(key, cache);
+    return this;
+  }
+
+  @Override
+  public Cache getCache(String name) {
+    return cacheMap.get(name);
+  }
 
 	@Override
 	public Collection<String> getCacheNames() {

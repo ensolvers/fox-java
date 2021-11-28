@@ -38,15 +38,17 @@ import ch.qos.logback.classic.Level;
  */
 public class Logger {
 
+	private Logger() {}
+
 	private static String customizeMsg(Object msg) {
 		return msg.toString();
 	}
 
-	public static <L> void info(Object category, CodeBlock fn) {
+	public static void info(Object category, CodeBlock fn) {
 		info(category.getClass(), fn);
 	}
 
-	public static <L> void info(Class category, CodeBlock fn) {
+	public static void info(Class<?> category, CodeBlock fn) {
 		org.slf4j.Logger c = getCategory(category);
 		if (c.isInfoEnabled()) {
 			c.info(fn.value());
@@ -86,11 +88,11 @@ public class Logger {
 		}
 	}
 
-	public static <L> void debug(Object category, CodeBlock fn) {
+	public static void debug(Object category, CodeBlock fn) {
 		debug(category.getClass(), fn);
 	}
 
-	public static <L> void debug(Class category, CodeBlock fn) {
+	public static void debug(Class<?> category, CodeBlock fn) {
 		org.slf4j.Logger c = getCategory(category);
 		if (c.isDebugEnabled()) {
 			c.debug(customizeMsg(fn.value()));
@@ -191,7 +193,7 @@ public class Logger {
 	}
 
 	public static void initInfo(Class o, String methodName) {
-		getCategory(o).info(methodName + " [Init]");
+		getCategory(o).info("{} [Init]", methodName);
 	}
 
 	public static void endInfo(Object o, String methodName) {
@@ -199,10 +201,10 @@ public class Logger {
 	}
 
 	public static void endInfo(Class o, String methodName) {
-		getCategory(o).info(methodName + " [End]");
+		getCategory(o).info("{} [End]", methodName);
 	}
 
-	public static org.slf4j.Logger getCategory(Class clazz) {
+	public static org.slf4j.Logger getCategory(Class<?> clazz) {
 		return org.slf4j.LoggerFactory.getLogger(clazz);
 	}
 
@@ -210,7 +212,7 @@ public class Logger {
 		return org.slf4j.LoggerFactory.getLogger(clazz);
 	}
 
-	public static void setDebugLevel(Class clazz) {
+	public static void setDebugLevel(Class<?> clazz) {
 		((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.DEBUG);
 	}
 
@@ -218,7 +220,7 @@ public class Logger {
 		((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.DEBUG);
 	}
 
-	public static void setInfoLevel(Class clazz) {
+	public static void setInfoLevel(Class<?> clazz) {
 		((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.INFO);
 	}
 
@@ -226,7 +228,7 @@ public class Logger {
 		((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.INFO);
 	}
 
-	public static void setWarnLevel(Class clazz) {
+	public static void setWarnLevel(Class<?> clazz) {
 		((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.WARN);
 	}
 

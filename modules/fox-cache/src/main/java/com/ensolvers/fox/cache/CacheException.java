@@ -3,14 +3,13 @@ package com.ensolvers.fox.cache;
 public abstract class CacheException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
-	public CacheException() {
-	}
+	protected CacheException() {}
 
-	public CacheException(String message) {
+	protected CacheException(String message) {
 		super(message);
 	}
 
-	public CacheException(String message, Throwable cause) {
+	protected CacheException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

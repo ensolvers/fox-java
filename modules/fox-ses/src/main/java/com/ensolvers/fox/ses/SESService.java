@@ -20,9 +20,27 @@ package com.ensolvers.fox.ses;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * The SES service takes care of sending emails using AWS SES
@@ -33,6 +51,7 @@ public class SESService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SESService.class);
 	private static final String LOG_PREFIX = "[AWS-SES]";
+	private static final String UTF_8 = "UTF-8";
 
 	private final AmazonSimpleEmailService client;
 
@@ -48,23 +67,136 @@ public class SESService {
 	 * @param bodyText  the email body (might be plain text or HTML)
 	 * @param isHTML    whether the email is HTML or plain text
 	 * @param toEmails  an array of email addresses to send the email to
-	 * 
+	 *
 	 * @return the message id of the result
 	 */
 	public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String... toEmails) {
 		Body body = new Body();
 		if (isHTML) {
-			body.withHtml(new Content().withCharset("UTF-8").withData(bodyText));
+			body.withHtml(new Content().withCharset(UTF_8).withData(bodyText));
 		} else {
-			body.withText(new Content().withCharset("UTF-8").withData(bodyText));
+			body.withText(new Content().withCharset(UTF_8).withData(bodyText));
 		}
 
-		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(toEmails))
-				.withMessage(new Message().withBody(body).withSubject(new Content().withCharset("UTF-8").withData(subject)))
-				.withSource(fromEmail);
+		SendEmailRequest request = new SendEmailRequest()
+						.withDestination(new Destination().withToAddresses(toEmails))
+						.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+										.withBody(body)
+										.withSubject(new Content().withCharset(UTF_8).withData(subject)))
+						.withSource(fromEmail);
 
 		SendEmailResult sendEmailResult = client.sendEmail(request);
-		logger.info(String.format("%s Email sent to %s, result: %s", LOG_PREFIX, Arrays.toString(toEmails), sendEmailResult));
+		String emailList = Arrays.toString(toEmails);
+		logger.info("{} Email sent to {}, result: {}", LOG_PREFIX, emailList, sendEmailResult);
 		return sendEmailResult.getMessageId();
+	}
+
+	/**
+	 * Sends an email with the specified parameters
+	 *
+	 * @param fromEmail   the email to sent it from (must be from a validated
+	 *                    domain)
+	 * @param subject     the email subject
+	 * @param bodyText    the email body for clients not supporting HTML
+	 * @param bodyHTML    the email body (in HTML)
+	 * @param attachments the list of attachments (files)
+	 * @param toEmails    an array of email addresses to send the email to
+	 * @return the message id of the result
+	 */
+	public String sendEmail(String fromEmail, String subject, String bodyText, String bodyHTML, List<File> attachments, String... toEmails)
+			throws MessagingException, IOException {
+		return sendEmail(fromEmail, subject,
+						attachments.stream().map(a -> new EmailAttachment(a, a.getName())).collect(Collectors.toList()),
+						bodyText, bodyHTML,
+						toEmails);
+	}
+
+	/**
+	 * Sends an email with the specified parameters
+	 *
+	 * @param fromEmail   the email to sent it from (must be from a validated
+	 *                    domain)
+	 * @param subject     the email subject
+	 * @param attachments the list of attachments
+	 * @param bodyText    the email body for clients not supporting HTML
+	 * @param bodyHTML    the email body (in HTML)
+	 * @param toEmails    an array of email addresses to send the email to
+	 * @return the message id of the result
+	 */
+	public String sendEmail(String fromEmail, String subject, List<EmailAttachment> attachments, String bodyText, String bodyHTML, String... toEmails)
+					throws MessagingException, IOException {
+
+		Session session = Session.getDefaultInstance(new Properties());
+
+		// Create a new MimeMessage object.
+		MimeMessage message = new MimeMessage(session);
+
+		// Add subject, from and to lines.
+		message.setSubject(subject, UTF_8);
+		message.setFrom(new InternetAddress(fromEmail));
+
+		InternetAddress[] addresses = new InternetAddress[toEmails.length];
+		for (int i = 0; i < toEmails.length; i++) {
+			addresses[i] = new InternetAddress(toEmails[i]);
+		}
+
+		message.setRecipients(Message.RecipientType.TO, addresses);
+
+		// Create a multipart/alternative child container.
+		MimeMultipart msgBody = new MimeMultipart("alternative");
+
+		// Create a wrapper for the HTML and text parts.
+		MimeBodyPart wrap = new MimeBodyPart();
+
+		// Define the text part.
+		MimeBodyPart textPart = new MimeBodyPart();
+		textPart.setContent(bodyText, "text/plain; charset=UTF-8");
+
+		// Define the HTML part.
+		MimeBodyPart htmlPart = new MimeBodyPart();
+		htmlPart.setContent(bodyHTML, "text/html; charset=UTF-8");
+
+		// Add the text and HTML parts to the child container.
+		if (bodyText != null) {
+			msgBody.addBodyPart(textPart);
+		}
+		msgBody.addBodyPart(htmlPart);
+
+		// Add the child container to the wrapper object.
+		wrap.setContent(msgBody);
+
+		// Create a multipart/mixed parent container.
+		MimeMultipart msg = new MimeMultipart("mixed");
+
+		// Add the parent container to the message.
+		message.setContent(msg);
+
+		// Add the multipart/alternative part to the message.
+		msg.addBodyPart(wrap);
+
+		for (EmailAttachment attachment : attachments) {
+			// Define the attachment
+			MimeBodyPart att = new MimeBodyPart();
+			DataSource fds = new FileDataSource(attachment.getFile());
+			att.setDataHandler(new DataHandler(fds));
+			att.setFileName(attachment.getName());
+
+			// Add the attachment to the message.
+			msg.addBodyPart(att);
+		}
+
+		// Send the email.
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		message.writeTo(outputStream);
+		RawMessage rawMessage = new RawMessage(ByteBuffer.wrap(outputStream.toByteArray()));
+
+		SendRawEmailRequest rawEmailRequest = new SendRawEmailRequest(rawMessage).withDestinations(toEmails);
+
+		SendRawEmailResult sendRawEmailResult = client.sendRawEmail(rawEmailRequest);
+		String emailList = Arrays.toString(toEmails);
+		logger.info("{} Email sent to {}, result: {}",
+						LOG_PREFIX, emailList, sendRawEmailResult);
+
+		return sendRawEmailResult.getMessageId();
 	}
 }

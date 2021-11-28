@@ -87,7 +87,7 @@ public class ChimeService {
 		CreateMeetingRequest request = new CreateMeetingRequest();
 		request.setClientRequestToken(clientRequestToken);
 		Meeting meeting = amazonChime.createMeeting(request).getMeeting();
-		logger.info("Meeting created: " + meeting);
+		logger.info("Meeting created: {}", meeting);
 
 		return meeting;
 	}
@@ -108,7 +108,7 @@ public class ChimeService {
 		request.setMeetingId(meetingId);
 		request.setExternalUserId(userId);
 		Attendee attendee = amazonChime.createAttendee(request).getAttendee();
-		logger.info("Attendee created: " + attendee);
+		logger.info("Attendee created: {}", attendee);
 
 		return attendee;
 	}
@@ -128,7 +128,7 @@ public class ChimeService {
 				.withMetadata(metadata).withAppInstanceUserId(userId);
 
 		CreateAppInstanceUserResult appInstanceUser = amazonChime.createAppInstanceUser(userRequest);
-		logger.info(String.format("User created for userId %s, arn: %s", userId, appInstanceUser));
+		logger.info("User created for userId {}, arn: {}", userId, appInstanceUser);
 		return appInstanceUser.getAppInstanceUserArn();
 	}
 
@@ -150,7 +150,7 @@ public class ChimeService {
 				.withMetadata(metadata);
 
 		UpdateAppInstanceUserResult appInstanceUser = amazonChime.updateAppInstanceUser(userRequest);
-		logger.info(String.format("User with arn: %s updated", userArn));
+		logger.info("User with arn: {} updated", userArn);
 		return appInstanceUser.getAppInstanceUserArn();
 	}
 
@@ -159,7 +159,7 @@ public class ChimeService {
 				.withChimeBearer(channelCreatorArn).withMemberArns(memberArns).withType(ChannelMembershipType.DEFAULT);
 
 		List<Identity> members = this.amazonChime.batchCreateChannelMembership(request).getBatchChannelMemberships().getMembers();
-		logger.info("Members added to channel: " + members);
+		logger.info("Members added to channel: {}", members);
 	}
 
 	public String createChannel(String name, String creatorArn, String metadata) {
@@ -167,7 +167,7 @@ public class ChimeService {
 				.withChimeBearer(creatorArn).withName(name).withMetadata(metadata).withPrivacy(ChannelPrivacy.PRIVATE);
 
 		String arn = amazonChime.createChannel(createChannelRequest).getChannelArn();
-		logger.info("Channel created: " + arn);
+		logger.info("Channel created: {}", arn);
 		return arn;
 	}
 
@@ -180,7 +180,7 @@ public class ChimeService {
 				.withName(name).withMetadata(metadata);
 
 		UpdateChannelResult updateChannelResult = amazonChime.updateChannel(updateChannelRequest);
-		logger.info(String.format("Channel with arn: %s updated", channelArn));
+		logger.info("Channel with arn: {} updated", channelArn);
 		return updateChannelResult.getChannelArn();
 	}
 
@@ -226,9 +226,9 @@ public class ChimeService {
 	public String createAppInstance(String name) {
 		CreateAppInstanceRequest createAppInstanceRequest = new CreateAppInstanceRequest().withName(name);
 		CreateAppInstanceResult appInstance = this.amazonChime.createAppInstance(createAppInstanceRequest);
-		String appInstanceArn = appInstance.getAppInstanceArn();
-		logger.info("App instance created: " + appInstanceArn);
-		return appInstanceArn;
+		String newAppInstanceArn = appInstance.getAppInstanceArn();
+		logger.info("App instance created: {}", newAppInstanceArn);
+		return newAppInstanceArn;
 	}
 
 	private String getMessagingSessionUrl() {

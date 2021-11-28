@@ -3,12 +3,16 @@ package com.ensolvers.fox.quality;
 import com.ensolvers.fox.quality.model.SonarQubeMetricHistoryResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.NoSuchElementException;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -21,9 +25,9 @@ import okhttp3.Response;
  */
 public class SonarQubeService {
 
-	public static final String SONAR_API_BASE_PATH = "https://sonarcloud.io/api";
+	private static final String SONAR_API_BASE_PATH = "https://sonarcloud.io/api";
 	private final ObjectMapper objectMapper;
-	private String token;
+	private final String token;
 
 	private final OkHttpClient client;
 
@@ -48,9 +52,9 @@ public class SonarQubeService {
 	 * @return a {@code SonarQubeMetricHistoryResponse} structure with all the
 	 *         individual measures
 	 * 
-	 * @throws Exception if an error occurs during the fetching
+	 * @throws IOException if an error occurs during the fetching
 	 */
-	public SonarQubeMetricHistoryResponse getMetricHistory(String component, String metric, Instant from, Instant to) throws Exception {
+	public SonarQubeMetricHistoryResponse getMetricHistory(String component, String metric, Instant from, Instant to) throws IOException, NoSuchElementException {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
 
 		String tokenInBase64 = Base64.getEncoder().withoutPadding().encodeToString((this.token + ":").getBytes(StandardCharsets.UTF_8));
@@ -62,12 +66,11 @@ public class SonarQubeService {
 		Response response = client.newCall(request).execute();
 
 		if (response.code() == 404) {
-			throw new Exception("Platform or component not found");
+			throw new NoSuchElementException("Platform or component not found");
 		}
 
 		String stringResponse = response.body().string();
-		SonarQubeMetricHistoryResponse sonarQubeMetricHistoryResponse = this.objectMapper.readValue(stringResponse,
+		return this.objectMapper.readValue(stringResponse,
 				SonarQubeMetricHistoryResponse.class);
-		return sonarQubeMetricHistoryResponse;
 	}
 }

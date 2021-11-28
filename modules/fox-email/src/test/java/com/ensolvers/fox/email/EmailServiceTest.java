@@ -18,6 +18,7 @@
  */
 package com.ensolvers.fox.email;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -26,12 +27,14 @@ import org.junit.jupiter.api.Test;
  *
  * @author Esteban Robles Luna
  */
-public class EmailServiceTest {
+class EmailServiceTest {
 
 	@Test
-	@Disabled
-	public void testEmail() throws Exception {
+	@Disabled("disabled")
+	void testEmail() throws Exception {
 		EmailService service = new EmailService("host", 465, "username", "password", "info@ensolvers.com");
 		service.sendMailTo("esteban.roblesluna@gmail.com", "hola", "Hola esteban como estas?");
+
+		Assertions.assertFalse(service.toString().isEmpty());
 	}
 }

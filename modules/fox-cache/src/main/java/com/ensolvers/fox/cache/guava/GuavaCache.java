@@ -1,7 +1,5 @@
 package com.ensolvers.fox.cache.guava;
 
-import com.ensolvers.fox.cache.core.CacheException;
-import com.ensolvers.fox.cache.core.GenericCache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

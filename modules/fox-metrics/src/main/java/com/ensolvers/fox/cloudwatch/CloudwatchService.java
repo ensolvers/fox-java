@@ -19,8 +19,6 @@
 package com.ensolvers.fox.cloudwatch;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
@@ -45,14 +43,9 @@ public class CloudwatchService {
 	}
 
 	private CloudWatchClient createClient(String accessKeyId, String secretAccessKeyId, Region region) {
-		CloudWatchClient client = CloudWatchClient.builder().region(region).credentialsProvider(new AwsCredentialsProvider() {
-			@Override
-			public AwsCredentials resolveCredentials() {
-				return AwsBasicCredentials.create(accessKeyId, secretAccessKeyId);
-			}
-		}).build();
 
-		return client;
+		return CloudWatchClient.builder().region(region).credentialsProvider(() ->
+						AwsBasicCredentials.create(accessKeyId, secretAccessKeyId)).build();
 	}
 
 	/**

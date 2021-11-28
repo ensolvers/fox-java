@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AutomaticLoggingImpl {
 
-	public static <T> boolean switchType(Object o, Consumer... a) {
+	public static boolean switchType(Object o, Consumer... a) {
 		for (Consumer consumer : a)
 			if (o instanceof Collection || o instanceof Map) {
 				consumer.accept(o);
@@ -30,7 +30,7 @@ public class AutomaticLoggingImpl {
 		return false;
 	}
 
-	public static <T> Consumer caze(Class<T> cls, Consumer<T> c) {
+	public static <T> Consumer<T> caze(Class<T> cls, Consumer<T> c) {
 		return obj -> Optional.of(obj).filter(cls::isInstance).map(cls::cast).ifPresent(c);
 	}
 
@@ -46,7 +46,7 @@ public class AutomaticLoggingImpl {
 		AutomaticLogging annotation = methodSignature.getMethod().getAnnotation(AutomaticLogging.class);
 		String className = joinPoint.getTarget().getClass().getName();
 
-		AtomicReference<String> logContent = new AtomicReference<String>(
+		AtomicReference<String> logContent = new AtomicReference<>(
 				(!annotation.logSuffix().equals("") ? "[" + annotation.logSuffix() + "] " : "") + "[" + className + "] "
 						+ methodSignature.getName() + (annotation.timeElapsedLogging() ? "[Call] " : ""));
 		String[] parameterNames = methodSignature.getParameterNames();
@@ -77,9 +77,11 @@ public class AutomaticLoggingImpl {
 				logger.info(logContent.get());
 			}
 		} catch (Exception error) {
-			logger.error((!annotation.logSuffix().equals("") ? "[" + annotation.logSuffix() + "] " : "") + "[" + className + "] " + "["
-					+ methodSignature.getName() + "] Error: " + error);
-			throw error;
+			logger.error("{} [{}] [{}] Error: {}",
+							(!annotation.logSuffix().equals("") ? "[" + annotation.logSuffix() + "] " : ""),
+							className,
+							methodSignature.getName(),
+							error);
 		}
 
 		return proceed;

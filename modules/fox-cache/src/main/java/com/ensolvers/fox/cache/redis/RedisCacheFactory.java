@@ -41,6 +41,8 @@ public class RedisCacheFactory {
 	 * @param expireTime time in seconds for the elements in the cache to expire.
 	 * @param valueClass Class of the values.
 	 * @param <V>        Class of the values.
+	 * @param customSerializer Serializer
+	 * @param customDeserializer Deserializer
 	 */
 	public <V> RedisRegularCache<V> getRegularCache(String name, int expireTime, Class<V> valueClass,
 			CheckedFunction<V, String> customSerializer, CheckedFunction<String, V> customDeserializer) {
@@ -91,6 +93,9 @@ public class RedisCacheFactory {
 	 * @param expireTime time in seconds for the elements in the cache to expire.
 	 * @param valueClass Class of the values.
 	 * @param <V>        Class of the values.
+	 * @param customSerializer Serializer
+	 * @param customDeserializer Deserializer
+	 * @param maxEntriesPerBlock Max entries per block
 	 */
 	public <V> RedisLimitedCache<V> getLimitedListCache(String name, int expireTime, Class<V> valueClass,
 			CheckedFunction<V, String> customSerializer, CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {
@@ -118,10 +123,13 @@ public class RedisCacheFactory {
 	 * @param expireTime time in seconds for the elements in the cache to expire.
 	 * @param valueClass Class of the values.
 	 * @param <V>        Class of the values.
+	 * @param customSerializer Serializer
+	 * @param customDeserializer Deserializer
+	 * @param maxEntriesPerBlock Max entries per block
 	 */
 	public <V> RedisSetCache<V> getSetCache(String name, int expireTime, Class<V> valueClass, CheckedFunction<V, String> customSerializer,
 			CheckedFunction<String, V> customDeserializer, Integer maxEntriesPerBlock) {
-		return this.getCache(name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer, null);
+		return this.getCache(name, expireTime, valueClass, RedisSetCache.class, customSerializer, customDeserializer, maxEntriesPerBlock);
 	}
 
 	/**

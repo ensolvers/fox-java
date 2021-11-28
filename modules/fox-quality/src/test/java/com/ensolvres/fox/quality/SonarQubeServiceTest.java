@@ -6,11 +6,13 @@ import com.ensolvers.fox.quality.SonarQubeService;
 import com.ensolvers.fox.quality.model.SonarQubeMetricHistoryResponse;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Date;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class SonarQubeServiceTest {
+class SonarQubeServiceTest {
 
 	private SonarQubeService service;
 
@@ -21,8 +23,8 @@ public class SonarQubeServiceTest {
 	}
 
 	@Test
-	@Disabled
-	public void getMetric() throws Exception {
+	@Disabled("")
+	void getMetric() throws Exception {
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
 		Instant from = format.parse("2021-07-01").toInstant();
@@ -42,7 +44,9 @@ public class SonarQubeServiceTest {
 	}
 
 	@Test
-	public void isoDateParsing() throws Exception {
-		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse("2021-07-19T01:06:13+0200");
+	void isoDateParsing() throws Exception {
+		Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse("2021-07-19T01:06:13+0200");
+
+		assertEquals("Sun", date.toString().substring(0,3));
 	}
 }
