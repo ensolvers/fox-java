@@ -6,14 +6,14 @@ import java.util.function.Function;
 
 @FunctionalInterface
 public interface CheckedFunction<T, R> extends Function<T, R> {
-	@Override
-	default R apply(T t) {
-		try {
-			return applyThrows(t);
-		} catch (Exception e) {
-			throw new CacheExecutionException("CheckedFunction failed", e);
-		}
-	}
+    @Override
+    default R apply(T t) {
+        try {
+            return applyThrows(t);
+        } catch (Exception e) {
+            throw new CacheExecutionException("CheckedFunction failed", e);
+        }
+    }
 
-	R applyThrows(T elem) throws CacheExecutionException, JsonProcessingException;
+    R applyThrows(T elem) throws CacheExecutionException, JsonProcessingException;
 }

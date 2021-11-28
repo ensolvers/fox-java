@@ -35,49 +35,49 @@ import org.slf4j.LoggerFactory;
  */
 public class SNSService {
 
-	private static final Logger logger = LoggerFactory.getLogger(SNSService.class);
-	private static final String LOG_PREFIX = "[AWS-SNS]";
+    private static final Logger logger = LoggerFactory.getLogger(SNSService.class);
+    private static final String LOG_PREFIX = "[AWS-SNS]";
 
-	private final AmazonSNS client;
+    private final AmazonSNS client;
 
-	public SNSService(AmazonSNS client) {
-		this.client = client;
-	}
+    public SNSService(AmazonSNS client) {
+        this.client = client;
+    }
 
-	/**
-	 * Sends a SMS with the specified parameters
-	 *
-	 * @param senderId     the sender name that appears in the phone (3–11
-	 *                     alphanumeric characters, at least 1 letter and no spaces)
-	 * @param phoneNumber  the phone number (in E.164 format, a maximum of 15 digits
-	 *                     along with the prefix (+) and the country code. For
-	 *                     example, a US phone number in E.164 format appears as
-	 *                     +1XXX5550100.
-	 * @param message      the message text (up to 140 bytes)
-	 * @param highPriority whether should be send with high priority (Transactional)
-	 *                     or not (Promotional)
-	 * @param maxPrice     the maximum price to spend in the message (in USD)
-	 */
-	public String sendSMSMessage(String senderId, String phoneNumber, String message, boolean highPriority, double maxPrice) {
-		Map<String, MessageAttributeValue> smsAttributes = new HashMap<>();
-		smsAttributes.put("AWS.SNS.SMS.SenderID", new MessageAttributeValue().withStringValue(senderId) // The sender ID
-																										// shown on the
-																										// device.
-				.withDataType("String"));
-		smsAttributes.put("AWS.SNS.SMS.MaxPrice",
-				new MessageAttributeValue().withStringValue(Double.toString(maxPrice)).withDataType("Number"));
-		smsAttributes.put("AWS.SNS.SMS.SMSType", new MessageAttributeValue().withStringValue(highPriority ? "Transactional" : "Promotional") // Transactional
-																																				// is
-																																				// send
-																																				// with
-																																				// higher
-																																				// priority
-				.withDataType("String"));
+    /**
+     * Sends a SMS with the specified parameters
+     *
+     * @param senderId     the sender name that appears in the phone (3–11
+     *                     alphanumeric characters, at least 1 letter and no spaces)
+     * @param phoneNumber  the phone number (in E.164 format, a maximum of 15 digits
+     *                     along with the prefix (+) and the country code. For
+     *                     example, a US phone number in E.164 format appears as
+     *                     +1XXX5550100.
+     * @param message      the message text (up to 140 bytes)
+     * @param highPriority whether should be send with high priority (Transactional)
+     *                     or not (Promotional)
+     * @param maxPrice     the maximum price to spend in the message (in USD)
+     */
+    public String sendSMSMessage(String senderId, String phoneNumber, String message, boolean highPriority, double maxPrice) {
+        Map<String, MessageAttributeValue> smsAttributes = new HashMap<>();
+        smsAttributes.put("AWS.SNS.SMS.SenderID", new MessageAttributeValue().withStringValue(senderId) // The sender ID
+                                                                                                        // shown on the
+                                                                                                        // device.
+                .withDataType("String"));
+        smsAttributes.put("AWS.SNS.SMS.MaxPrice",
+                new MessageAttributeValue().withStringValue(Double.toString(maxPrice)).withDataType("Number"));
+        smsAttributes.put("AWS.SNS.SMS.SMSType", new MessageAttributeValue().withStringValue(highPriority ? "Transactional" : "Promotional") // Transactional
+                                                                                                                                             // is
+                                                                                                                                             // send
+                                                                                                                                             // with
+                                                                                                                                             // higher
+                                                                                                                                             // priority
+                .withDataType("String"));
 
-		PublishResult result = this.client
-				.publish(new PublishRequest().withMessage(message).withPhoneNumber(phoneNumber).withMessageAttributes(smsAttributes));
+        PublishResult result = this.client
+                .publish(new PublishRequest().withMessage(message).withPhoneNumber(phoneNumber).withMessageAttributes(smsAttributes));
 
-		logger.info("{} SMS sent to {}, result: {}", LOG_PREFIX, phoneNumber, result);
-		return result.getMessageId();
-	}
+        logger.info("{} SMS sent to {}, result: {}", LOG_PREFIX, phoneNumber, result);
+        return result.getMessageId();
+    }
 }

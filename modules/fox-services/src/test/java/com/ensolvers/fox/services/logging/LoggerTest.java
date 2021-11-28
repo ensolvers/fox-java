@@ -9,89 +9,89 @@ import org.junit.jupiter.api.Test;
 
 class LoggerTest {
 
-	/** shows use of level up/downgrade */
-	@Test
-	void magicTest() {
-		Logger.initInfo(this, "magicTest");
+    /** shows use of level up/downgrade */
+    @Test
+    void magicTest() {
+        Logger.initInfo(this, "magicTest");
 
-		Logger.setInfoLevel(getClass());
-		Logger.debug(this, "you won't see this");
-		Logger.setDebugLevel(getClass());
-		Logger.debug(this, "Now you see me");
+        Logger.setInfoLevel(getClass());
+        Logger.debug(this, "you won't see this");
+        Logger.setDebugLevel(getClass());
+        Logger.debug(this, "Now you see me");
 
-		Logger.endInfo(this, "magicTest");
+        Logger.endInfo(this, "magicTest");
 
-		Assertions.assertTrue(true);
-	}
+        Assertions.assertTrue(true);
+    }
 
-	/** shows use logging within instance and class context */
-	@Test
-	void clazzTest() {
-		Logger.initInfo(this, "clazzTest");
+    /** shows use logging within instance and class context */
+    @Test
+    void clazzTest() {
+        Logger.initInfo(this, "clazzTest");
 
-		Logger.info(this, "this is me");
-		Logger.info(Math.class, "Now I am something else");
+        Logger.info(this, "this is me");
+        Logger.info(Math.class, "Now I am something else");
 
-		Logger.endInfo(this, "clazzTest");
+        Logger.endInfo(this, "clazzTest");
 
-		Assertions.assertTrue(true);
-	}
+        Assertions.assertTrue(true);
+    }
 
-	/** shows specific category creation and use */
-	@Test
-	void onTheFlyCategoryTest() {
-		Logger.initInfo(this, "onTheFlyCategoryTest");
+    /** shows specific category creation and use */
+    @Test
+    void onTheFlyCategoryTest() {
+        Logger.initInfo(this, "onTheFlyCategoryTest");
 
-		org.slf4j.Logger myLogger = Logger.getCategory("ensolvers.especialCategory");
-		myLogger.debug("Hey new category!");
+        org.slf4j.Logger myLogger = Logger.getCategory("ensolvers.especialCategory");
+        myLogger.debug("Hey new category!");
 
-		Logger.endInfo(this, "onTheFlyCategoryTest");
+        Logger.endInfo(this, "onTheFlyCategoryTest");
 
-		Assertions.assertTrue(true);
-	}
+        Assertions.assertTrue(true);
+    }
 
-	/** shows collateral cost of logging */
-	@Test
-	void expensiveLoggingTest() {
-		Logger.initInfo(this, "expensiveLoggingTest");
+    /** shows collateral cost of logging */
+    @Test
+    void expensiveLoggingTest() {
+        Logger.initInfo(this, "expensiveLoggingTest");
 
-		ExpensiveToLog witness = new ExpensiveToLog();
-		assertEquals("no work done", witness.status);
-		Logger.info(this, witness.recurseIntensiveLog());
-		assertEquals("hard work done", witness.status);
+        ExpensiveToLog witness = new ExpensiveToLog();
+        assertEquals("no work done", witness.status);
+        Logger.info(this, witness.recurseIntensiveLog());
+        assertEquals("hard work done", witness.status);
 
-		Logger.endInfo(this, "expensiveLoggingTest");
-	}
+        Logger.endInfo(this, "expensiveLoggingTest");
+    }
 
-	/** shows deferred logging, no resources consumed if log level is inactive */
-	@Test
-	void deferredLoggingTest() {
-		Logger.initInfo(this, "deferredLoggingTest");
+    /** shows deferred logging, no resources consumed if log level is inactive */
+    @Test
+    void deferredLoggingTest() {
+        Logger.initInfo(this, "deferredLoggingTest");
 
-		ExpensiveToLog witness = new ExpensiveToLog();
+        ExpensiveToLog witness = new ExpensiveToLog();
 
-		Logger.setInfoLevel(this.getClass()); // ensure logging level is high
-		assertFalse(Logger.isDebugEnabled(this));
+        Logger.setInfoLevel(this.getClass()); // ensure logging level is high
+        assertFalse(Logger.isDebugEnabled(this));
 
-		Logger.debug(this, () -> witness.recurseIntensiveLog());
-		assertEquals("no work done", witness.status);
+        Logger.debug(this, () -> witness.recurseIntensiveLog());
+        assertEquals("no work done", witness.status);
 
-		Logger.setDebugLevel(this.getClass()); // ensure logging level is low
-		assertTrue(Logger.isDebugEnabled(this));
+        Logger.setDebugLevel(this.getClass()); // ensure logging level is low
+        assertTrue(Logger.isDebugEnabled(this));
 
-		Logger.debug(this, () -> witness.recurseIntensiveLog());
-		assertEquals("hard work done", witness.status);
+        Logger.debug(this, () -> witness.recurseIntensiveLog());
+        assertEquals("hard work done", witness.status);
 
-		Logger.endInfo(this, "deferredLoggingTest");
-	}
+        Logger.endInfo(this, "deferredLoggingTest");
+    }
 
-	class ExpensiveToLog {
-		String status = "no work done";
+    class ExpensiveToLog {
+        String status = "no work done";
 
-		String recurseIntensiveLog() {
-			status = "hard work done";
-			return "resource intensive log";
-		}
-	}
+        String recurseIntensiveLog() {
+            status = "hard work done";
+            return "resource intensive log";
+        }
+    }
 
 }

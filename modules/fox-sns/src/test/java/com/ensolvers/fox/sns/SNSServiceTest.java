@@ -11,26 +11,24 @@ import org.junit.jupiter.api.Test;
 
 class SNSServiceTest {
 
-	@Disabled("403 Security token")
-	@Test
-	void testSNS() {
-		String accessKey = "";
-		String secretKey = "";
-		Regions region = Regions.US_EAST_1;
+    @Disabled("403 Security token")
+    @Test
+    void testSNS() {
+        String accessKey = "";
+        String secretKey = "";
+        Regions region = Regions.US_EAST_1;
 
-		AmazonSNS client = AmazonSNSClient.builder()
-						.withCredentials(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-						.withRegion(region)
-						.build();
+        AmazonSNS client = AmazonSNSClient.builder()
+                .withCredentials(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))).withRegion(region).build();
 
-		SNSService service = new SNSService(client);
+        SNSService service = new SNSService(client);
 
-		String senderId = "Ensolvers";
-		String phoneNumber = "";
-		String message = "Test SMS message";
-		double maxPrice = 0.01;
+        String senderId = "Ensolvers";
+        String phoneNumber = "";
+        String message = "Test SMS message";
+        double maxPrice = 0.01;
 
-		String smsId = service.sendSMSMessage(senderId, phoneNumber, message, false, maxPrice);
-		Assertions.assertFalse(smsId.isEmpty());
-	}
+        String smsId = service.sendSMSMessage(senderId, phoneNumber, message, false, maxPrice);
+        Assertions.assertFalse(smsId.isEmpty());
+    }
 }

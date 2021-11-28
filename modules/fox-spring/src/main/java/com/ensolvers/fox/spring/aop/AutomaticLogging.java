@@ -24,11 +24,11 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AutomaticLogging {
-	String logSuffix() default "";
+    String logSuffix() default "";
 
-	boolean includeParameters() default true;
+    boolean includeParameters() default true;
 
-	boolean logCollectionsSizeOnly() default true;
+    boolean logCollectionsSizeOnly() default true;
 
-	boolean timeElapsedLogging() default false;
+    boolean timeElapsedLogging() default false;
 }

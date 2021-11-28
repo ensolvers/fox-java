@@ -14,15 +14,15 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
-@ContextConfiguration(classes = {MemcachedCacheConfig.class, SampleComponent.class})
+@ContextConfiguration(classes = { MemcachedCacheConfig.class, SampleComponent.class })
 @Testcontainers
 class MemcachedCacheTest {
     @Autowired
     SampleComponent sampleComponent;
 
     @Container
-    public static GenericContainer<?> memcachedContainer =
-        new GenericContainer<>(DockerImageName.parse("memcached:1.6.10")).withExposedPorts(11211);
+    public static GenericContainer<?> memcachedContainer = new GenericContainer<>(DockerImageName.parse("memcached:1.6.10"))
+            .withExposedPorts(11211);
 
     @DynamicPropertySource
     public static void overrideProps(DynamicPropertyRegistry registry) {

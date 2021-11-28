@@ -28,28 +28,28 @@ import org.junit.jupiter.api.Test;
 
 class ChimeServiceTest {
 
-	/**
-	 * NOTE: test disabled since Localstack Chime integration is not available
- 	 */
+    /**
+     * NOTE: test disabled since Localstack Chime integration is not available
+     */
 
-	@Test
-	@Disabled("Integration not available")
-	void testChime() {
-		String accessKey = "";
-		String secretKey = "";
-		Regions region = Regions.US_EAST_1;
-		String chatAccessKey = "";
-		String chatSecretKey = "";
-		String appArn = "";
+    @Test
+    @Disabled("Integration not available")
+    void testChime() {
+        String accessKey = "";
+        String secretKey = "";
+        Regions region = Regions.US_EAST_1;
+        String chatAccessKey = "";
+        String chatSecretKey = "";
+        String appArn = "";
 
-		ChimeService service = new ChimeService(new BasicAWSCredentials(accessKey, secretKey), region, appArn,
-				new BasicAWSCredentials(chatAccessKey, chatSecretKey));
+        ChimeService service = new ChimeService(new BasicAWSCredentials(accessKey, secretKey), region, appArn,
+                new BasicAWSCredentials(chatAccessKey, chatSecretKey));
 
-		service.listChannels("userArn");
-		Meeting meeting = service.createMeeting("token");
-		service.getMeeting(meeting.getMeetingId());
-		Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
-		service.listChannels("userArn");
-		Assertions.assertSame(service.getMeeting(meeting.getMeetingId()), meeting);
-	}
+        service.listChannels("userArn");
+        Meeting meeting = service.createMeeting("token");
+        service.getMeeting(meeting.getMeetingId());
+        Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
+        service.listChannels("userArn");
+        Assertions.assertSame(service.getMeeting(meeting.getMeetingId()), meeting);
+    }
 }
