@@ -1,7 +1,7 @@
 package com.ensolvers.fox.cache.spring;
 
 import com.ensolvers.fox.cache.exception.CacheInvalidArgumentException;
-import com.ensolvers.fox.cache.spring.context.objects.Profile;
+import com.ensolvers.fox.cache.utils.Profile;
 import com.ensolvers.fox.cache.spring.context.objects.SampleComponent;
 
 import java.util.*;

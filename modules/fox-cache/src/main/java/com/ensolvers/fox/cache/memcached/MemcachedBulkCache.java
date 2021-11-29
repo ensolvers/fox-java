@@ -1,5 +1,6 @@
 package com.ensolvers.fox.cache.memcached;
 
+import com.ensolvers.fox.cache.common.CacheString;
 import com.ensolvers.fox.cache.common.GenericBulkCache;
 import com.ensolvers.fox.cache.exception.CacheSerializingException;
 import com.fasterxml.jackson.databind.JavaType;
@@ -66,10 +67,13 @@ public class MemcachedBulkCache<T> extends MemcachedCache<T> implements GenericB
     // Convert hits to objects (T)
     hits.forEach((cacheKey, value) -> {
       try {
-        objects.put(
-            cacheKeyToOriginalKey.get(cacheKey),
-            this.convertToObject((String) value)
-        );
+        if (!value.equals(CacheString.NULL_STRING)) {
+          objects.put(
+              cacheKeyToOriginalKey.get(cacheKey),
+              this.convertToObject((String) value)
+          );
+        }
+
         // Remove the hit
         cacheKeyToOriginalKey.remove(cacheKey);
       } catch (IOException e) {
@@ -88,7 +92,9 @@ public class MemcachedBulkCache<T> extends MemcachedCache<T> implements GenericB
       Map<String, T> freshObjects = fetchMultiFunction.apply(cacheKeyToOriginalKey.values());
 
       // Save the fresh objects to the cache
-      freshObjects.forEach(this::put);
+      cacheKeyToOriginalKey.values().forEach(originalMissedKey -> {
+        this.put(originalMissedKey, freshObjects.get(originalMissedKey));
+      });
 
       // Add fresh objects to the result
       objects.putAll(freshObjects);

@@ -65,28 +65,53 @@ public class SpringGuavaCache implements org.springframework.cache.Cache {
 		return wrapper == null ? null : (T) wrapper.get();
 	}
 
+
 	@Override
 	public void put(Object key, Object value) {
 		if (value == null) {
 			if (!allowNullValues) {
 				throw new CacheInvalidArgumentException("Cache '" + name + "' is configured to not allow null values but null was provided");
 			} else {
-				guavaCache.put(computeKey(key), CacheString.NULL_STRING);
+				guavaCache.put(getCacheKey(key), CacheString.NULL_STRING);
 				return;
 			}
 		}
 
-		guavaCache.put(computeKey(key), value);
+		guavaCache.put(getCacheKey(key), value);
 	}
 
 	@Override
 	public void evict(Object key) {
-		guavaCache.invalidate(computeKey(key));
+		guavaCache.invalidate(getCacheKey(key));
 	}
 
 	@Override
 	public void clear() {
 		guavaCache.invalidateAll();
+	}
+
+	/**
+	 * Build the final key to use in the cache
+	 * @param key the key of the object
+	 * @return the final key (a string conformed with the name of the cache and the params of the method)
+	 */
+	private String getCacheKey(Object key) {
+		StringBuilder finalKeyBuilder = new StringBuilder();
+		finalKeyBuilder.append(name);
+
+		if (key instanceof CustomCacheKey) {
+			if (((CustomCacheKey)key).isEmpty()) {
+				finalKeyBuilder.append("-").append("UNIQUE");
+			} else {
+				finalKeyBuilder.append("-").append(key);
+			}
+		} else if (key instanceof Collection) {
+			((Collection)key).forEach(o -> finalKeyBuilder.append("-").append(o));
+		} else {
+			finalKeyBuilder.append("-").append(key);
+		}
+
+		return finalKeyBuilder.toString().replace(" ", "-");
 	}
 
 	private void putSingle(Object key, Object value) {
@@ -95,12 +120,12 @@ public class SpringGuavaCache implements org.springframework.cache.Cache {
 			throw new CacheInvalidArgumentException("Cache '" + name + "' is configured to not allow null values but null was provided");
 		}
 
-		guavaCache.put(computeKey(key), value == null ? CacheString.NULL_STRING : value);
+		guavaCache.put(getCacheKey(key), value == null ? CacheString.NULL_STRING : value);
 	}
 
 	private ValueWrapper getSingle(Object key) {
 		// Get cached object
-		Object result = this.guavaCache.asMap().get(computeKey(key));
+		Object result = this.guavaCache.asMap().get(getCacheKey(key));
 
 		if (result == null) {
 			return null;
@@ -124,7 +149,7 @@ public class SpringGuavaCache implements org.springframework.cache.Cache {
 
 		// Convert key to cache key
 		Map<String, Object> cacheKeyToOriginalKey = collection.stream()
-				.collect(Collectors.toMap(this::computeKey, Function.identity(), (v1, v2) -> v1));
+				.collect(Collectors.toMap(this::getCacheKey, Function.identity(), (v1, v2) -> v1));
 		Map<Object, Object> result = new HashMap<>();
 
 		// Get cached objects
@@ -170,29 +195,5 @@ public class SpringGuavaCache implements org.springframework.cache.Cache {
 
 		// Return the result
 		return new SimpleValueWrapper(result);
-	}
-
-	/**
-	 * Build the final key to use in the cache
-	 * @param key the key of the object
-	 * @return the final key (a string conformed with the name of the cache and the params of the method)
-	 */
-	private String computeKey(Object key) {
-		StringBuilder finalKeyBuilder = new StringBuilder();
-		finalKeyBuilder.append(name);
-
-		if (key instanceof CustomCacheKey) {
-			if (((CustomCacheKey)key).isEmpty()) {
-				finalKeyBuilder.append("-").append("UNIQUE");
-			} else {
-				finalKeyBuilder.append("-").append(key);
-			}
-		} else if (key instanceof Collection) {
-			((Collection)key).forEach(o -> finalKeyBuilder.append("-").append(o));
-		} else {
-			finalKeyBuilder.append("-").append(key);
-		}
-
-		return finalKeyBuilder.toString().replace(" ", "-");
 	}
 }

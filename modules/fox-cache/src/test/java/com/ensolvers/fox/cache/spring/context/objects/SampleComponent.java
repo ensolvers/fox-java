@@ -1,5 +1,7 @@
 package com.ensolvers.fox.cache.spring.context.objects;
 
+import com.ensolvers.fox.cache.utils.Media;
+import com.ensolvers.fox.cache.utils.Profile;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;

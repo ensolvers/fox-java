@@ -1,11 +1,26 @@
-package com.ensolvers.fox.cache.spring.context.objects;
+package com.ensolvers.fox.cache.utils;
 
 import java.util.Objects;
+import java.util.Random;
+import java.util.UUID;
 
 public class Profile {
     private Long id;
     private String name;
     private Media media;
+
+    public static Profile random() {
+        Media media = new Media();
+        media.setId(new Random().nextLong());
+        media.setTitle(UUID.randomUUID().toString());
+
+        Profile profile = new Profile();
+        profile.setId(new Random().nextLong());
+        profile.setName(UUID.randomUUID().toString());
+        profile.setMedia(media);
+
+        return profile;
+    }
 
     public Long getId() {
         return id;

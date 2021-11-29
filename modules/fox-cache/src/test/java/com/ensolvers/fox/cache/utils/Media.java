@@ -1,4 +1,4 @@
-package com.ensolvers.fox.cache.spring.context.objects;
+package com.ensolvers.fox.cache.utils;
 
 import java.util.Objects;
 
