@@ -20,6 +20,7 @@ package com.ensolvers.fox.location;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -31,6 +32,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,369 +50,364 @@ import org.slf4j.LoggerFactory;
  */
 public class IP2LocationService {
 
-	private static final String TEST_FILE = "IP2LOCATION-test.csv";
-	private static final Boolean EUROPEAN_IP_DEFAULT_VALUE = false;
-	private static Logger logger = LoggerFactory.getLogger(IP2LocationService.class);
+    private static final String TEST_FILE = "IP2LOCATION-test.csv";
+    private static final Boolean EUROPEAN_IP_DEFAULT_VALUE = false;
+    private static final Logger logger = LoggerFactory.getLogger(IP2LocationService.class);
 
-	private static volatile IP2LocationService INSTANCE;
-	private Map<String, String> countryToContinentMap;
-	private static String resourceFile = "IP2LOCATION-LITE-DB5.tar.gz";
+    private static IP2LocationService instance;
+    private Map<String, String> countryToContinentMap;
+    private static String resourceFile = "IP2LOCATION-LITE-DB5.tar.gz";
 
-	/**
-	 * Creates a new service and sets its input stream
-	 *
-	 * @return a new IP2LocationService service instance
-	 */
-	private static IP2LocationService build() {
-		InputStream io = IP2LocationService.class.getClassLoader().getResourceAsStream(resourceFile);
-		return new IP2LocationService(io);
-	}
+    /**
+     * Creates a new service and sets its input stream
+     *
+     * @return a new IP2LocationService service instance
+     */
+    private static IP2LocationService build() {
+        InputStream io = IP2LocationService.class.getClassLoader().getResourceAsStream(resourceFile);
+        return new IP2LocationService(io);
+    }
 
-	/**
-	 * @param ip2LocationServiceEnabled true to read the ip2location csv, false to
-	 *                                  read the test csv (smaller, faster)
-	 * 
-	 * @return an IP2LocationService service instance
-	 */
-	public static IP2LocationService getInstance(Boolean ip2LocationServiceEnabled) {
+    /**
+     * @param ip2LocationServiceEnabled true to read the ip2location csv, false to
+     *                                  read the test csv (smaller, faster)
+     * 
+     * @return an IP2LocationService service instance
+     */
+    public static IP2LocationService getInstance(Boolean ip2LocationServiceEnabled) {
 
-		if (INSTANCE == null) {
+        if (instance == null) {
 
-			if (!ip2LocationServiceEnabled) {
-				useTestResource();
-			}
+            if (Boolean.FALSE.equals(ip2LocationServiceEnabled)) {
+                useTestResource();
+            }
 
-			synchronized (IP2LocationService.class) {
-				if (INSTANCE == null) {
-					INSTANCE = IP2LocationService.build();
+            synchronized (IP2LocationService.class) {
 
-					new Thread() {
-						@Override
-						public void run() {
-							INSTANCE.read();
-						}
-					}.start();
-				}
-			}
-		}
+                instance = IP2LocationService.build();
 
-		return INSTANCE;
-	}
+                new Thread() {
+                    @Override
+                    public void run() {
+                        instance.read();
+                    }
+                }.start();
 
-	/** Use the test csv. */
-	public static void useTestResource() {
-		resourceFile = TEST_FILE;
-	}
+            }
+        }
 
-	/**
-	 * Returns true if the IP is from Europe, false otherwise
-	 *
-	 * @param ip the ip
-	 * 
-	 * @return the boolean result
-	 */
-	public boolean isIpFromEU(String ip) {
-		try {
-			IP2LocationInfo info = this.getInfoFor(ip);
+        return instance;
+    }
 
-			if (StringUtils.isEmpty(info.getContinentCode())) {
-				logger.warn(FoxStringUtils.concat("[IP2LOCATION] Failed to find continent for info: ", info.getCountryName(), ", ",
-						info.getCityName()));
-				return EUROPEAN_IP_DEFAULT_VALUE;
-			}
+    /** Use the test csv. */
+    public static void useTestResource() {
+        resourceFile = TEST_FILE;
+    }
 
-			return info.getContinentCode().equals("EU");
-		} catch (IPV4NotFoundException e) {
-			logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, ipv4 not found: ", ip), e);
-			return EUROPEAN_IP_DEFAULT_VALUE;
-		} catch (IPV6NotFoundException e) {
-			logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, ipv6 not found: ", ip), e);
-			return EUROPEAN_IP_DEFAULT_VALUE;
-		} catch (InvalidIPException e) {
-			logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, invalid ip: ", ip), e);
-			return EUROPEAN_IP_DEFAULT_VALUE;
-		} catch (Exception e) {
-			logger.warn(FoxStringUtils.concat("[IP2LOCATION] Something went wrong for when getting info for ip: ", ip), e);
-			return EUROPEAN_IP_DEFAULT_VALUE;
-		}
-	}
+    /**
+     * Returns true if the IP is from Europe, false otherwise
+     *
+     * @param ip the ip
+     * 
+     * @return the boolean result
+     */
+    public boolean isIpFromEU(String ip) {
+        try {
+            IP2LocationInfo info = this.getInfoFor(ip);
 
-	/**
-	 * Gets the continent for the country code provided. Will load lazily and just
-	 * once.
-	 *
-	 * @param countryCode the country code
-	 * 
-	 * @return the string
-	 * 
-	 * @throws IOException the io exception
-	 */
-	public String country2Continent(String countryCode) throws IOException {
-		if (countryToContinentMap == null) {
-			this.countryToContinentMap = this.createMapFromFile();
-		}
-		return countryToContinentMap.get(countryCode);
-	}
+            if (StringUtils.isEmpty(info.getContinentCode())) {
+                logger.warn("[IP2LOCATION] Failed to find continent for info: {}, {}", info.getCountryName(), info.getCityName());
+                return EUROPEAN_IP_DEFAULT_VALUE;
+            }
 
-	/**
-	 * Instantiates a Map with country code => continent code Used by other methods
-	 * to quickly determine a country's continent.
-	 *
-	 * @return
-	 * 
-	 * @throws IOException
-	 */
-	private Map<String, String> createMapFromFile() throws IOException {
-		String resourceFile = "country-continent-mapping.txt";
-		InputStream io = IP2LocationService.class.getClassLoader().getResourceAsStream(resourceFile);
-		List<String> lines = Arrays.asList(IOUtils.toString(io).split("\\r?\\n"));
+            return info.getContinentCode().equals("EU");
+        } catch (IPV4NotFoundException e) {
+            logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, ipv4 not found: ", ip), e);
+            return EUROPEAN_IP_DEFAULT_VALUE;
+        } catch (IPV6NotFoundException e) {
+            logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, ipv6 not found: ", ip), e);
+            return EUROPEAN_IP_DEFAULT_VALUE;
+        } catch (InvalidIPException e) {
+            logger.warn(FoxStringUtils.concat("[IP2LOCATION] Error trying to get location info for ip, invalid ip: ", ip), e);
+            return EUROPEAN_IP_DEFAULT_VALUE;
+        } catch (Exception e) {
+            logger.warn(FoxStringUtils.concat("[IP2LOCATION] Something went wrong for when getting info for ip: ", ip), e);
+            return EUROPEAN_IP_DEFAULT_VALUE;
+        }
+    }
 
-		Map<String, String> map = new HashMap<>();
+    /**
+     * Gets the continent for the country code provided. Will load lazily and just
+     * once.
+     *
+     * @param countryCode the country code
+     * 
+     * @return the string
+     * 
+     * @throws IOException the io exception
+     */
+    public String country2Continent(String countryCode) throws IOException {
+        if (countryToContinentMap == null) {
+            this.countryToContinentMap = this.createMapFromFile();
+        }
+        return countryToContinentMap.get(countryCode);
+    }
 
-		for (String each : lines) {
-			String[] data = each.split("\\s*,\\s*");
-			map.put(data[0], data[1]);
-		}
+    /**
+     * Instantiates a Map with country code => continent code Used by other methods
+     * to quickly determine a country's continent.
+     *
+     * @return
+     * 
+     * @throws IOException
+     */
+    private Map<String, String> createMapFromFile() throws IOException {
+        String fileToMap = "country-continent-mapping.txt";
+        InputStream io = IP2LocationService.class.getClassLoader().getResourceAsStream(fileToMap);
+        String[] lines = IOUtils.toString(io, StandardCharsets.UTF_8).split("\\r?\\n");
 
-		return map;
-	}
+        Map<String, String> map = new HashMap<>();
 
-	// The Input stream of the CSV source
-	private InputStream csvIO;
-	// The list of sorted IPs obtained from the CSV
-	private List<IP2LocationInfo> infos;
-	// loading lock to avoid blocking when obtaining the instance
-	private volatile ReentrantLock loadingLock;
+        for (String each : lines) {
+            String[] data = each.split("\\s*,\\s*");
+            map.put(data[0], data[1]);
+        }
 
-	private volatile boolean hasLoaded;
+        return map;
+    }
 
-	public IP2LocationService(String csvLocation) throws FileNotFoundException {
-		this.csvIO = new FileInputStream(csvLocation);
-	}
+    // The Input stream of the CSV source
+    private InputStream csvIO;
+    // The list of sorted IPs obtained from the CSV
+    private List<IP2LocationInfo> infos;
+    // loading lock to avoid blocking when obtaining the instance
+    private ReentrantLock loadingLock;
 
-	public IP2LocationService(InputStream csvIO) {
-		this.csvIO = csvIO;
-		this.loadingLock = new ReentrantLock();
-		this.hasLoaded = false;
-	}
+    private volatile boolean hasLoaded;
 
-	public void read() {
-		this.loadingLock.lock();
-		this.infos = new ArrayList<IP2LocationInfo>(4000000);
-		this.readFromTarGZ(this.csvIO);
-	}
+    public IP2LocationService(String csvLocation) throws FileNotFoundException {
+        this.csvIO = new FileInputStream(csvLocation);
+    }
 
-	private void basicRead(InputStream io) {
-		CSVParser parser;
-		Iterator<CSVRecord> iterator;
-		Reader reader = null;
+    public IP2LocationService(InputStream csvIO) {
+        this.csvIO = csvIO;
+        this.loadingLock = new ReentrantLock();
+        this.hasLoaded = false;
+    }
 
-		try {
-			reader = new InputStreamReader(io);
-			parser = new CSVParser(reader, CSVFormat.DEFAULT);
-			iterator = parser.iterator();
+    public void read() {
+        this.loadingLock.lock();
+        this.infos = new ArrayList<>(4000000);
+        this.readFromTarGZ(this.csvIO);
+    }
 
-			int i = 0;
-			while (iterator.hasNext()) {
-				IP2LocationInfo info = this.parse(iterator.next());
-				/*
-				 * IMPROVEMENT (see getIpAsNumber() comments for the reason) make this.infos a
-				 * MAP indexed by info.getFromIP() to search faster
-				 */
-				this.infos.add(info);
-				i++;
+    private void basicRead(InputStream io) throws IOException {
+        Iterator<CSVRecord> iterator;
+        Reader reader = new InputStreamReader(io);
+        CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
 
-				if (i % 10000 == 0) {
-					logger.info("Read " + i + " rows");
-					// System.out.println("Read " + i + " rows");
-				}
-			}
+        try {
+            iterator = parser.iterator();
 
-			parser.close();
-		} catch (IOException e) {
-			logger.error("Error working with stream", e);
-		} finally {
-			IOUtils.closeQuietly(reader);
-			IOUtils.closeQuietly(this.csvIO);
-			this.hasLoaded = true;
-			this.loadingLock.unlock();
-		}
-	}
+            int i = 0;
+            while (iterator.hasNext()) {
+                IP2LocationInfo info = this.parse(iterator.next());
+                /*
+                 * IMPROVEMENT (see getIpAsNumber() comments for the reason) make this.infos a
+                 * MAP indexed by info.getFromIP() to search faster
+                 */
+                this.infos.add(info);
+                i++;
 
-	private void readFromTarGZ(InputStream tarGz) {
-		try (InputStream bi = new BufferedInputStream(tarGz);
-				InputStream gzi = new GzipCompressorInputStream(bi);
-				ArchiveInputStream o = new TarArchiveInputStream(gzi)) {
+                if (i % 10000 == 0) {
+                    logger.info("Read {} rows", i);
+                }
+            }
 
-			ArchiveEntry entry = null;
+            parser.close();
+        } catch (IOException e) {
+            logger.error("Error working with stream", e);
+        } finally {
+            IOUtils.close(reader);
+            IOUtils.close(this.csvIO);
+            this.hasLoaded = true;
+            this.loadingLock.unlock();
+        }
+    }
 
-			while ((entry = o.getNextEntry()) != null) {
-				if (!o.canReadEntryData(entry)) {
-					// log something?
-					continue;
-				}
-				this.basicRead(o);
-				return;
-			}
-		} catch (IOException e) {
-			logger.error("Error fetching data from tar gz csv file", e);
-		}
-	}
+    private void readFromTarGZ(InputStream tarGz) {
+        try (InputStream bi = new BufferedInputStream(tarGz);
+                InputStream gzi = new GzipCompressorInputStream(bi);
+                ArchiveInputStream o = new TarArchiveInputStream(gzi)) {
 
-	private IP2LocationInfo parse(CSVRecord record) throws IOException {
-		long fromIP = Long.valueOf(record.get(0)).longValue();
-		long toIP = Long.valueOf(record.get(1)).longValue();
-		String countryCode = record.get(2);
-		String countryName = record.get(3);
-		String regionName = record.get(4);
-		String cityName = record.get(5);
-		double lat = Double.valueOf(record.get(6)).doubleValue();
-		double lng = Double.valueOf(record.get(7)).doubleValue();
+            ArchiveEntry entry = null;
 
-		IP2LocationInfo info = new IP2LocationInfo();
-		info.setFromIP(fromIP);
-		info.setToIP(toIP);
-		info.setCountryCode(countryCode);
-		info.setContinentCode(this.country2Continent(countryCode));
-		info.setCountryName(countryName);
-		info.setRegionName(regionName);
-		info.setCityName(cityName);
-		info.setLat(lat);
-		info.setLng(lng);
+            while ((entry = o.getNextEntry()) != null) {
+                if (!o.canReadEntryData(entry)) {
+                    // log something?
+                    continue;
+                }
+                this.basicRead(o);
+                return;
+            }
+        } catch (IOException e) {
+            logger.error("Error fetching data from tar gz csv file", e);
+        }
+    }
 
-		return info;
-	}
+    private IP2LocationInfo parse(CSVRecord csvRecord) throws IOException {
+        long fromIP = Long.parseLong(csvRecord.get(0));
+        long toIP = Long.parseLong(csvRecord.get(1));
+        String countryCode = csvRecord.get(2);
+        String countryName = csvRecord.get(3);
+        String regionName = csvRecord.get(4);
+        String cityName = csvRecord.get(5);
+        double lat = Double.parseDouble(csvRecord.get(6));
+        double lng = Double.parseDouble(csvRecord.get(7));
 
-	void waitForLoaded() {
-		if (this.hasLoaded) {
-			return;
-		}
+        IP2LocationInfo info = new IP2LocationInfo();
+        info.setFromIP(fromIP);
+        info.setToIP(toIP);
+        info.setCountryCode(countryCode);
+        info.setContinentCode(this.country2Continent(countryCode));
+        info.setCountryName(countryName);
+        info.setRegionName(regionName);
+        info.setCityName(cityName);
+        info.setLat(lat);
+        info.setLng(lng);
 
-		this.loadingLock.lock();
-		this.loadingLock.unlock();
-	}
+        return info;
+    }
 
-	/**
-	 * Returns location information about the IP.
-	 *
-	 * @param ip The IP in V4 or V6 format. Examples: 124.45.21.5 or
-	 *           2001:db8:85a3::8a2e:370:7334
-	 * 
-	 * @return The information about the ip
-	 * 
-	 * @throws IPV4NotFoundException when the IPv4 has not been found.
-	 * @throws IPV6NotFoundException when the IPv6 has not been found.
-	 * @throws InvalidIPException    when the ip parameter is not an IP address
-	 */
-	public IP2LocationInfo getInfoFor(String ip) throws IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
-		if (StringUtils.isEmpty(ip)) {
-			throw new InvalidIPException();
-		}
+    void waitForLoaded() {
+        if (this.hasLoaded) {
+            return;
+        }
 
-		this.waitForLoaded();
+        this.loadingLock.lock();
+        this.loadingLock.unlock();
+    }
 
-		// Ipv4 logic
-		if (NetworkUtils.isValidIPv4Address(ip)) {
-			return getInfoForIpv4(ip);
-		}
+    /**
+     * Returns location information about the IP.
+     *
+     * @param ip The IP in V4 or V6 format. Examples: 124.45.21.5 or
+     *           2001:db8:85a3::8a2e:370:7334
+     * 
+     * @return The information about the ip
+     * 
+     * @throws IPV4NotFoundException when the IPv4 has not been found.
+     * @throws IPV6NotFoundException when the IPv6 has not been found.
+     * @throws InvalidIPException    when the ip parameter is not an IP address
+     */
+    public IP2LocationInfo getInfoFor(String ip) throws IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
+        if (StringUtils.isEmpty(ip)) {
+            throw new InvalidIPException();
+        }
 
-		// Ipv6 logic
-		if (NetworkUtils.isValidIPv6Address(ip)) {
-			return getInfoForIpv6(ip);
-		}
+        this.waitForLoaded();
 
-		throw new InvalidIPException();
-	}
+        // Ipv4 logic
+        if (NetworkUtils.isValidIPv4Address(ip)) {
+            return getInfoForIpv4(ip);
+        }
 
-	private IP2LocationInfo getInfoForIpv4(String ip) throws IPV4NotFoundException {
-		IP2LocationInfo toFind = new IP2LocationInfo();
-		long number = this.getIpv4AsNumber(ip);
-		toFind.setFromIP(number);
-		toFind.setToIP(number);
-		/*
-		 * see getIpAsNumber() comments If the data is stored in a MAP, x21 faster
-		 * access is possible
-		 */
-		int index = Collections.binarySearch(this.infos, toFind);
-		if (index >= 0) {
-			return this.infos.get(index);
-		} else {
-			throw new IPV4NotFoundException();
-		}
-	}
+        // Ipv6 logic
+        if (Boolean.TRUE.equals(NetworkUtils.isValidIPv6Address(ip))) {
+            return getInfoForIpv6(ip);
+        }
 
-	private long getIpv4AsNumber(String ip) {
+        throw new InvalidIPException();
+    }
 
-		String[] parts = ip.split("\\.");
+    private IP2LocationInfo getInfoForIpv4(String ip) throws IPV4NotFoundException {
+        IP2LocationInfo toFind = new IP2LocationInfo();
+        long number = this.getIpv4AsNumber(ip);
+        toFind.setFromIP(number);
+        toFind.setToIP(number);
+        /*
+         * see getIpAsNumber() comments If the data is stored in a MAP, x21 faster
+         * access is possible
+         */
+        int index = Collections.binarySearch(this.infos, toFind);
+        if (index >= 0) {
+            return this.infos.get(index);
+        } else {
+            throw new IPV4NotFoundException();
+        }
+    }
 
-		/*
-		 * IMPROVEMENTS: this is the worst case scenario: a class C address a) compute
-		 * only the network part (first byte for class A, two for class B, three for
-		 * class C b) use the network for x21 faster search (if the data is stored in a
-		 * hashmap)
-		 */
-		return (Long.valueOf(parts[0]) * 256 * 256 * 256) + (Long.valueOf(parts[1]) * 256 * 256) + (Long.valueOf(parts[2]) * 256)
-				+ (Long.valueOf(parts[3]));
-	}
+    private long getIpv4AsNumber(String ip) {
 
-	private IP2LocationInfo getInfoForIpv6(String ip) throws IPV6NotFoundException {
-		if (ip != null) {
-			return IP2LocationInfo.generateMockLocation();
-		} else {
-			throw new IPV6NotFoundException();
-		}
-	}
+        String[] parts = ip.split("\\.");
 
-	/**
-	 * This method returns the ipv6 address as a BigInteger due to a long not being
-	 * big enough to store the value, it's not in use yet because of the mock
-	 * approach we are taking, in case we change the approach it might be relevant
-	 * again
-	 *
-	 * @param addr the ipv6 address
-	 * 
-	 * @return
-	 */
-	// TODO test this method
-	private BigInteger ipv6ToNumber(String addr) {
-		int startIndex = addr.indexOf("::");
-		if (startIndex != -1) {
-			String firstStr = addr.substring(0, startIndex);
-			String secondStr = addr.substring(startIndex + 2, addr.length());
-			BigInteger first = new BigInteger("0");
-			BigInteger second = new BigInteger("0");
-			if (!firstStr.equals("")) {
-				int x = this.countChar(addr, ':');
-				first = ipv6ToNumber(firstStr).shiftLeft(16 * (7 - x));
-			}
-			if (!secondStr.equals("")) {
-				second = ipv6ToNumber(secondStr);
-			}
-			first = first.add(second);
-			return first;
-		}
+        /*
+         * IMPROVEMENTS: this is the worst case scenario: a class C address a) compute
+         * only the network part (first byte for class A, two for class B, three for
+         * class C b) use the network for x21 faster search (if the data is stored in a
+         * hashmap)
+         */
+        return (Long.valueOf(parts[0]) * 256 * 256 * 256) + (Long.valueOf(parts[1]) * 256 * 256) + (Long.valueOf(parts[2]) * 256)
+                + (Long.valueOf(parts[3]));
+    }
 
-		String[] strArr = addr.split(":");
-		BigInteger retValue = BigInteger.valueOf(0);
-		for (int i = 0; i < strArr.length; i++) {
-			BigInteger bi = new BigInteger(strArr[i], 16);
-			retValue = retValue.shiftLeft(16).add(bi);
-		}
-		return retValue;
-	}
+    private IP2LocationInfo getInfoForIpv6(String ip) throws IPV6NotFoundException {
+        if (ip != null) {
+            return IP2LocationInfo.generateMockLocation();
+        } else {
+            throw new IPV6NotFoundException();
+        }
+    }
 
-	private int countChar(String str, char reg) {
-		char[] ch = str.toCharArray();
-		int count = 0;
-		for (int i = 0; i < ch.length; ++i) {
-			if (ch[i] == reg) {
-				if (ch[i + 1] == reg) {
-					++i;
-					break;
-				}
-				++count;
-			}
-		}
-		return count;
-	}
+    /**
+     * This method returns the ipv6 address as a BigInteger due to a long not being
+     * big enough to store the value, it's not in use yet because of the mock
+     * approach we are taking, in case we change the approach it might be relevant
+     * again
+     *
+     * @param addr the ipv6 address
+     * 
+     * @return ipv6 in BigInteger format
+     */
+    @Disabled("Currently out of use because of Mock approach")
+    private BigInteger ipv6ToNumber(String addr) {
+        int startIndex = addr.indexOf("::");
+        if (startIndex != -1) {
+            String firstStr = addr.substring(0, startIndex);
+            String secondStr = addr.substring(startIndex + 2, addr.length());
+            BigInteger first = BigInteger.valueOf(0);
+            BigInteger second = BigInteger.valueOf(0);
+            if (!firstStr.equals("")) {
+                int x = this.countChar(addr, ':');
+                first = ipv6ToNumber(firstStr).shiftLeft(16 * (7 - x));
+            }
+            if (!secondStr.equals("")) {
+                second = ipv6ToNumber(secondStr);
+            }
+            first = first.add(second);
+            return first;
+        }
+
+        String[] strArr = addr.split(":");
+        BigInteger retValue = BigInteger.valueOf(0);
+        for (String s : strArr) {
+            BigInteger bi = new BigInteger(s, 16);
+            retValue = retValue.shiftLeft(16).add(bi);
+        }
+        return retValue;
+    }
+
+    private int countChar(String str, char reg) {
+        char[] ch = str.toCharArray();
+        int count = 0;
+        for (int i = 0; i < ch.length; ++i) {
+            if (ch[i] == reg) {
+                if (ch[i + 1] == reg) {
+                    break;
+                }
+                ++count;
+            }
+        }
+        return count;
+    }
 }

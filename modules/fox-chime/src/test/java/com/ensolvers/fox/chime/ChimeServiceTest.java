@@ -22,29 +22,34 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.chime.model.Attendee;
 import com.amazonaws.services.chime.model.Meeting;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class ChimeServiceTest {
+class ChimeServiceTest {
 
-	// NOTE: test disabled since Localstack Chime integration is not available
-	@Test
-	@Disabled
-	public void testChime() {
-		String accessKey = "";
-		String secretKey = "";
-		Regions region = Regions.US_EAST_1;
-		String chatAccessKey = "";
-		String chatSecretKey = "";
-		String appArn = "";
+    /**
+     * NOTE: test disabled since Localstack Chime integration is not available
+     */
 
-		ChimeService service = new ChimeService(new BasicAWSCredentials(accessKey, secretKey), region, appArn,
-				new BasicAWSCredentials(chatAccessKey, chatSecretKey));
+    @Test
+    @Disabled("Integration not available")
+    void testChime() {
+        String accessKey = "";
+        String secretKey = "";
+        Regions region = Regions.US_EAST_1;
+        String chatAccessKey = "";
+        String chatSecretKey = "";
+        String appArn = "";
 
-		service.listChannels("userArn");
-		Meeting meeting = service.createMeeting("token");
-		service.getMeeting(meeting.getMeetingId());
-		Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
-		service.listChannels("userArn");
-	}
+        ChimeService service = new ChimeService(new BasicAWSCredentials(accessKey, secretKey), region, appArn,
+                new BasicAWSCredentials(chatAccessKey, chatSecretKey));
+
+        service.listChannels("userArn");
+        Meeting meeting = service.createMeeting("token");
+        service.getMeeting(meeting.getMeetingId());
+        Attendee attendee = service.joinMeeting("userId", meeting.getMeetingId());
+        service.listChannels("userArn");
+        Assertions.assertSame(service.getMeeting(meeting.getMeetingId()), meeting);
+    }
 }

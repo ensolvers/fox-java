@@ -1,16 +1,16 @@
 package com.ensolvers.fox.cache.exception;
 
 public abstract class CacheException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public CacheException() {
-	}
+    protected CacheException() {
+    }
 
-	public CacheException(String message) {
-		super(message);
-	}
+    protected CacheException(String message) {
+        super(message);
+    }
 
-	public CacheException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    protected CacheException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

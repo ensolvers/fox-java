@@ -19,8 +19,6 @@
 package com.ensolvers.fox.cloudwatch;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
@@ -35,95 +33,90 @@ import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
  */
 public class CloudwatchService {
 
-	private final String namespace;
-	private final CloudWatchClient client;
+    private final String namespace;
+    private final CloudWatchClient client;
 
-	public CloudwatchService(String accessKeyId, String secretAccessKeyId, Region region, String namespace) {
-		this.namespace = namespace;
+    public CloudwatchService(String accessKeyId, String secretAccessKeyId, Region region, String namespace) {
+        this.namespace = namespace;
 
-		this.client = this.createClient(accessKeyId, secretAccessKeyId, region);
-	}
+        this.client = this.createClient(accessKeyId, secretAccessKeyId, region);
+    }
 
-	private CloudWatchClient createClient(String accessKeyId, String secretAccessKeyId, Region region) {
-		CloudWatchClient client = CloudWatchClient.builder().region(region).credentialsProvider(new AwsCredentialsProvider() {
-			@Override
-			public AwsCredentials resolveCredentials() {
-				return AwsBasicCredentials.create(accessKeyId, secretAccessKeyId);
-			}
-		}).build();
+    private CloudWatchClient createClient(String accessKeyId, String secretAccessKeyId, Region region) {
 
-		return client;
-	}
+        return CloudWatchClient.builder().region(region)
+                .credentialsProvider(() -> AwsBasicCredentials.create(accessKeyId, secretAccessKeyId)).build();
+    }
 
-	/**
-	 * Publishes a new value for a specific metric using the default unit
-	 * (StandardUnit.NONE) Note: the dimensionValue is also used to set the name of
-	 * the metric
-	 *
-	 * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
-	 * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
-	 * @param value          individual metric to be published for the dimension
-	 */
-	public void put(String dimensionName, String dimensionValue, double value) {
-		this.putMetricData(dimensionName, dimensionValue, dimensionValue, StandardUnit.NONE, value);
-	}
+    /**
+     * Publishes a new value for a specific metric using the default unit
+     * (StandardUnit.NONE) Note: the dimensionValue is also used to set the name of
+     * the metric
+     *
+     * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
+     * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
+     * @param value          individual metric to be published for the dimension
+     */
+    public void put(String dimensionName, String dimensionValue, double value) {
+        this.putMetricData(dimensionName, dimensionValue, dimensionValue, StandardUnit.NONE, value);
+    }
 
-	/**
-	 * Publishes a new value for a specific metric using the default unit
-	 * (StandardUnit.NONE)
-	 *
-	 * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
-	 * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
-	 * @param metricName     the name of the metric - e.g <code>PAGES_VISITED</code>
-	 * @param value          individual metric to be published for the dimension
-	 */
-	public void put(String dimensionName, String dimensionValue, String metricName, double value) {
-		this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.NONE, value);
-	}
+    /**
+     * Publishes a new value for a specific metric using the default unit
+     * (StandardUnit.NONE)
+     *
+     * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
+     * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
+     * @param metricName     the name of the metric - e.g <code>PAGES_VISITED</code>
+     * @param value          individual metric to be published for the dimension
+     */
+    public void put(String dimensionName, String dimensionValue, String metricName, double value) {
+        this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.NONE, value);
+    }
 
-	/**
-	 * Publishes a new value that will be interpreted as milliseconds
-	 *
-	 * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
-	 * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
-	 * @param metricName     the name of the metric - e.g
-	 *                       <code>MILLISECONDS_TO_LOAD</code>
-	 * @param value          individual metric to be published for the dimension
-	 */
-	public void putMilliseconds(String dimensionName, String dimensionValue, String metricName, double value) {
-		this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.MILLISECONDS, value);
-	}
+    /**
+     * Publishes a new value that will be interpreted as milliseconds
+     *
+     * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
+     * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
+     * @param metricName     the name of the metric - e.g
+     *                       <code>MILLISECONDS_TO_LOAD</code>
+     * @param value          individual metric to be published for the dimension
+     */
+    public void putMilliseconds(String dimensionName, String dimensionValue, String metricName, double value) {
+        this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.MILLISECONDS, value);
+    }
 
-	/**
-	 * Publishes a new value that will be interpreted as seconds
-	 *
-	 * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
-	 * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
-	 * @param metricName     the name of the metric - e.g
-	 *                       <code>SECONDS_TO_LOAD</code>
-	 * @param value          individual metric to be published for the dimension
-	 */
-	public void putSeconds(String dimensionName, String dimensionValue, String metricName, double value) {
-		this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.SECONDS, value);
-	}
+    /**
+     * Publishes a new value that will be interpreted as seconds
+     *
+     * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
+     * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
+     * @param metricName     the name of the metric - e.g
+     *                       <code>SECONDS_TO_LOAD</code>
+     * @param value          individual metric to be published for the dimension
+     */
+    public void putSeconds(String dimensionName, String dimensionValue, String metricName, double value) {
+        this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.SECONDS, value);
+    }
 
-	/**
-	 * Publishes a new value that will be interpreted as count
-	 *
-	 * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
-	 * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
-	 * @param metricName     the name of the metric - e.g <code>PAGES_VISITED</code>
-	 * @param value          individual metric to be published for the dimension
-	 */
-	public void putCount(String dimensionName, String dimensionValue, String metricName, double value) {
-		this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.COUNT, value);
-	}
+    /**
+     * Publishes a new value that will be interpreted as count
+     *
+     * @param dimensionName  name for the dimension - e.g. <code>UNIQUE_PAGES</code>
+     * @param dimensionValue a value for the dimension - e.g. <code>URLS</code>
+     * @param metricName     the name of the metric - e.g <code>PAGES_VISITED</code>
+     * @param value          individual metric to be published for the dimension
+     */
+    public void putCount(String dimensionName, String dimensionValue, String metricName, double value) {
+        this.putMetricData(dimensionName, dimensionValue, metricName, StandardUnit.COUNT, value);
+    }
 
-	private void putMetricData(String dimensionName, String dimensionValue, String metricName, StandardUnit standardUnit, double value) {
-		Dimension dimension = Dimension.builder().name(dimensionName).value(dimensionValue).build();
-		MetricDatum datum = MetricDatum.builder().metricName(metricName).unit(standardUnit).value(value).dimensions(dimension).build();
-		PutMetricDataRequest request = PutMetricDataRequest.builder().namespace(this.namespace).metricData(datum).build();
+    private void putMetricData(String dimensionName, String dimensionValue, String metricName, StandardUnit standardUnit, double value) {
+        Dimension dimension = Dimension.builder().name(dimensionName).value(dimensionValue).build();
+        MetricDatum datum = MetricDatum.builder().metricName(metricName).unit(standardUnit).value(value).dimensions(dimension).build();
+        PutMetricDataRequest request = PutMetricDataRequest.builder().namespace(this.namespace).metricData(datum).build();
 
-		client.putMetricData(request);
-	}
+        client.putMetricData(request);
+    }
 }
