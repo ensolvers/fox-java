@@ -49,4 +49,4 @@ Then, libraries can be referenced simply by its groupId, artifactId and version,
 4. Configure your AWS environment 
 5. Run `deploy.sh`
 
-If `deploy.sh` runs successfully, both the compiled jars and the source code should be upload to the repo
+If `deploy.sh` runs successfully, both the compiled jars and the source code should be uploaded to the repo

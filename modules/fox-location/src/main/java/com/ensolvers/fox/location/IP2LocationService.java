@@ -398,7 +398,7 @@ public class IP2LocationService {
 		}
 		return retValue;
 	}
-
+	@Disabled("Used only on ipv6ToNumber()")
 	private int countChar(String str, char reg) {
 		char[] ch = str.toCharArray();
 		int count = 0;

@@ -29,7 +29,7 @@ import org.junit.platform.commons.logging.LoggerFactory;
 class IP2LocationServiceITTest {
 
 	@Test
-	@Disabled("")
+	//@Disabled("")
 	void testLocation() throws InterruptedException, IPV4NotFoundException, IPV6NotFoundException, InvalidIPException {
 		IP2LocationService service = IP2LocationService.getInstance(true);
 		Thread.sleep(100);

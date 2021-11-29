@@ -13,13 +13,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class SonarQubeServiceTest {
-
+	private String SONARQUBE_TOKEN = "sonar_token";
+	private String COMPONENT = "component";
+	private String COVERAGE = "coverage";
 	private SonarQubeService service;
 
 	@BeforeEach
 	private void createService() {
 		// TODO replace to an env var and provide via an action/pipeline
-		this.service = new SonarQubeService("token");
+		this.service = new SonarQubeService(SONARQUBE_TOKEN);
 	}
 
 	@Test
@@ -32,11 +34,11 @@ class SonarQubeServiceTest {
 
 		// TODO replace component to an env var and provide via an action/pipeline
 
-		SonarQubeMetricHistoryResponse coverage = this.service.getMetricHistory("component", "coverage", from, to);
+		SonarQubeMetricHistoryResponse coverage = this.service.getMetricHistory(COMPONENT, COVERAGE, from, to);
 
 		// check that at least one historic coverage datapoint can be fetched
 		assertFalse(coverage.getMeasures().isEmpty());
-		assertEquals("coverage", coverage.getMeasures().get(0).getMetric());
+		assertEquals(COVERAGE, coverage.getMeasures().get(0).getMetric());
 		assertFalse(coverage.getMeasures().get(0).getHistory().isEmpty());
 		assertNotNull(coverage.getMeasures().get(0).getHistory().get(0).getDate());
 		assertNotNull(coverage.getMeasures().get(0).getHistory().get(0).getValue());

@@ -28,12 +28,21 @@ import org.junit.jupiter.api.Test;
  * @author Esteban Robles Luna
  */
 class EmailServiceTest {
+	private final String awsSES_HOST = "host";
+	private final Integer awsSES_PORT = 465;
+	private final String smtpUsername = "username";
+	private final String smtpPassword = "password";
+	private final String senderMail = "info@ensolvers.com";
+
+	private final String subject = "Hola";
+	private final String body = "Hola esteban como estas?";
+	private final String recipientMail = "esteban.roblesluna@gmail.com";
 
 	@Test
 	@Disabled("disabled")
 	void testEmail() throws Exception {
-		EmailService service = new EmailService("host", 465, "username", "password", "info@ensolvers.com");
-		service.sendMailTo("esteban.roblesluna@gmail.com", "hola", "Hola esteban como estas?");
+		EmailService service = new EmailService(awsSES_HOST, awsSES_PORT, smtpUsername, smtpPassword, senderMail);
+		service.sendMailTo(recipientMail, subject, body);
 
 		Assertions.assertFalse(service.toString().isEmpty());
 	}

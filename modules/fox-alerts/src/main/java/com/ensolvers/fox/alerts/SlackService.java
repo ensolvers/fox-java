@@ -26,7 +26,7 @@ public class SlackService {
 	 * Creates an instance with a specific bot token and default channel
 	 *
 	 * @param token          bot token that will be used to send messages - an app
-	 *                       must be created and installed an da bot token should be
+	 *                       must be created and installed and a bot token should be
 	 *                       generated and provided
 	 * @param defaultChannel for methods that do not require a channel, the channel
 	 *                       id that will be used to send messages

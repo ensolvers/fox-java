@@ -18,7 +18,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * A utils class that allows to interact with SonarQube (mostly for data
+ * An utils class that allows to interact with SonarQube (mostly for data
  * fetching) via its API
  *
  * @author José Matías Rivero (jose.matias.rivero@gmail.com)
