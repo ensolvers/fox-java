@@ -24,6 +24,11 @@ class SpringGuavaCacheTest {
     }
 
     @Test
+    void testBulkGetComplexObjects() {
+        CacheTester.testBulkGetComplexObjects(sampleComponent);
+    }
+
+    @Test
     void testNullValues() {
         CacheTester.testNullValues(sampleComponent);
     }

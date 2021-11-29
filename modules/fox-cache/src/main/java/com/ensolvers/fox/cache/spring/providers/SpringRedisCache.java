@@ -95,8 +95,8 @@ public class SpringRedisCache implements Cache {
 
   @Override
   public void evict(Object key) {
-    String finalKey = getRedisKey(key);
-    redisClient.del(finalKey);
+    String cacheKey = getCacheKey(key);
+    redisClient.del(cacheKey);
   }
 
   @Override
@@ -110,23 +110,23 @@ public class SpringRedisCache implements Cache {
     } while (!cursor.isFinished() && cursor.getKeys() != null && cursor.getKeys().size() > 0);
   }
 
-  private String getRedisKey(Object key) {
-    StringBuilder finalKeyBuilder = new StringBuilder();
-    finalKeyBuilder.append(name);
+  private String getCacheKey(Object key) {
+    StringBuilder cacheKeyBuilder = new StringBuilder();
+    cacheKeyBuilder.append(name);
 
     if (key instanceof CustomCacheKey) {
       if (((CustomCacheKey)key).isEmpty()) {
-        finalKeyBuilder.append("-").append("UNIQUE");
+        cacheKeyBuilder.append("-").append("UNIQUE");
       } else {
-        finalKeyBuilder.append("-").append(key);
+        cacheKeyBuilder.append("-").append(key);
       }
     } else if (key instanceof Collection) {
-      ((Collection)key).forEach(o -> finalKeyBuilder.append("-").append(o));
+      ((Collection)key).forEach(o -> cacheKeyBuilder.append("-").append(o));
     } else {
-      finalKeyBuilder.append("-").append(key);
+      cacheKeyBuilder.append("-").append(key);
     }
 
-    return finalKeyBuilder.toString().replace(" ", "-");
+    return cacheKeyBuilder.toString().replace(" ", "-");
   }
 
   private Object deserializeUsingMapArgumentType(CustomCacheKey customCacheKey, String memcachedKey, String hit) {
@@ -155,22 +155,22 @@ public class SpringRedisCache implements Cache {
       throw new CacheInvalidArgumentException("Cache '" + name + "' is configured to not allow null values but null was provided");
     }
 
-    String finalKey = getRedisKey(key);
+    String cacheKey = getCacheKey(key);
     try {
       String serializedValue = CacheString.NULL_STRING;
       if (value != null) {
         serializedValue = objectMapper.writeValueAsString(value);
       }
-      redisClient.set(finalKey, serializedValue, SetArgs.Builder.ex(expirationTimeInSeconds));
+      redisClient.set(cacheKey, serializedValue, SetArgs.Builder.ex(expirationTimeInSeconds));
     } catch (JsonProcessingException e) {
-      throw CacheSerializingException.with(finalKey, value.getClass(), e);
+      throw CacheSerializingException.with(cacheKey, value.getClass(), e);
     }
   }
 
   private ValueWrapper getSingle(Object key) {
     // Get cached object
-    String redisKey = getRedisKey(key);
-    String hit = redisClient.get(redisKey);
+    String cacheKey = getCacheKey(key);
+    String hit = redisClient.get(cacheKey);
 
     // Missed hit
     if (hit == null) {
@@ -181,7 +181,7 @@ public class SpringRedisCache implements Cache {
       return new SimpleValueWrapper(null);
     }
 
-    Object deserializedObject = deserializeUsingReturnType((CustomCacheKey) key, redisKey, hit);
+    Object deserializedObject = deserializeUsingReturnType((CustomCacheKey) key, cacheKey, hit);
     return new SimpleValueWrapper(deserializedObject);
   }
 
@@ -194,17 +194,17 @@ public class SpringRedisCache implements Cache {
     // Get the collection of requested keys
     Collection<Object> collection = (Collection<Object>) customCacheKey.getParams()[0] ;
 
-    // Convert key to memcached key
-    Map<String, Object> redisKeyToOriginalKey = collection.stream()
-        .collect(Collectors.toMap(this::getRedisKey, Function.identity(), (v1, v2) -> v1));
+    // Convert key to redis key
+    Map<String, Object> cacheKeyToOriginalKey = collection.stream()
+        .collect(Collectors.toMap(this::getCacheKey, Function.identity(), (v1, v2) -> v1));
     Map<Object, Object> result = new HashMap<>();
 
     // Get cached objects
     Map<String, Object> hits;
-    if (redisKeyToOriginalKey.isEmpty()) {
+    if (cacheKeyToOriginalKey.isEmpty()) {
       hits = new HashMap<>();
     } else {
-      hits = redisClient.mget(redisKeyToOriginalKey.keySet().toArray(new String[0])).stream()
+      hits = redisClient.mget(cacheKeyToOriginalKey.keySet().toArray(new String[0])).stream()
                 .filter(Value::hasValue)
                 .collect(Collectors.toMap(KeyValue::getKey, kv -> kv.getValueOrElse(null)));
     }
@@ -215,17 +215,17 @@ public class SpringRedisCache implements Cache {
       if (!hit.equals(CacheString.NULL_STRING)) {
         deserializedObject = deserializeUsingMapArgumentType(customCacheKey, memcachedKey, (String) hit);
       }
-      result.put(redisKeyToOriginalKey.get(memcachedKey), deserializedObject);
-      redisKeyToOriginalKey.remove(memcachedKey);
+      result.put(cacheKeyToOriginalKey.get(memcachedKey), deserializedObject);
+      cacheKeyToOriginalKey.remove(memcachedKey);
     });
 
     // Check missed hits
-    if (!redisKeyToOriginalKey.isEmpty()) {
+    if (!cacheKeyToOriginalKey.isEmpty()) {
       // Create a new instance of the collection class and collect the missed keys to pass it to the annotated method
       Collection missedKeys;
       try {
         missedKeys = (Collection)customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
-        missedKeys.addAll(redisKeyToOriginalKey.values());
+        missedKeys.addAll(cacheKeyToOriginalKey.values());
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw CacheInvalidArgumentException.collectionError(customCacheKey.getParams()[0].getClass(), e);
       }

@@ -13,35 +13,31 @@ import java.util.stream.Collectors;
 
 public class MemcachedBulkCache<T> extends MemcachedCache<T> implements GenericBulkCache<T> {
   private final Function<Collection<String>, Map<String, T>> fetchMultiFunction;
-  private final boolean includeNullValuesInReturn;
 
 
   protected MemcachedBulkCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, Function<Collection<String>, Map<String, T>> fetchMultiFunction,
-                               String keyPrefix, Function<TypeFactory, JavaType> objectTypeFactory, int expirationTimeInSeconds,
-                               boolean allowNullValues, boolean includeNullValuesInReturn,
+                               String keyPrefix, Function<TypeFactory, JavaType> objectTypeFactory, int expirationTimeInSeconds, boolean allowNullValues,
                                Function<T, String> customSerializer, Function<String, T> customDeserializer) {
     super(memcachedClient, fetchFunction, keyPrefix, objectTypeFactory, expirationTimeInSeconds, allowNullValues, customSerializer, customDeserializer);
     this.fetchMultiFunction = fetchMultiFunction;
-    this.includeNullValuesInReturn = includeNullValuesInReturn;
   }
 
   public MemcachedBulkCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, Function<Collection<String>, Map<String, T>> fetchMultiFunction,
-                            String keyPrefix, Class<T> objectClass, int expirationTimeInSeconds,
-                            boolean allowNullValues, boolean includeNullValuesInReturn,
+                            String keyPrefix, Class<T> objectClass, int expirationTimeInSeconds, boolean allowNullValues,
                             Function<T, String> customSerializer, Function<String, T> customDeserializer) {
-    this(memcachedClient, fetchFunction, fetchMultiFunction, keyPrefix, f -> f.constructType(objectClass), expirationTimeInSeconds, allowNullValues, includeNullValuesInReturn, customSerializer, customDeserializer);
+    this(memcachedClient, fetchFunction, fetchMultiFunction, keyPrefix, f -> f.constructType(objectClass), expirationTimeInSeconds, allowNullValues, customSerializer, customDeserializer);
   }
 
   public MemcachedBulkCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, Function<Collection<String>, Map<String, T>> fetchMultiFunction,
                             String keyPrefix, Function<TypeFactory, JavaType> objectTypeFactory, int expirationTimeInSeconds,
-                            boolean allowNullValues, boolean includeNullValuesInReturn) {
-    this(memcachedClient, fetchFunction, fetchMultiFunction, keyPrefix, objectTypeFactory, expirationTimeInSeconds, allowNullValues, includeNullValuesInReturn, null, null);
+                            boolean allowNullValues) {
+    this(memcachedClient, fetchFunction, fetchMultiFunction, keyPrefix, objectTypeFactory, expirationTimeInSeconds, allowNullValues, null, null);
   }
 
   public MemcachedBulkCache(MemcachedClient memcachedClient, Function<String, T> fetchFunction, Function<Collection<String>, Map<String, T>> fetchMultiFunction,
                             String keyPrefix, Class<T> objectClass, int expirationTimeInSeconds,
-                            boolean allowNullValues, boolean includeNullValuesInReturn) {
-    this(memcachedClient, fetchFunction, fetchMultiFunction, keyPrefix, f -> f.constructType(objectClass), expirationTimeInSeconds, allowNullValues, includeNullValuesInReturn, null, null);
+                            boolean allowNullValues) {
+    this(memcachedClient, fetchFunction, fetchMultiFunction, keyPrefix, f -> f.constructType(objectClass), expirationTimeInSeconds, allowNullValues, null, null);
   }
 
   @Override

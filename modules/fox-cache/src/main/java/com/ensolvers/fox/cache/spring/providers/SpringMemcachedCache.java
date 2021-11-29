@@ -118,8 +118,8 @@ public class SpringMemcachedCache implements Cache {
    */
   @Override
   public void evict(Object key) {
-    String finalKey = getMemcachedKey(key);
-    memcachedClient.delete(finalKey);
+    String cacheKey = getCacheKey(key);
+    memcachedClient.delete(cacheKey);
   }
 
   /**
@@ -136,42 +136,42 @@ public class SpringMemcachedCache implements Cache {
    * @param key the key of the object
    * @return the final key (a string conformed with the name of the cache and the params of the method)
    */
-  private String getMemcachedKey(Object key) {
-    StringBuilder finalKeyBuilder = new StringBuilder();
-    finalKeyBuilder.append(name);
+  private String getCacheKey(Object key) {
+    StringBuilder cacheKeyBuilder = new StringBuilder();
+    cacheKeyBuilder.append(name);
 
     if (key instanceof CustomCacheKey) {
       if (((CustomCacheKey)key).isEmpty()) {
-        finalKeyBuilder.append("-").append("UNIQUE");
+        cacheKeyBuilder.append("-").append("UNIQUE");
       } else {
-        finalKeyBuilder.append("-").append(key);
+        cacheKeyBuilder.append("-").append(key);
       }
     } else if (key instanceof Collection) {
-      ((Collection)key).forEach(o -> finalKeyBuilder.append("-").append(o));
+      ((Collection)key).forEach(o -> cacheKeyBuilder.append("-").append(o));
     } else {
-      finalKeyBuilder.append("-").append(key);
+      cacheKeyBuilder.append("-").append(key);
     }
 
-    return finalKeyBuilder.toString().replace(" ", "-");
+    return cacheKeyBuilder.toString().replace(" ", "-");
   }
 
-  private Object deserializeUsingMapArgumentType(CustomCacheKey customCacheKey, String memcachedKey, String hit) {
+  private Object deserializeUsingMapArgumentType(CustomCacheKey customCacheKey, String cacheKey, String hit) {
     // Get the type of the serialized object
     Type type = ((ParameterizedType) customCacheKey.getMethod().getGenericReturnType()).getActualTypeArguments()[1];
     try {
       return objectMapper.readValue(hit, objectMapper.getTypeFactory().constructType(type));
     } catch (JsonProcessingException e) {
-      throw CacheSerializingException.with(memcachedKey, type.getTypeName(), e);
+      throw CacheSerializingException.with(cacheKey, type.getTypeName(), e);
     }
   }
 
-  private Object deserializeUsingReturnType(CustomCacheKey customCacheKey, String memcachedKey, String hit) {
+  private Object deserializeUsingReturnType(CustomCacheKey customCacheKey, String cacheKey, String hit) {
     // Get the type of the serialized object
     Type type = customCacheKey.getMethod().getGenericReturnType();
     try {
       return objectMapper.readValue(hit, objectMapper.getTypeFactory().constructType(type));
     } catch (JsonProcessingException e) {
-      throw CacheSerializingException.with(memcachedKey, type.getTypeName(), e);
+      throw CacheSerializingException.with(cacheKey, type.getTypeName(), e);
     }
   }
 
@@ -181,22 +181,22 @@ public class SpringMemcachedCache implements Cache {
       throw new CacheInvalidArgumentException("Cache '" + name + "' is configured to not allow null values but null was provided");
     }
 
-    String finalKey = getMemcachedKey(key);
+    String cacheKey = getCacheKey(key);
     try {
       String serializedValue = CacheString.NULL_STRING;
       if (value != null) {
         serializedValue = objectMapper.writeValueAsString(value);
       }
-      memcachedClient.set(finalKey, expirationTimeInSeconds, serializedValue);
+      memcachedClient.set(cacheKey, expirationTimeInSeconds, serializedValue);
     } catch (JsonProcessingException e) {
-      throw CacheSerializingException.with(finalKey, value.getClass(), e);
+      throw CacheSerializingException.with(cacheKey, value.getClass(), e);
     }
   }
 
   private ValueWrapper getSingle(Object key) {
     // Get cached object
-    String memcachedKey = getMemcachedKey(key);
-    String hit = (String) memcachedClient.get(memcachedKey);
+    String cacheKey = getCacheKey(key);
+    String hit = (String) memcachedClient.get(cacheKey);
 
     // Missed hit
     if (hit == null) {
@@ -207,7 +207,7 @@ public class SpringMemcachedCache implements Cache {
       return new SimpleValueWrapper(null);
     }
 
-    Object deserializedObject = deserializeUsingReturnType((CustomCacheKey) key, memcachedKey, hit);
+    Object deserializedObject = deserializeUsingReturnType((CustomCacheKey) key, cacheKey, hit);
     return new SimpleValueWrapper(deserializedObject);
   }
 
@@ -218,33 +218,33 @@ public class SpringMemcachedCache implements Cache {
     }
 
     // Get the collection of requested keys
-    Collection<Object> collection = (Collection<Object>) customCacheKey.getParams()[0] ;
+    Collection<Object> collection = (Collection<Object>) customCacheKey.getParams()[0];
 
-    // Convert key to memcached key
-    Map<String, Object> memcachedKeyToOriginalKey = collection.stream()
-        .collect(Collectors.toMap(this::getMemcachedKey, Function.identity(), (v1, v2) -> v1));
+    // Convert key to cache key
+    Map<String, Object> cacheKeyToOriginalKey = collection.stream()
+        .collect(Collectors.toMap(this::getCacheKey, Function.identity(), (v1, v2) -> v1));
     Map<Object, Object> result = new HashMap<>();
 
     // Get cached objects
-    Map<String, Object> hits = memcachedClient.getBulk(memcachedKeyToOriginalKey.keySet());
+    Map<String, Object> hits = memcachedClient.getBulk(cacheKeyToOriginalKey.keySet());
 
     // Deserialize cached objects
-    hits.forEach((memcachedKey, hit) -> {
+    hits.forEach((cacheKey, hit) -> {
       Object deserializedObject = null;
       if (!hit.equals(CacheString.NULL_STRING)) {
-        deserializedObject = deserializeUsingMapArgumentType(customCacheKey, memcachedKey, (String) hit);
+        deserializedObject = deserializeUsingMapArgumentType(customCacheKey, cacheKey, (String) hit);
       }
-      result.put(memcachedKeyToOriginalKey.get(memcachedKey), deserializedObject);
-      memcachedKeyToOriginalKey.remove(memcachedKey);
+      result.put(cacheKeyToOriginalKey.get(cacheKey), deserializedObject);
+      cacheKeyToOriginalKey.remove(cacheKey);
     });
 
     // Check missed hits
-    if (!memcachedKeyToOriginalKey.isEmpty()) {
+    if (!cacheKeyToOriginalKey.isEmpty()) {
       // Create a new instance of the collection class and collect the missed keys to pass it to the annotated method
       Collection missedKeys;
       try {
         missedKeys = (Collection)customCacheKey.getParams()[0].getClass().getDeclaredConstructor().newInstance();
-        missedKeys.addAll(memcachedKeyToOriginalKey.values());
+        missedKeys.addAll(cacheKeyToOriginalKey.values());
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw CacheInvalidArgumentException.collectionError(customCacheKey.getParams()[0].getClass(), e);
       }
