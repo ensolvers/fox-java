@@ -29,8 +29,24 @@ import org.springframework.stereotype.Component;
  *      <p>
  *      <p>
  *      * Construction allows building on the fly new context by offering legacy configuration xml files. <p>
- *      Example:  <code> MyComponent component = (MyComponent)GlobalApplicationContext.getBean( "MyComponent" );</code> <p>
- *
+ *      <p> See AlternativeGlobalApplicationContextTest tests.<p>
+ *      <p>
+ *      <p> Static accessors: <p>
+ *      <p>
+ *      <code>getBean</code> looks up a Spring bean.<p>
+ *      <p>
+ *      <code>setGlobalContext</code> and <code>getInstance</code> are user static accessors to the actual ApplicationContext.<p>
+ *      <p>
+ *      <p>
+ *      Context Building for Testing Scenery Set Up: <p>
+ *      <p>
+ *      <code>build</code> builds an ApplicationContext from a xml Context file.<p>
+ *      <p> See AlternativeGlobalApplicationContextTest tests.<p>
+ *      <p>
+ *      <p>
+ *      Accessors:<p>
+ *      <p>
+ *      <code>setApplicationContext</code> is the mandatory ApplicationContextAware interface ApplicationContext instance accessor.<p>
  *      <p>
  *
  */
@@ -38,85 +54,29 @@ import org.springframework.stereotype.Component;
 public class GlobalApplicationContext implements ApplicationContextAware {
     private static ApplicationContext context;
 
-
-    public static void setGlobalContext( ApplicationContext globalContext ) {
-        Logger.info(GlobalApplicationContext.class, "setGlobalContext [" + globalContext + "]" );
-        context = globalContext;
-    }
-
-    public static Object getBean( String name ) {
-        if ( context == null ) {
-            Logger.error( GlobalApplicationContext.class, "No Spring Context available" );
-            throw new ApplicationContextException( "No Spring Context available" );
+    public static Object getBean(String name) {
+        if (context == null) {
+            Logger.error(GlobalApplicationContext.class, "No Spring Context available");
+            throw new ApplicationContextException("No Spring Context available");
         }
         return getInstance().getBean(name);
+    }
+
+    public static void setGlobalContext(ApplicationContext globalContext) {
+        context = globalContext;
     }
 
     public static ApplicationContext getInstance() {
         return context;
     }
 
-    public static Collection<String> getContextsFromProperty( InputStream stream ) throws IOException {
-        Vector contexts = new Vector();
-        if ( stream != null ) {
-            BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
-            String line;
-            while ( (line = reader.readLine() ) != null ) {
-                contexts.add( line );
-                Logger.debug( GlobalApplicationContext.class, "context line read [" + line + "]" );
-            }
-        }
-
-        return contexts;
-    }
-
-    public static Collection<String> getContextsFromProperty( String propertyClassPath ) throws IOException {
-        InputStream stream = GlobalApplicationContext.class.getResourceAsStream( propertyClassPath );
-        if ( stream == null ) {
-            Logger.error( GlobalApplicationContext.class, "context property not found at ClassPath with path definided as [" + propertyClassPath + "]" );
-            return new Vector();
-        }
-        return getContextsFromProperty( stream );
-    }
-
-    public static String[] applyDevelopContextFilter(String[] paths) throws ApplicationContextException {
-        Vector<String> filtered = new Vector();
-        try {
-            for (String path : paths) {
-                Logger.info(GlobalApplicationContext.class, "configLocations [" + path + "]");
-                Resource[] resources = new PathMatchingResourcePatternResolver().getResources(path);
-                Logger.debug(GlobalApplicationContext.class, "resources obtenidos segun locations [" + resources.length + "]");
-                for (Resource resource : resources) {
-                    Logger.info(GlobalApplicationContext.class, "subLocation from [" + path + "], [" + resource + "]");
-                    if (resource.getFilename().toString().indexOf("develop") == -1) {
-                        /* *
-                         * ClassPathResource o FileSystemResource suported, both interfaces with getPath method
-                         */
-                        Method method = resource.getClass().getDeclaredMethod("getPath", null);
-                        filtered.add("classpath*:" + method.invoke(resource, null));
-                        Logger.info(GlobalApplicationContext.class, "context to apply " + resource);
-                    } else {
-                        Logger.info(GlobalApplicationContext.class, "context filtered " + resource);
-                    }
-                }
-            }
-        } catch(Exception e ) {
-            throw new ApplicationContextException(e.getMessage(),e );
-        }
-
-        return filtered.toArray( new String[ filtered.size() ] );
-    }
-
-    public static ApplicationContext build( String config ) {
-        setGlobalContext( new ClassPathXmlApplicationContext( config ) );
+    public static ApplicationContext build(String config) {
+        setGlobalContext(new ClassPathXmlApplicationContext(config));
         return getInstance();
     }
 
-    // Accessors
-    public ApplicationContext getApplicationContext() {
-        return context;
-    }
-    public void setApplicationContext( ApplicationContext ac ) throws BeansException {
-        context = ac;
+    // ApplicationContextAware interface
+    public void setApplicationContext(ApplicationContext ac) throws BeansException {
+        setGlobalContext(ac);
     }
 }
