@@ -16,14 +16,14 @@ public class GlobalApplicationContextTest {
 
     @Test
     void testAutowiring() {
-        assertNotNull( sampleComponent );
+        assertNotNull(sampleComponent);
     }
 
     @Test
     void testBeanLookUp() {
-        SampleComponent sc = (SampleComponent)GlobalApplicationContext.getBean("sampleComponent" );
-        assertNotNull( sc );
-        assertEquals( sampleComponent, sc );
-        assertEquals( "Hey there", sc.helloWorld() );
+        SampleComponent sc = (SampleComponent)GlobalApplicationContext.getBean("sampleComponent");
+        assertNotNull(sc);
+        assertEquals(sampleComponent, sc);
+        assertEquals("Hey there", sc.helloWorld());
     }
 }

@@ -16,23 +16,23 @@ public class AlternativeGlobalApplicationContextTest {
 
    @Test
    public void testResourceSample() {
-      GlobalApplicationContext.build( "classpath*:/com/ensolvers/fox/spring/sameAutowiring-context.xml");
-      SampleComponent sc = (SampleComponent)GlobalApplicationContext.getBean("sampleComponent" );
-      assertNotNull( sc );
-      assertEquals( "Hey there", sc.helloWorld() );
+      GlobalApplicationContext.build("classpath*:/com/ensolvers/fox/spring/sameAutowiring-context.xml");
+      SampleComponent sc = (SampleComponent)GlobalApplicationContext.getBean("sampleComponent");
+      assertNotNull(sc);
+      assertEquals("Hey there", sc.helloWorld());
 
    }
 
    @Test
    public void testPointcutResourceSample() {
-      GlobalApplicationContext.build( "classpath*:/com/ensolvers/fox/spring/pointcutAutowiring-context.xml");
+      GlobalApplicationContext.build("classpath*:/com/ensolvers/fox/spring/pointcutAutowiring-context.xml");
 
       try {
          GlobalApplicationContext.getBean("sampleComponent");
          fail();
       } catch (Exception e) {}
 
-      assertNotNull(GlobalApplicationContext.getBean("automaticLoggingImpl" ) );
+      assertNotNull(GlobalApplicationContext.getBean("automaticLoggingImpl"));
    }
 
 }
