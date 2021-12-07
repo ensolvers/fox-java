@@ -88,6 +88,14 @@ public class JsonMap<K, V> extends HashMap<K, V> {
 	}
 
 	// Builders
+	public static JsonMap from(Object target) {
+		try {
+			return fromJson(new ObjectMapper().writeValueAsString(target));
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static JsonMap fromJson(InputStream inputStream) {
 		try {
 			return fromJson(new String(IOUtils.toByteArray(inputStream)));
