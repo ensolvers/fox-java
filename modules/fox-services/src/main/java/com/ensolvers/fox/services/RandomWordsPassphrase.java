@@ -45,7 +45,7 @@ public final class RandomWordsPassphrase {
         int i = 0;
         while (i < n) {
             String currentWord = pickRandomItemFromList(dictionary);
-            if (currentWord.length() > 3 && currentWord.length() < 8) {
+            if (currentWord != null && currentWord.length() > 3 && currentWord.length() < 8) {
                 words.append(currentWord);
                 if (i < n - 1) words.append(" ");
                 ++i;
