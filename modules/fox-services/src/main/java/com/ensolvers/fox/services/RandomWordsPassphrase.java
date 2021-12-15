@@ -17,7 +17,8 @@ public final class RandomWordsPassphrase {
 
     private static RandomWordsPassphrase instance;
     private final List<String> dictionary;
-    private static Logger logger = LoggerFactory.getLogger(RandomWordsPassphrase.class);
+    private static final Logger logger = LoggerFactory.getLogger(RandomWordsPassphrase.class);
+    private static final Random random = new Random();
 
     private RandomWordsPassphrase() throws IOException {
         // Load english dictionary to memory
@@ -31,8 +32,7 @@ public final class RandomWordsPassphrase {
     }
 
     private static <T> T pickRandomItemFromList(List<T> originalList) {
-        Random r = new Random();
-        int idx = r.nextInt(originalList.size() - 1);
+        int idx = random.nextInt(originalList.size() - 1);
         T randomItem = null;
         if (!originalList.isEmpty()) {
             randomItem = originalList.get(idx);
