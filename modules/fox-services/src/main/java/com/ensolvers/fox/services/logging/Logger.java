@@ -1,6 +1,8 @@
 package com.ensolvers.fox.services.logging;
 
 import ch.qos.logback.classic.Level;
+import com.newrelic.api.agent.NewRelic;
+import java.util.function.Supplier;
 
 /**
  * This service class logger avoids the need to structurally declare a Logger
@@ -8,9 +10,10 @@ import ch.qos.logback.classic.Level;
  * <p>
  * Logs in the right category when logging within a polymorphic hierarchy.
  * <p>
+ * Notifies NewRelic when present
  * <p>
  * <p>
- * Information to obtain the right category is obtained from the instance class.
+ * Information to get to the right category is obtained from the instance class.
  * <p>
  * Within a static context ClassName.class() should be used.
  * <p>
@@ -37,6 +40,11 @@ import ch.qos.logback.classic.Level;
  * <p>
  */
 public class Logger {
+    enum ExternalStatus {
+        Unknown, Present, Absent
+    }
+
+    private static ExternalStatus newRelicStatus = ExternalStatus.Unknown;
 
     private Logger() {
     }
@@ -45,14 +53,14 @@ public class Logger {
         return msg.toString();
     }
 
-    public static void info(Object category, CodeBlock fn) {
+    public static void info(Object category, Supplier<String> fn) {
         info(category.getClass(), fn);
     }
 
-    public static void info(Class<?> category, CodeBlock fn) {
+    public static void info(Class<?> category, Supplier<String> fn) {
         org.slf4j.Logger c = getCategory(category);
         if (c.isInfoEnabled()) {
-            c.info(fn.value());
+            c.info(fn.get());
         }
     }
 
@@ -89,14 +97,14 @@ public class Logger {
         }
     }
 
-    public static void debug(Object category, CodeBlock fn) {
+    public static void debug(Object category, Supplier<String> fn) {
         debug(category.getClass(), fn);
     }
 
-    public static void debug(Class<?> category, CodeBlock fn) {
+    public static void debug(Class<?> category, Supplier<String> fn) {
         org.slf4j.Logger c = getCategory(category);
         if (c.isDebugEnabled()) {
-            c.debug(customizeMsg(fn.value()));
+            c.debug(customizeMsg(fn.get()));
         }
     }
 
@@ -138,7 +146,9 @@ public class Logger {
     }
 
     public static void error(Class category, Object msg, Throwable e) {
-        getCategory(category).error(customizeMsg(msg), e);
+        String cMsg = customizeMsg(msg);
+        notifyExternals(cMsg);
+        getCategory(category).error(cMsg, e);
     }
 
     public static void error(Object category, Object msg) {
@@ -146,7 +156,9 @@ public class Logger {
     }
 
     public static void error(Class category, Object msg) {
-        getCategory(category).error(customizeMsg(msg));
+        String cMsg = customizeMsg(msg);
+        notifyExternals(cMsg);
+        getCategory(category).error(cMsg);
     }
 
     public static void error(Object category, String msg) {
@@ -154,6 +166,7 @@ public class Logger {
     }
 
     public static void error(Class category, String msg) {
+        notifyExternals(msg);
         getCategory(category).error(msg);
     }
 
@@ -236,8 +249,19 @@ public class Logger {
     public static void setWarnLevel(String clazz) {
         ((ch.qos.logback.classic.Logger) getCategory(clazz)).setLevel(Level.WARN);
     }
-}
 
-interface CodeBlock {
-    String value();
+    private static void notifyExternals(String cMsg) {
+        if (newRelicStatus == ExternalStatus.Unknown) {
+            try {
+                Class.forName("com.newrelic.api.agent.NewRelic");
+                newRelicStatus = ExternalStatus.Present;
+            } catch (ClassNotFoundException e) {
+                newRelicStatus = ExternalStatus.Absent;
+                getCategory(Logger.class).info("NewRelic not available");
+                return;
+            }
+        }
+        if (newRelicStatus == ExternalStatus.Present)
+            NewRelic.noticeError(cMsg);
+    }
 }

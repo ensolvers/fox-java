@@ -85,6 +85,18 @@ class LoggerTest {
         Logger.endInfo(this, "deferredLoggingTest");
     }
 
+    /** checks for external services like NewRelic */
+    @Test
+    void externalNewRelicLookUp() {
+        Logger.initInfo(this, "onTheFlyNewRelicLookUp");
+
+        Logger.error(this, "peek a boo New Relic");
+
+        Logger.endInfo(this, "onTheFlyNewRelicLookUp");
+
+        Assertions.assertTrue(true);
+    }
+
     class ExpensiveToLog {
         String status = "no work done";
 
