@@ -230,8 +230,8 @@ class RedisCacheTest {
 
         assertThrows(CacheSerializingException.class, () -> finalCache.get("123"));
 
-        assertThrows(CacheExecutionException.class, () -> finalCache.push("123", new TestClass()));
-        assertThrows(CacheExecutionException.class, () -> finalCache.push("abc", new TestClass()));
+        assertThrows(RuntimeException.class, () -> finalCache.push("123", new TestClass()));
+        assertThrows(RuntimeException.class, () -> finalCache.push("abc", new TestClass()));
 
         cache.invalidateAll();
     }
