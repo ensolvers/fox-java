@@ -16,37 +16,35 @@ import java.util.function.Function;
  */
 public class GuavaCache<T> implements GenericCache<T> {
 
-	private final LoadingCache<String, T> cache;
-	private final String keyPrefix;
+    private final LoadingCache<String, T> cache;
+    private final String keyPrefix;
 
-	public GuavaCache(Function<String, T> fetchingFunction, String keyPrefix, int expirationTimeInSeconds) {
-		this.keyPrefix = keyPrefix;
-		this.cache = CacheBuilder.newBuilder()
-				.expireAfterAccess(expirationTimeInSeconds, TimeUnit.SECONDS)
-				.build(new CacheLoader<>() {
-					@Override
-					public T load(String key) {
-						return fetchingFunction.apply(key);
-					}
-				});
-	}
+    public GuavaCache(Function<String, T> fetchingFunction, String keyPrefix, int expirationTimeInSeconds) {
+        this.keyPrefix = keyPrefix;
+        this.cache = CacheBuilder.newBuilder().expireAfterAccess(expirationTimeInSeconds, TimeUnit.SECONDS).build(new CacheLoader<>() {
+            @Override
+            public T load(String key) {
+                return fetchingFunction.apply(key);
+            }
+        });
+    }
 
-	@Override
-	public T get(String key) {
-		try {
-			return this.cache.get(key);
-		} catch (ExecutionException e) {
-			throw new CacheExecutionException("Error when trying to get an item from the cache", e);
-		}
-	}
+    @Override
+    public T get(String key) {
+        try {
+            return this.cache.get(key);
+        } catch (ExecutionException e) {
+            throw new CacheExecutionException("Error when trying to get an item from the cache", e);
+        }
+    }
 
-	@Override
-	public void invalidate(String key) {
-		this.cache.refresh(key);
-	}
+    @Override
+    public void invalidate(String key) {
+        this.cache.refresh(key);
+    }
 
-	@Override
-	public void put(String key, T object) {
-		this.cache.put(key, object);
-	}
+    @Override
+    public void put(String key, T object) {
+        this.cache.put(key, object);
+    }
 }

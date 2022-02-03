@@ -19,10 +19,11 @@
 package com.ensolvers.fox.sns;
 
 import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.model.MessageAttributeValue;
-import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.PublishResult;
+import com.amazonaws.services.sns.model.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,5 +80,17 @@ public class SNSService {
 
         logger.info("{} SMS sent to {}, result: {}", LOG_PREFIX, phoneNumber, result);
         return result.getMessageId();
+    }
+
+    public List<String> listOptOut(){
+        List<String> optedOuts = new ArrayList<>();
+        ListPhoneNumbersOptedOutResult result = this.client.listPhoneNumbersOptedOut(new ListPhoneNumbersOptedOutRequest());
+        optedOuts.addAll(result.getPhoneNumbers());
+
+        while (result.getNextToken() != null) { //the result is paginated, each page has 100 numbers
+            result = this.client.listPhoneNumbersOptedOut(new ListPhoneNumbersOptedOutRequest().withNextToken(result.getNextToken()));
+            optedOuts.addAll(result.getPhoneNumbers());
+        }
+        return optedOuts;
     }
 }

@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 class SNSServiceTest {
 
     @Disabled("403 Security token")
@@ -26,9 +28,12 @@ class SNSServiceTest {
         String senderId = "Ensolvers";
         String phoneNumber = "";
         String message = "Test SMS message";
-        double maxPrice = 0.01;
+        double maxPrice = 0.06;
 
-        String smsId = service.sendSMSMessage(senderId, phoneNumber, message, false, maxPrice);
+        String smsId = service.sendSMSMessage(senderId, phoneNumber, message, true, maxPrice);
+        List<String> optedOuts = service.listOptOut();
+
+        Assertions.assertNotNull(optedOuts);
         Assertions.assertFalse(smsId.isEmpty());
     }
 }
