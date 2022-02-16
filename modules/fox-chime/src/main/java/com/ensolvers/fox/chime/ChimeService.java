@@ -185,8 +185,12 @@ public class ChimeService {
     }
 
     public void sendMessage(String userArn, String channelArn, String message, String metadata) {
+        this.sendMessage(userArn, channelArn, message, metadata, ChannelMessageType.STANDARD);
+    }
+
+    public void sendMessage(String userArn, String channelArn, String message, String metadata, ChannelMessageType type) {
         SendChannelMessageRequest sendChannelMessageRequest = new SendChannelMessageRequest().withChannelArn(channelArn)
-                .withChimeBearer(userArn).withType(ChannelMessageType.STANDARD).withPersistence(ChannelMessagePersistenceType.PERSISTENT)
+                .withChimeBearer(userArn).withType(type).withPersistence(ChannelMessagePersistenceType.PERSISTENT)
                 .withContent(message).withMetadata(metadata);
 
         this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
