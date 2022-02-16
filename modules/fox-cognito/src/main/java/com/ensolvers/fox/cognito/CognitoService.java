@@ -136,4 +136,20 @@ public class CognitoService {
 
         return cognitoIdentityProviderClient.adminInitiateAuth(adminInitiateAuthRequest);
     }
+
+    /**
+     * Method to delete a user in cognito, if the username exists it deletes it, no matter if caller is not that user
+     *
+     * @param username User's username or email (depending on cognito pool configuration)
+     * @return An AdminDeleteUserResponse containing success or error state
+     */
+    public AdminDeleteUserResponse deleteUser(String username) {
+        AdminDeleteUserRequest adminDeleteUserRequest = AdminDeleteUserRequest
+                .builder()
+                .username(username)
+                .userPoolId(userPoolId)
+                .build();
+
+        return cognitoIdentityProviderClient.adminDeleteUser(adminDeleteUserRequest);
+    }
 }
