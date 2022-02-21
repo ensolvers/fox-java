@@ -155,7 +155,7 @@ public class ChimeService {
     }
 
     public String updateUser(String userArn, String fullName) {
-        UpdateAppInstanceUserRequest userRequest = new UpdateAppInstanceUserRequest().withAppInstanceUserArn(userArn).withName(fullName)
+        UpdateAppInstanceUserRequest userRequest = new UpdateAppInstanceUserRequest().withAppInstanceUserArn(userArn).withName(fullName);
 
         UpdateAppInstanceUserResult appInstanceUser = amazonChime.updateAppInstanceUser(userRequest);
         logger.info("User with arn: {} updated", userArn);
