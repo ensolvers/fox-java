@@ -154,6 +154,14 @@ public class ChimeService {
         return appInstanceUser.getAppInstanceUserArn();
     }
 
+    public String updateUser(String userArn, String fullName) {
+        UpdateAppInstanceUserRequest userRequest = new UpdateAppInstanceUserRequest().withAppInstanceUserArn(userArn).withName(fullName)
+
+        UpdateAppInstanceUserResult appInstanceUser = amazonChime.updateAppInstanceUser(userRequest);
+        logger.info("User with arn: {} updated", userArn);
+        return appInstanceUser.getAppInstanceUserArn();
+    }
+
     public void addMembersToChannel(String channelArn, String channelCreatorArn, Collection<String> memberArns) {
         BatchCreateChannelMembershipRequest request = new BatchCreateChannelMembershipRequest().withChannelArn(channelArn)
                 .withChimeBearer(channelCreatorArn).withMemberArns(memberArns).withType(ChannelMembershipType.DEFAULT);
