@@ -290,4 +290,17 @@ public class ChimeService {
         // Remove the final ampersand (&)
         return endpoint.substring(0, endpoint.length() - 1);
     }
+
+    /**
+     * Deleted a message from a given channel
+     *
+     * @param channelCreatorArn The channel creator arn
+     * @param channelArn The channel arn
+     * @param messageId The id of the message to be deleted
+     */
+    public void deleteChannelMessage(String channelCreatorArn, String channelArn, String messageId) {
+        DeleteChannelMessageRequest deleteChannelMessageRequest = new DeleteChannelMessageRequest().withChannelArn(channelArn).withMessageId(messageId).withChimeBearer(channelCreatorArn);
+
+        amazonChime.deleteChannelMessage(deleteChannelMessageRequest);
+    }
 }
