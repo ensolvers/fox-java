@@ -292,14 +292,14 @@ public class ChimeService {
     }
 
     /**
-     * Deleted a message from a given channel
+     * Deleted a message from a given channel, only for admins
      *
-     * @param channelCreatorArn The channel creator arn
+     * @param chimeBearer The chime bearer
      * @param channelArn The channel arn
      * @param messageId The id of the message to be deleted
      */
-    public void deleteChannelMessage(String channelCreatorArn, String channelArn, String messageId) {
-        DeleteChannelMessageRequest deleteChannelMessageRequest = new DeleteChannelMessageRequest().withChannelArn(channelArn).withMessageId(messageId).withChimeBearer(channelCreatorArn);
+    public void deleteChannelMessage(String chimeBearer, String channelArn, String messageId) {
+        DeleteChannelMessageRequest deleteChannelMessageRequest = new DeleteChannelMessageRequest().withChannelArn(channelArn).withMessageId(messageId).withChimeBearer(chimeBearer);
 
         amazonChime.deleteChannelMessage(deleteChannelMessageRequest);
     }
