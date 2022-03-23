@@ -84,15 +84,16 @@ public class SNSService {
 
     /**
      * Retrieves a list of phone numbers that opted out SMS notifications
+     * 
      * @author Facundo Errobidart
      */
 
-    public List<String> listOptOut(){
+    public List<String> listOptOut() {
         List<String> optedOuts = new ArrayList<>();
         ListPhoneNumbersOptedOutResult result = this.client.listPhoneNumbersOptedOut(new ListPhoneNumbersOptedOutRequest());
         optedOuts.addAll(result.getPhoneNumbers());
 
-        while (result.getNextToken() != null) { //the result is paginated, each page has 100 numbers
+        while (result.getNextToken() != null) { // the result is paginated, each page has 100 numbers
             result = this.client.listPhoneNumbersOptedOut(new ListPhoneNumbersOptedOutRequest().withNextToken(result.getNextToken()));
             optedOuts.addAll(result.getPhoneNumbers());
         }

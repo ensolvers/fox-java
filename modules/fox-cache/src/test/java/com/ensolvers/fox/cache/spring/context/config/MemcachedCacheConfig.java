@@ -16,32 +16,30 @@ import java.net.InetSocketAddress;
 
 @EnableCaching
 public class MemcachedCacheConfig extends CachingConfigurerSupport {
-  @Value("${cache.memcache.port}")
-  private String memcachedPort;
+    @Value("${cache.memcache.port}")
+    private String memcachedPort;
 
-  @Bean
-  @Override
-  public KeyGenerator keyGenerator() {
-    return new CustomKeyGenerator();
-  }
-
-  @Bean
-  @Override
-  public CacheManager cacheManager() {
-    MemcachedClient client;
-    try {
-      client = new MemcachedClient(new InetSocketAddress(Integer.parseInt(memcachedPort)));
-    } catch (IOException e) {
-      throw new RuntimeException("Error trying to instantiate memcached bean", e);
+    @Bean
+    @Override
+    public KeyGenerator keyGenerator() {
+        return new CustomKeyGenerator();
     }
 
-    SpringMemcachedCache testCache = new SpringMemcachedCache("test", client, 60000, false);
-    SpringMemcachedCache profileCache = new SpringMemcachedCache("profile", client, 60000, false);
-    SpringMemcachedCache profileCacheNullable = new SpringMemcachedCache("profileNullable", client, 60000, true);
+    @Bean
+    @Override
+    public CacheManager cacheManager() {
+        MemcachedClient client;
+        try {
+            client = new MemcachedClient(new InetSocketAddress(Integer.parseInt(memcachedPort)));
+        } catch (IOException e) {
+            throw new RuntimeException("Error trying to instantiate memcached bean", e);
+        }
 
-    return new GenericCacheManager()
-        .append("test", testCache)
-        .append("profile", profileCache)
-        .append("profileNullable", profileCacheNullable);
-  }
+        SpringMemcachedCache testCache = new SpringMemcachedCache("test", client, 60000, false);
+        SpringMemcachedCache profileCache = new SpringMemcachedCache("profile", client, 60000, false);
+        SpringMemcachedCache profileCacheNullable = new SpringMemcachedCache("profileNullable", client, 60000, true);
+
+        return new GenericCacheManager().append("test", testCache).append("profile", profileCache).append("profileNullable",
+                profileCacheNullable);
+    }
 }

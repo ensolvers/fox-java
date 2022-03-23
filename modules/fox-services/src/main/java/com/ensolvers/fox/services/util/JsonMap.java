@@ -75,216 +75,216 @@ import org.apache.commons.io.IOUtils;
  */
 public class JsonMap<K, V> extends HashMap<K, V> {
 
-	// Constructors
-	public JsonMap() {
-	}
+    // Constructors
+    public JsonMap() {
+    }
 
-	public JsonMap(Map entrySet) {
-		super(entrySet);
-	}
+    public JsonMap(Map entrySet) {
+        super(entrySet);
+    }
 
-	public JsonMap(Object key, Object value) {
-		addProp(key, value);
-	}
+    public JsonMap(Object key, Object value) {
+        addProp(key, value);
+    }
 
-	// Builders
-	public static JsonMap from(Object target) {
-		try {
-			return fromJson(new ObjectMapper().writeValueAsString(target));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    // Builders
+    public static JsonMap from(Object target) {
+        try {
+            return fromJson(new ObjectMapper().writeValueAsString(target));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static JsonMap fromJson(InputStream inputStream) {
-		try {
-			return fromJson(new String(IOUtils.toByteArray(inputStream)));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public static JsonMap fromJson(InputStream inputStream) {
+        try {
+            return fromJson(new String(IOUtils.toByteArray(inputStream)));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static JsonMap fromJson(String json) {
-		try {
-			return new ObjectMapper().readValue(json, JsonMap.class);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public static JsonMap fromJson(String json) {
+        try {
+            return new ObjectMapper().readValue(json, JsonMap.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static JsonMap[] fromJsonArray(String json) {
-		try {
-			return new ObjectMapper().readValue(json, JsonMap[].class);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public static JsonMap[] fromJsonArray(String json) {
+        try {
+            return new ObjectMapper().readValue(json, JsonMap[].class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static JsonMap[] fromJsonArray(String json, String key) throws Exception {
-		JsonMap[] trv = fromJsonArray(json);
-		Arrays.sort((JsonMap<String, String>[]) trv, new Comparator<JsonMap<String, String>>() {
-			public int compare(JsonMap<String, String> j1, JsonMap<String, String> j2) {
-				return j1.get(key).compareTo(j2.get(key));
-			}
-		});
-		return trv;
-	}
+    public static JsonMap[] fromJsonArray(String json, String key) throws Exception {
+        JsonMap[] trv = fromJsonArray(json);
+        Arrays.sort((JsonMap<String, String>[]) trv, new Comparator<JsonMap<String, String>>() {
+            public int compare(JsonMap<String, String> j1, JsonMap<String, String> j2) {
+                return j1.get(key).compareTo(j2.get(key));
+            }
+        });
+        return trv;
+    }
 
-	public static String asJson(Object key, Object value) {
-		return new JsonMap(key, value).asJson();
-	}
+    public static String asJson(Object key, Object value) {
+        return new JsonMap(key, value).asJson();
+    }
 
-	// Instance protocol
-	public String asJson() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    // Instance protocol
+    public String asJson() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public JsonMap addProp(Object key, Object value) {
-		put((K) key, (V) value);
-		return this;
-	}
+    public JsonMap addProp(Object key, Object value) {
+        put((K) key, (V) value);
+        return this;
+    }
 
-	public JsonMap appendProp(Object key, Object value) {
-		Vector val = (Vector) get(key);
-		if (val == null) {
-			put((K) key, (V) new Vector());
-		}
-		((Vector) get(key)).add(value);
-		return this;
-	}
+    public JsonMap appendProp(Object key, Object value) {
+        Vector val = (Vector) get(key);
+        if (val == null) {
+            put((K) key, (V) new Vector());
+        }
+        ((Vector) get(key)).add(value);
+        return this;
+    }
 
-	public JsonMap addProps(Map adquiProps) {
-		putAll(adquiProps);
-		return this;
-	}
+    public JsonMap addProps(Map adquiProps) {
+        putAll(adquiProps);
+        return this;
+    }
 
-	public JsonMap removeProp(String key) {
-		remove(key);
-		return this;
-	}
+    public JsonMap removeProp(String key) {
+        remove(key);
+        return this;
+    }
 
-	// Traversing: get
-	public Object path(String path) {
-		return pathOn(Arrays.asList(path.split(" ")).iterator());
-	}
+    // Traversing: get
+    public Object path(String path) {
+        return pathOn(Arrays.asList(path.split(" ")).iterator());
+    }
 
-	public Object pathOn(Iterator<String> iterator) {
-		String key = iterator.next();
-		return pathOn(key, get(key), iterator, null);
-	}
+    public Object pathOn(Iterator<String> iterator) {
+        String key = iterator.next();
+        return pathOn(key, get(key), iterator, null);
+    }
 
-	protected Object pathIndexOn(List list, Iterator<String> iterator) {
-		String key = iterator.next();
-		return pathOn(key, list.get(Integer.parseInt(key)), iterator, list);
-	}
+    protected Object pathIndexOn(List list, Iterator<String> iterator) {
+        String key = iterator.next();
+        return pathOn(key, list.get(Integer.parseInt(key)), iterator, list);
+    }
 
-	protected Object pathOn(String key, Object present, Iterator<String> iterator, List parent) {
-		if (!iterator.hasNext()) {
-			if (List.class.isInstance(present)) { // may be returning a no JsonMap list
+    protected Object pathOn(String key, Object present, Iterator<String> iterator, List parent) {
+        if (!iterator.hasNext()) {
+            if (List.class.isInstance(present)) { // may be returning a no JsonMap list
 
-				if (!List.class.cast(present).isEmpty() && Map.class.isInstance(List.class.cast(present).get(0))) {
-					List<JsonMap> jt = new Vector();
-					for (Map map : (List<Map>) present) {
-						jt.add(new JsonMap(map));
-					}
-					put((K) key, (V) jt);
-					return get(key);
-				}
+                if (!List.class.cast(present).isEmpty() && Map.class.isInstance(List.class.cast(present).get(0))) {
+                    List<JsonMap> jt = new Vector();
+                    for (Map map : (List<Map>) present) {
+                        jt.add(new JsonMap(map));
+                    }
+                    put((K) key, (V) jt);
+                    return get(key);
+                }
 
-				return present;
-			}
-			if (Map.class.isInstance(present)) {
-				// Logger.debug( this, "fixing JsonMap" );
-				JsonMap jt = new JsonMap(Map.class.cast(present));
-				if (List.class.isInstance(parent)) {
-					parent.set(Integer.parseInt(key), (V) jt);
-				} else {
-					put((K) key, (V) jt);
-				}
-				return jt;
-			}
-			return present;
-		}
+                return present;
+            }
+            if (Map.class.isInstance(present)) {
+                // Logger.debug( this, "fixing JsonMap" );
+                JsonMap jt = new JsonMap(Map.class.cast(present));
+                if (List.class.isInstance(parent)) {
+                    parent.set(Integer.parseInt(key), (V) jt);
+                } else {
+                    put((K) key, (V) jt);
+                }
+                return jt;
+            }
+            return present;
+        }
 
-		if (JsonMap.class.isInstance(present)) {
-			return JsonMap.class.cast(present).pathOn(iterator);
-		}
+        if (JsonMap.class.isInstance(present)) {
+            return JsonMap.class.cast(present).pathOn(iterator);
+        }
 
-		if (Map.class.isInstance(present)) {
-			// Logger.debug( this, "fixing JsonMap" );
-			JsonMap jt = new JsonMap(Map.class.cast(present));
-			if (List.class.isInstance(parent)) {
-				parent.set(Integer.parseInt(key), (V) jt);
-			} else {
-				put((K) key, (V) jt);
-			}
-			return jt.pathOn(iterator);
+        if (Map.class.isInstance(present)) {
+            // Logger.debug( this, "fixing JsonMap" );
+            JsonMap jt = new JsonMap(Map.class.cast(present));
+            if (List.class.isInstance(parent)) {
+                parent.set(Integer.parseInt(key), (V) jt);
+            } else {
+                put((K) key, (V) jt);
+            }
+            return jt.pathOn(iterator);
 
-		}
+        }
 
-		if (List.class.isInstance(present)) {
-			return pathIndexOn(List.class.cast(present), iterator);
-		}
+        if (List.class.isInstance(present)) {
+            return pathIndexOn(List.class.cast(present), iterator);
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	// Traversing: set
-	public JsonMap setPath(Object value, String path) {
-		path(path); // to ensure the hole path is JsonMap'ed
-		setPathOn(value, Arrays.asList(path.split(" ")).iterator());
-		return this;
-	}
+    // Traversing: set
+    public JsonMap setPath(Object value, String path) {
+        path(path); // to ensure the hole path is JsonMap'ed
+        setPathOn(value, Arrays.asList(path.split(" ")).iterator());
+        return this;
+    }
 
-	public void setPathOn(Object value, Iterator<String> iterator) {
-		setPathOn(value, iterator.next(), iterator);
-	}
+    public void setPathOn(Object value, Iterator<String> iterator) {
+        setPathOn(value, iterator.next(), iterator);
+    }
 
-	public void setPathOn(Object value, String key, Iterator<String> iterator) {
-		if (!iterator.hasNext()) {
-			addProp(key, value);
-			return;
-		}
+    public void setPathOn(Object value, String key, Iterator<String> iterator) {
+        if (!iterator.hasNext()) {
+            addProp(key, value);
+            return;
+        }
 
-		if (JsonMap.class.isInstance(get(key))) {
-			JsonMap.class.cast(get(key)).setPathOn(value, iterator.next(), iterator);
-			return;
-		}
+        if (JsonMap.class.isInstance(get(key))) {
+            JsonMap.class.cast(get(key)).setPathOn(value, iterator.next(), iterator);
+            return;
+        }
 
-		if (List.class.isInstance(get(key))) {
-			setPathIndexOn(value, Integer.parseInt(iterator.next()), List.class.cast(get(key)), iterator);
-			return;
-		}
+        if (List.class.isInstance(get(key))) {
+            setPathIndexOn(value, Integer.parseInt(iterator.next()), List.class.cast(get(key)), iterator);
+            return;
+        }
 
-	}
+    }
 
-	protected void setPathIndexOn(Object value, int key, List list, Iterator<String> iterator) {
+    protected void setPathIndexOn(Object value, int key, List list, Iterator<String> iterator) {
 
-		if (!iterator.hasNext()) {
-			list.set(key, value);
-			return;
-		}
+        if (!iterator.hasNext()) {
+            list.set(key, value);
+            return;
+        }
 
-		if (JsonMap.class.isInstance(list.get(key))) {
-			JsonMap.class.cast(list.get(key)).setPathOn(value, iterator.next(), iterator);
-			return;
-		}
+        if (JsonMap.class.isInstance(list.get(key))) {
+            JsonMap.class.cast(list.get(key)).setPathOn(value, iterator.next(), iterator);
+            return;
+        }
 
-		if (List.class.isInstance(list.get(key))) {
-			setPathIndexOn(value, Integer.parseInt(iterator.next()), List.class.cast(list.get(key)), iterator);
-			return;
-		}
-	}
+        if (List.class.isInstance(list.get(key))) {
+            setPathIndexOn(value, Integer.parseInt(iterator.next()), List.class.cast(list.get(key)), iterator);
+            return;
+        }
+    }
 
-	public <T> T as(Class<T> clazz) {
-		try {
-			return new ObjectMapper().readValue(asJson(), clazz);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public <T> T as(Class<T> clazz) {
+        try {
+            return new ObjectMapper().readValue(asJson(), clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -198,8 +198,8 @@ public class ChimeService {
 
     public void sendMessage(String userArn, String channelArn, String message, String metadata, ChannelMessageType type) {
         SendChannelMessageRequest sendChannelMessageRequest = new SendChannelMessageRequest().withChannelArn(channelArn)
-                .withChimeBearer(userArn).withType(type).withPersistence(ChannelMessagePersistenceType.PERSISTENT)
-                .withContent(message).withMetadata(metadata);
+                .withChimeBearer(userArn).withType(type).withPersistence(ChannelMessagePersistenceType.PERSISTENT).withContent(message)
+                .withMetadata(metadata);
 
         this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
     }
@@ -295,15 +295,13 @@ public class ChimeService {
      * Method to obtain a specific channel message by id
      *
      * @param chimeBearer The chime bearer
-     * @param channelArn The channel arn
-     * @param messageId The id of the message to be obtained
+     * @param channelArn  The channel arn
+     * @param messageId   The id of the message to be obtained
      * @return The message obtained by id as ChannelMessage
      */
     public ChannelMessage getChannelMessage(String chimeBearer, String channelArn, String messageId) {
-        GetChannelMessageRequest getChannelMessageRequest = new GetChannelMessageRequest()
-            .withChannelArn(channelArn)
-            .withMessageId(messageId)
-            .withChimeBearer(chimeBearer);
+        GetChannelMessageRequest getChannelMessageRequest = new GetChannelMessageRequest().withChannelArn(channelArn)
+                .withMessageId(messageId).withChimeBearer(chimeBearer);
         GetChannelMessageResult channelMessage = amazonChime.getChannelMessage(getChannelMessageRequest);
 
         return channelMessage.getChannelMessage();
@@ -313,14 +311,12 @@ public class ChimeService {
      * Deleted a message from a given channel, only for admins
      *
      * @param chimeBearer The chime bearer
-     * @param channelArn The channel arn
-     * @param messageId The id of the message to be deleted
+     * @param channelArn  The channel arn
+     * @param messageId   The id of the message to be deleted
      */
     public void deleteChannelMessage(String chimeBearer, String channelArn, String messageId) {
-        DeleteChannelMessageRequest deleteChannelMessageRequest = new DeleteChannelMessageRequest()
-            .withChannelArn(channelArn)
-            .withMessageId(messageId)
-            .withChimeBearer(chimeBearer);
+        DeleteChannelMessageRequest deleteChannelMessageRequest = new DeleteChannelMessageRequest().withChannelArn(channelArn)
+                .withMessageId(messageId).withChimeBearer(chimeBearer);
 
         amazonChime.deleteChannelMessage(deleteChannelMessageRequest);
     }
