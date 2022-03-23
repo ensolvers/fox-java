@@ -14,7 +14,8 @@ class SimpleRateLimiterTest {
 
         AtomicInteger invocationCount = new AtomicInteger();
 
-        // try to execute 100k method calls, by using 1k keys, only 1k executions should be done
+        // try to execute 100k method calls, by using 1k keys, only 1k executions should
+        // be done
         for (int i = 0; i < 100000; i++) {
             simpleRateLimiter.throttle("key" + i % 1000, () -> invocationCount.getAndIncrement());
         }
@@ -23,7 +24,8 @@ class SimpleRateLimiterTest {
         // wait for 2 secs until that key expires
         Thread.sleep(2000);
 
-        // now after trying another 100k times again with another 1k keys, only 2k executions should be registered
+        // now after trying another 100k times again with another 1k keys, only 2k
+        // executions should be registered
         for (int i = 0; i < 100000; i++) {
             simpleRateLimiter.throttle("key" + i % 1000, () -> invocationCount.getAndIncrement());
         }
