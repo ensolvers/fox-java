@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = {GuavaCacheConfig.class, SampleComponent.class})
+@ContextConfiguration(classes = { GuavaCacheConfig.class, SampleComponent.class })
 class SpringGuavaCacheTest {
     @Autowired
     SampleComponent sampleComponent;

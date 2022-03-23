@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-
 @SpringBootTest
 public class GlobalApplicationContextTest {
 
-    @Autowired SampleComponent sampleComponent;
+    @Autowired
+    SampleComponent sampleComponent;
 
     @Test
     void testAutowiring() {
@@ -20,7 +20,7 @@ public class GlobalApplicationContextTest {
 
     @Test
     void testBeanLookUp() {
-        SampleComponent sc = (SampleComponent)GlobalApplicationContext.getBean("sampleComponent");
+        SampleComponent sc = (SampleComponent) GlobalApplicationContext.getBean("sampleComponent");
         assertNotNull(sc);
         assertEquals(sampleComponent, sc);
         assertEquals("Hey there", sc.helloWorld());

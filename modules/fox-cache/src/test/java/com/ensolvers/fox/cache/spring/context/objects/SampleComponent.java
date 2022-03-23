@@ -83,7 +83,7 @@ public class SampleComponent {
         missedHits = paramList.size();
 
         Map<String, Profile> result = new HashMap<>();
-        for (String param: paramList) {
+        for (String param : paramList) {
             Media media = new Media();
             media.setId(new Random().nextLong());
             media.setTitle(UUID.randomUUID().toString());
@@ -105,7 +105,7 @@ public class SampleComponent {
         missedHits = paramList.size();
 
         Map<String, Profile> result = new HashMap<>();
-        for (String param: paramList) {
+        for (String param : paramList) {
             Media media = new Media();
             media.setId(new Random().nextLong());
             media.setTitle(UUID.randomUUID().toString());
@@ -141,7 +141,7 @@ public class SampleComponent {
         missedHits = paramList.size();
 
         Map<String, Profile> result = new HashMap<>();
-        for (String param: paramList) {
+        for (String param : paramList) {
             Media media = new Media();
             media.setId(new Random().nextLong());
             media.setTitle(UUID.randomUUID().toString());
@@ -164,7 +164,7 @@ public class SampleComponent {
         missedHits = paramList.size();
 
         Map<String, Profile> result = new HashMap<>();
-        for (String param: paramList) {
+        for (String param : paramList) {
             Media media = new Media();
             media.setId(new Random().nextLong());
             media.setTitle(UUID.randomUUID().toString());
@@ -194,7 +194,7 @@ public class SampleComponent {
         return String.valueOf(Integer.parseInt(stringNumber) - 1);
     }
 
-    @CacheEvict(value = {"test", "profile", "profileNullable"}, allEntries=true)
+    @CacheEvict(value = { "test", "profile", "profileNullable" }, allEntries = true)
     public void invalidateAll() {
 
     }

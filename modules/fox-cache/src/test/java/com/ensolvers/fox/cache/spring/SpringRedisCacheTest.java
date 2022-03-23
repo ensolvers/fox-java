@@ -15,15 +15,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
-@ContextConfiguration(classes = {RedisCacheConfig.class, SampleComponent.class})
+@ContextConfiguration(classes = { RedisCacheConfig.class, SampleComponent.class })
 @Testcontainers
 class SpringRedisCacheTest {
     @Autowired
     SampleComponent sampleComponent;
 
     @Container
-    public static GenericContainer<?> redisContainer =
-        new GenericContainer<>(DockerImageName.parse("redis:6.2.5")).withExposedPorts(6379);
+    public static GenericContainer<?> redisContainer = new GenericContainer<>(DockerImageName.parse("redis:6.2.5")).withExposedPorts(6379);
 
     @DynamicPropertySource
     public static void overrideProps(DynamicPropertyRegistry registry) {
