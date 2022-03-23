@@ -29,7 +29,7 @@ public class TemplateUtils {
   /**
    * Validates that every placeholder in the document has been replaced successfully
    *
-   * @param body The html document
+   * @param body The html document to validate
    * @throws MessagingException When a placeholder wasn't replaced
    */
   public static void validateEmptyReplacements(String body) throws MessagingException {
