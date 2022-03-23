@@ -24,9 +24,10 @@ public class SimpleRateLimiter {
     }
 
     /**
-     * Invokes a Runnable with a registered `key` only if a call with the same `key` was not
-     * registered before
-     * @param key key for identifying the Runnable unequivocally
+     * Invokes a Runnable with a registered `key` only if a call with the same `key`
+     * was not registered before
+     * 
+     * @param key      key for identifying the Runnable unequivocally
      * @param runnable runnable to be called
      */
     public void throttle(Object key, Runnable runnable) {
