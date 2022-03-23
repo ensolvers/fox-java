@@ -1,4 +1,4 @@
-package com.ensolvers.fox.email;
+package com.ensolvers.fox.ses;
 
 import javax.mail.MessagingException;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class TemplateUtils {
    * @param body The html document
    * @throws MessagingException When a placeholder wasn't replaced
    */
-  public static  void validateEmptyReplacements(String body) throws MessagingException {
+  public static void validateEmptyReplacements(String body) throws MessagingException {
     Pattern pattern = Pattern.compile("[$][{]\\S+[}]");
     Matcher matcher = pattern.matcher(body);
     StringBuilder allMatches = new StringBuilder("Placeholder wasn't replaced: \n");
