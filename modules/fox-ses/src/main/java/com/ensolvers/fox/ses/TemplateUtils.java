@@ -37,10 +37,14 @@ public class TemplateUtils {
         Pattern pattern = Pattern.compile("[$][{]\\S+[}]");
         Matcher matcher = pattern.matcher(body);
         StringBuilder allMatches = new StringBuilder("Placeholder wasn't replaced: \n");
+        boolean placeholderMissing = false;
         while (matcher.find()) {
             allMatches.append(matcher.group()).append("\n");
+            placeholderMissing = true;
         }
 
-        throw new MessagingException(allMatches.toString());
+        if (placeholderMissing) {
+            throw new MessagingException(allMatches.toString());
+        }
     }
 }
