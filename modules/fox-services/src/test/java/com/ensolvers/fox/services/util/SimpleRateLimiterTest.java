@@ -10,7 +10,7 @@ class SimpleRateLimiterTest {
 
     @Test
     void testThrottle() throws InterruptedException {
-        SimpleRateLimiter simpleRateLimiter = new SimpleRateLimiter(3);
+        SimpleRateLimiter simpleRateLimiter = new SimpleRateLimiter(4);
 
         AtomicInteger invocationCount = new AtomicInteger();
 
@@ -22,7 +22,7 @@ class SimpleRateLimiterTest {
         assertEquals(1000, invocationCount.get());
 
         // wait for 2 secs until that key expires
-        Thread.sleep(6000);
+        Thread.sleep(8000);
 
         // now after trying another 100k times again with another 1k keys, only 2k
         // executions should be registered
