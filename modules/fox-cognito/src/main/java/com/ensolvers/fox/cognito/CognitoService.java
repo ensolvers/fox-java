@@ -150,4 +150,15 @@ public class CognitoService {
 
         return cognitoIdentityProviderClient.adminDeleteUser(adminDeleteUserRequest);
     }
+
+    /**
+     * Method to get a user in cognito, if the username exist it gets it, but
+     * if not exists throw the UserNotFoundException
+     * @param username
+     * @return
+     */
+    public AdminGetUserResponse getUser(String username) {
+        AdminGetUserRequest adminGetUserRequest = AdminGetUserRequest.builder().username(username).userPoolId(userPoolId).build();
+        return cognitoIdentityProviderClient.adminGetUser(adminGetUserRequest);
+    }
 }
