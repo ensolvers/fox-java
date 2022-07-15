@@ -11,7 +11,7 @@
   <description>Fox - Parent project</description>
 
   <properties>
-    <aws-sdk.version>1.12.65</aws-sdk.version>
+    <aws-sdk.version>1.12.261</aws-sdk.version>
     <software.amazon.awssdk.version>2.16.29</software.amazon.awssdk.version>
     <spring.version>5.3.7</spring.version>
     <aspectj.version>1.9.6</aspectj.version>
