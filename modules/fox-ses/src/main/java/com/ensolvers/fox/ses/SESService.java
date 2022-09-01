@@ -69,10 +69,10 @@ public class SESService {
      * @return the message id of the result
      */
     public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String... toEmails) {
-        return sendEmail(fromEmail, subject, bodyText, isHTML, null, toEmails);
+        return sendEmail(fromEmail, subject, null, bodyText, isHTML, toEmails);
     }
 
-    public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String configurationSet,String... toEmails) {
+    public String sendEmail(String fromEmail, String subject, String configurationSet, String bodyText, boolean isHTML, String... toEmails) {
         Body body = new Body();
         if (isHTML) {
             body.withHtml(new Content().withCharset(UTF_8).withData(bodyText));
