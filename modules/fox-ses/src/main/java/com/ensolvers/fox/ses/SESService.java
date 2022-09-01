@@ -69,6 +69,10 @@ public class SESService {
      * @return the message id of the result
      */
     public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String... toEmails) {
+        return sendEmail(fromEmail, subject, bodyText, isHTML, null, toEmails);
+    }
+
+    public String sendEmail(String fromEmail, String subject, String bodyText, boolean isHTML, String configurationSet,String... toEmails) {
         Body body = new Body();
         if (isHTML) {
             body.withHtml(new Content().withCharset(UTF_8).withData(bodyText));
@@ -80,6 +84,10 @@ public class SESService {
                 .withMessage(new com.amazonaws.services.simpleemail.model.Message().withBody(body)
                         .withSubject(new Content().withCharset(UTF_8).withData(subject)))
                 .withSource(fromEmail);
+
+        if (configurationSet != null) {
+            request.withConfigurationSetName(configurationSet);
+        }
 
         SendEmailResult sendEmailResult = client.sendEmail(request);
         String emailList = Arrays.toString(toEmails);
