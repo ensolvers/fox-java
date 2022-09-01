@@ -37,9 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -122,7 +120,25 @@ public class SESService {
      */
     public String sendEmail(String fromEmail, String subject, List<EmailAttachment> attachments, String bodyText, String bodyHTML,
             String... toEmails) throws MessagingException, IOException {
+        return sendEmail(fromEmail, subject, attachments, bodyText, bodyHTML, new HashMap<>(), toEmails);
+    }
 
+
+    /**
+     * Sends an email with the specified parameters
+     *
+     * @param fromEmail   the email to sent it from (must be from a validated
+     *                    domain)
+     * @param subject     the email subject
+     * @param attachments the list of attachments
+     * @param bodyText    the email body for clients not supporting HTML
+     * @param bodyHTML    the email body (in HTML)
+     * @param headers     custom email headers, can be an empty map
+     * @param toEmails    an array of email addresses to send the email to
+     * @return the message id of the result
+     */
+    public String sendEmail(String fromEmail, String subject, List<EmailAttachment> attachments, String bodyText, String bodyHTML,
+                            Map<String, String> headers, String... toEmails) throws MessagingException, IOException {
         Session session = Session.getDefaultInstance(new Properties());
 
         // Create a new MimeMessage object.
@@ -135,6 +151,10 @@ public class SESService {
         InternetAddress[] addresses = new InternetAddress[toEmails.length];
         for (int i = 0; i < toEmails.length; i++) {
             addresses[i] = new InternetAddress(toEmails[i]);
+        }
+
+        for(Map.Entry<String, String> header : headers.entrySet()) {
+            message.addHeader(header.getKey(), header.getValue());
         }
 
         message.setRecipients(Message.RecipientType.TO, addresses);
