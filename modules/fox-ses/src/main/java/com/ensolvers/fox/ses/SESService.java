@@ -72,7 +72,8 @@ public class SESService {
         return sendEmail(fromEmail, subject, null, bodyText, isHTML, toEmails);
     }
 
-    public String sendEmail(String fromEmail, String subject, String configurationSet, String bodyText, boolean isHTML, String... toEmails) {
+    public String sendEmail(String fromEmail, String subject, String configurationSet, String bodyText, boolean isHTML,
+            String... toEmails) {
         Body body = new Body();
         if (isHTML) {
             body.withHtml(new Content().withCharset(UTF_8).withData(bodyText));
@@ -131,7 +132,6 @@ public class SESService {
         return sendEmail(fromEmail, subject, attachments, bodyText, bodyHTML, new HashMap<>(), toEmails);
     }
 
-
     /**
      * Sends an email with the specified parameters
      *
@@ -146,7 +146,7 @@ public class SESService {
      * @return the message id of the result
      */
     public String sendEmail(String fromEmail, String subject, List<EmailAttachment> attachments, String bodyText, String bodyHTML,
-                            Map<String, String> headers, String... toEmails) throws MessagingException, IOException {
+            Map<String, String> headers, String... toEmails) throws MessagingException, IOException {
         Session session = Session.getDefaultInstance(new Properties());
 
         // Create a new MimeMessage object.
@@ -161,7 +161,7 @@ public class SESService {
             addresses[i] = new InternetAddress(toEmails[i]);
         }
 
-        for(Map.Entry<String, String> header : headers.entrySet()) {
+        for (Map.Entry<String, String> header : headers.entrySet()) {
             message.addHeader(header.getKey(), header.getValue());
         }
 

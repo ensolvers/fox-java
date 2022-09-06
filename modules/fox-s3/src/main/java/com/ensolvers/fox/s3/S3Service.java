@@ -107,13 +107,13 @@ public class S3Service {
         return put(bucketName, keyName, inputStream, size, isPublicRead, "");
     }
 
-        /**
+    /**
      * Sets the contents of the MultipartFile into the bucketName/keyName This
      * overload of the put method simplifies the image uploading process to S3
      *
-     * @param bucketName the bucket
-     * @param keyName    the path to the file
-     * @param contentType   the file content type. Example: application/pdf
+     * @param bucketName  the bucket
+     * @param keyName     the path to the file
+     * @param contentType the file content type. Example: application/pdf
      */
     public String put(String bucketName, String keyName, InputStream inputStream, long size, boolean isPublicRead, String contentType) {
         logger.info("{}[START] Uploading a new object to S3 from a file", LOG_PREFIX);

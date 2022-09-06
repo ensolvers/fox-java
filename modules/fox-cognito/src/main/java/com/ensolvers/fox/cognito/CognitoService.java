@@ -152,8 +152,9 @@ public class CognitoService {
     }
 
     /**
-     * Method to get a user in cognito, if the username exist it gets it, but
-     * if not exists throw the UserNotFoundException
+     * Method to get a user in cognito, if the username exist it gets it, but if not
+     * exists throw the UserNotFoundException
+     * 
      * @param username
      * @return
      */
