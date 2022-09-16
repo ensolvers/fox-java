@@ -192,16 +192,16 @@ public class ChimeService {
         return updateChannelResult.getChannelArn();
     }
 
-    public void sendMessage(String userArn, String channelArn, String message, String metadata) {
-        this.sendMessage(userArn, channelArn, message, metadata, ChannelMessageType.STANDARD);
+    public String sendMessage(String userArn, String channelArn, String message, String metadata) {
+        return this.sendMessage(userArn, channelArn, message, metadata, ChannelMessageType.STANDARD);
     }
 
-    public void sendMessage(String userArn, String channelArn, String message, String metadata, ChannelMessageType type) {
+    public String sendMessage(String userArn, String channelArn, String message, String metadata, ChannelMessageType type) {
         SendChannelMessageRequest sendChannelMessageRequest = new SendChannelMessageRequest().withChannelArn(channelArn)
                 .withChimeBearer(userArn).withType(type).withPersistence(ChannelMessagePersistenceType.PERSISTENT).withContent(message)
                 .withMetadata(metadata);
 
-        this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
+        return this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
     }
 
     public ListChannelsResult listChannels(String userArn) {
