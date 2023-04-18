@@ -4,11 +4,60 @@ public class NetworkUtils {
     private NetworkUtils() {
     }
 
+    private static final String IPV4_PATTERN = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}";
+    private static final String HEX_PATTERN = "[A-Fa-f\\d]{1,4}";
+    private static final String IPV6_PATTERN = 
+    "^(?:" +
+    "(?:" + HEX_PATTERN + ":){7}(?:" + HEX_PATTERN + "|:)|" + // 1:2:3:4:5:6:7::  1:2:3:4:5:6:7:8
+    "(?:" + HEX_PATTERN + ":){6}(?:" + IPV4_PATTERN + "|:" + HEX_PATTERN + "|:)|" + // 1:2:3:4:5:6::    1:2:3:4:5:6::8   1:2:3:4:5:6::8  1:2:3:4:5:6::1.2.3.4
+    "(?:" + HEX_PATTERN + ":){5}(?::" + IPV4_PATTERN + "|(?::" + HEX_PATTERN + "){1,2}|:)|" + // 1:2:3:4::        1:2:3:4::6:7:8   1:2:3:4::8      1:2:3:4::6:7:1.2.3.4
+    "(?:" + HEX_PATTERN + ":){4}(?:(?::" + HEX_PATTERN + "){0,1}:" + IPV4_PATTERN + "|(?::" + HEX_PATTERN + "){1,3}|:)|" + // 1:2:3:4::        1:2:3:4::6:7:8   1:2:3:4::8      1:2:3:4::6:7:1.2.3.4
+    "(?:" + HEX_PATTERN + ":){3}(?:(?::" + HEX_PATTERN + "){0,2}:" + IPV4_PATTERN + "|(?::" + HEX_PATTERN + "){1,4}|:)|" + // 1:2:3::          1:2:3::5:6:7:8   1:2:3::8        1:2:3::5:6:7:1.2.3.4
+    "(?:" + HEX_PATTERN + ":){2}(?:(?::" + HEX_PATTERN + "){0,3}:" + IPV4_PATTERN + "|(?::" + HEX_PATTERN + "){1,5}|:)|" + // 1:2::            1:2::4:5:6:7:8   1:2::8          1:2::4:5:6:7:1.2.3.4
+    "(?:" + HEX_PATTERN + ":){1}(?:(?::" + HEX_PATTERN + "){0,4}:" + IPV4_PATTERN + "|(?::" + HEX_PATTERN + "){1,6}|:)|" + // 1::              1::3:4:5:6:7:8   1::8            1::3:4:5:6:7:1.2.3.4
+    "(?::(?:(?::" + HEX_PATTERN + "){0,5}:" + IPV4_PATTERN + "|(?::" + HEX_PATTERN + "){1,7}|:)))"; // ::2:3:4:5:6:7:8  ::2:3:4:5:6:7:8  ::8             ::1.2.3.4
+
+    
+    /**
+     * Check if string is a valid IPv4 address
+     * @param ip a ip address in string form
+     * @return true if a ip is a valid IPv4 address, false otherwise
+     */
     public static boolean isValidIPv4Address(String ip) {
-        return (ip.matches("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"));
+        return (ip.matches(IPV4_PATTERN));
     }
 
-    public static Boolean isValidIPv6Address(String ip) {
+    /**
+     * <p>Check if string is a valid IPv6 address</p>
+     * 
+     * <p>While faster, this one may not check if IPv4 addresses are embedded on IPv6 ones</p>
+     * 
+     * <p>ie: 2001:db8:122:344::192.0.2.33</p>  
+     * 
+     * @param ip a ip address in string form
+     * @return true if a ip is a valid IPv6 address, false otherwise
+     */
+
+    public static boolean isValidIPv6Address(String ip) {
+        return isValidIPv6Addressv1(ip);
+    }
+    
+    /**
+     * <p>Check if string is a valid IPv6 address</p>
+     * 
+     * <p>Slower, but will check if IPv4 addresses are embedded in IPv6 ones</p>   
+     * 
+     * <p>ie: 2001:db8:122:344::192.0.2.33</p>  
+     * 
+     * @param ip a ip address in string form
+     * @return true if a ip is a valid IPv6 address, false otherwise
+     * @see {@link https://www.juniper.net/documentation/us/en/software/junos/interfaces-next-gen-services/topics/concept/ipv4-address-embedded-ipv6.html}
+     */
+    public static boolean isValidIPv6Addressv2(String ip) {
+        return ip.matches(IPV6_PATTERN);
+    }
+
+    private static Boolean isValidIPv6Addressv1(String ip) {
         int simplification = 0;
         int partCounter = 0;
         StringBuilder hexadecimalValue = new StringBuilder();
@@ -56,14 +105,6 @@ public class NetworkUtils {
     }
 
     private static Boolean checkIfHexadecimalValueIsValid(String hexadecimal) {
-        try {
-            if (hexadecimal.length() > 4) {
-                return false;
-            }
-            Long.valueOf(hexadecimal, 16);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return hexadecimal.matches(HEX_PATTERN);
     }
 }

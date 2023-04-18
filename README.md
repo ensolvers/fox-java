@@ -31,13 +31,19 @@ Then, libraries can be referenced simply by its groupId, artifactId and version,
 ```
 
 ## Libraries included
-
-- `fox-cache`: Memcached and Redis typed cache clients which simplify access to most common cache methods, serialization (using Jackson), and so on
-- `fox-email`: Utilities for email sending and processing
-- `fox-s3`: AWS S3 client that simplifies content uploading and fetching
-- `fox-location`: IP2Location using MaxMind DB
-- `fox-ses`: Utils for sending emails via AWS SES
-- `fox-sns`: Utils for sending notifications via AWS SNS
+- [`fox-alert`](modules/fox-alerts/README.md): Utils for creating notification alerts (using Slack)
+- [`fox-cache`](modules/fox-cache/README.md): Memcached and Redis typed cache clients which simplify access to most common cache methods, serialization (using Jackson), and so on
+- [`fox-chime`](modules/fox-chime/README.md): AWS Chime client
+- [`fox-cli`](modules/fox-cli/README.md): Command-line application that allows to generate and send SonarQube reports to a specified Slack channel
+- [`fox-quality`](modules/fox-quality/README.md): A utility class that allows to interact with the SonarQube API
+- [`fox-cognito`](modules/fox-cognito/README.md): AWS Cognito client
+- [`fox-email`](modules/fox-email/README.md): Utilities for email sending and processing
+- [`fox-metrics`](modules/fox-metrics/README.md): Service which simplifies metric pushing to AWS Cloudwatch 
+- [`fox-s3`](modules/fox-s3/README.md): A service which takes care of CRUD operations for objects from and to AWS S3
+- [`fox-location`](modules/fox-location/README.md): IP2Location using MaxMind DB and utilities for IP handling
+- [`fox-services`](modules/fox-services/README.md): Provides utility services and classes for logging and rate limiting.
+- [`fox-ses`](modules/fox-ses/README.md): Utils for sending emails via AWS SES
+- [`fox-sns`](modules/fox-sns/README.md): Utils for sending notifications via AWS SNS
 - [`fox-spring`](modules/fox-spring/README.md): General utils for Spring and Spring Boot
 
 

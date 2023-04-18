@@ -145,6 +145,16 @@ public class ChimeService {
         return this.createUser(userId, fullName, null);
     }
 
+    /**
+     * Updates an app instance user inside the app instance with the specified
+     * display name and metadata
+     *
+     * @param userId   the user id
+     * @param fullName the display name
+     * @param metadata the user metadata
+     * 
+     * @return the app instance user arn
+     */
     public String updateUser(String userArn, String fullName, String metadata) {
         UpdateAppInstanceUserRequest userRequest = new UpdateAppInstanceUserRequest().withAppInstanceUserArn(userArn).withName(fullName)
                 .withMetadata(metadata);
@@ -154,6 +164,15 @@ public class ChimeService {
         return appInstanceUser.getAppInstanceUserArn();
     }
 
+    /**
+     * Updates an app instance user inside the app instance with the specified
+     * display name
+     *
+     * @param userId   the user id
+     * @param fullName the display name
+     * 
+     * @return the app instance user arn
+     */
     public String updateUser(String userArn, String fullName) {
         UpdateAppInstanceUserRequest userRequest = new UpdateAppInstanceUserRequest().withAppInstanceUserArn(userArn).withName(fullName);
 
@@ -162,6 +181,14 @@ public class ChimeService {
         return appInstanceUser.getAppInstanceUserArn();
     }
 
+    /**
+     * Adds a collection of app instance users to the specified channel
+     *
+     * @param channelArn        channel where users are to be added to
+     * @param channelCreatorArn arn of user who created the channel (owner)
+     * @param memberArns        collection of users to be added
+     * 
+     */
     public void addMembersToChannel(String channelArn, String channelCreatorArn, Collection<String> memberArns) {
         BatchCreateChannelMembershipRequest request = new BatchCreateChannelMembershipRequest().withChannelArn(channelArn)
                 .withChimeBearer(channelCreatorArn).withMemberArns(memberArns).withType(ChannelMembershipType.DEFAULT);
@@ -170,6 +197,15 @@ public class ChimeService {
         logger.info("Members added to channel: {}", members);
     }
 
+    /**
+     * Creates a channel with the given metadata (optional)
+     *
+     * @param name       name given to the channel
+     * @param creatorArn arn of user who will create the channel (owner)
+     * @param metadata   the channel metadata, may be null
+     * 
+     * @return the created channel arn
+     */
     public String createChannel(String name, String creatorArn, String metadata) {
         CreateChannelRequest createChannelRequest = new CreateChannelRequest().withAppInstanceArn(appInstanceArn)
                 .withChimeBearer(creatorArn).withName(name).withMetadata(metadata).withPrivacy(ChannelPrivacy.PRIVATE);
@@ -179,10 +215,28 @@ public class ChimeService {
         return arn;
     }
 
+    /**
+     * Creates a channel
+     *
+     * @param name       name given to the channel
+     * @param creatorArn arn of user who will create the channel (owner)
+     * 
+     * @return the created channel arn
+     */
     public String createChannel(String name, String creatorArn) {
         return this.createChannel(name, creatorArn, null);
     }
 
+    /**
+     * Updates a channel with a specified name and metadata
+     *
+     * @param channelArn channel to be updated
+     * @param creatorArn arn of user who will create the channel (owner)
+     * @param name       name given to the channel
+     * @param metadata   metadata for the channel
+     * 
+     * @return the updated channel arn
+     */
     public String updateChannel(String channelArn, String creatorArn, String name, String metadata) {
         UpdateChannelRequest updateChannelRequest = new UpdateChannelRequest().withChimeBearer(creatorArn).withChannelArn(channelArn)
                 .withName(name).withMetadata(metadata);
@@ -192,10 +246,33 @@ public class ChimeService {
         return updateChannelResult.getChannelArn();
     }
 
+    /**
+     * Send a message (Standard)
+     * 
+     * @param userArn    user which sent the message
+     * @param channelArn channel where the message was sent to
+     * @param message    message contents
+     * @param metadata   message metadata (optional)
+     * 
+     * @return the message id of the sent message
+     */
     public String sendMessage(String userArn, String channelArn, String message, String metadata) {
         return this.sendMessage(userArn, channelArn, message, metadata, ChannelMessageType.STANDARD);
     }
 
+    /**
+     * Send a message with specified message type
+     * 
+     * @param userArn    user which sent the message
+     * @param channelArn channel where the message was sent to
+     * @param message    message contents
+     * @param metadata   message metadata (optional)
+     * @param type       the type of message sent
+     * @see ChannelMessageType
+     * 
+     * @return the message id of the sent message
+     * 
+     */
     public String sendMessage(String userArn, String channelArn, String message, String metadata, ChannelMessageType type) {
         SendChannelMessageRequest sendChannelMessageRequest = new SendChannelMessageRequest().withChannelArn(channelArn)
                 .withChimeBearer(userArn).withType(type).withPersistence(ChannelMessagePersistenceType.PERSISTENT).withContent(message)
@@ -204,12 +281,35 @@ public class ChimeService {
         return this.amazonChime.sendChannelMessage(sendChannelMessageRequest).getMessageId();
     }
 
+    /**
+     * List all channels for the app instance
+     * 
+     * @param userArn arn of user who issued the call
+     * 
+     * @return the list of channels for the app instance
+     */
+
     public ListChannelsResult listChannels(String userArn) {
         ListChannelsRequest request = new ListChannelsRequest().withChimeBearer(userArn).withAppInstanceArn(appInstanceArn);
 
         return this.amazonChime.listChannels(request);
     }
 
+    /**
+     * List all messages for a given channel
+     * 
+     * @param userArn    arn of user who issued the call
+     * @param channelArn channel arn to list messages from
+     * @param maxResults maximum number of messages returned by the call
+     * @param cursor     token passed by a previous call to this method to list more
+     *                   messages (optional, max length of 2048 chars)
+     * @param beforeDate final or ending time stamp for the requested messages
+     *                   (optional)
+     * @param afterDate  initial or starting time stamp for the requested messages
+     *                   (optional)
+     * 
+     * @return a list of messages that match the parameters sent
+     */
     public ListChannelMessagesResult listMessages(String userArn, String channelArn, Integer maxResults, String cursor, Date beforeDate,
             Date afterDate) {
         ListChannelMessagesRequest listChannelMessagesRequest = new ListChannelMessagesRequest().withChannelArn(channelArn)
@@ -243,6 +343,11 @@ public class ChimeService {
         return newAppInstanceArn;
     }
 
+    /**
+     * Get the details of the current session's messaging endpoint
+     * 
+     * @return the messaging session endpoint url
+     */
     private String getMessagingSessionUrl() {
         GetMessagingSessionEndpointRequest request = new GetMessagingSessionEndpointRequest();
         GetMessagingSessionEndpointResult result = this.amazonChime.getMessagingSessionEndpoint(request);
@@ -292,7 +397,7 @@ public class ChimeService {
     }
 
     /**
-     * Method to obtain a specific channel message by id
+     * Obtain a specific channel message by its id
      *
      * @param chimeBearer The chime bearer
      * @param channelArn  The channel arn

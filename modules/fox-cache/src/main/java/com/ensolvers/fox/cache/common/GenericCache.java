@@ -1,7 +1,7 @@
 package com.ensolvers.fox.cache.common;
 
 /**
- * Generic cache interface to abstract underlying implementation
+ * Generic cache interface to abstract the underlying implementation
  *
  * @param <T> type of elements stored in the cache
  */
