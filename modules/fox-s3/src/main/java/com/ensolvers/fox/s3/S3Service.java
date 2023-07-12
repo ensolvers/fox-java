@@ -71,6 +71,10 @@ public class S3Service {
         return url.toString();
     }
 
+    public boolean doesObjectExist(String bucketName, String keyName) {
+        return this.s3Client.doesObjectExist(bucketName, keyName);
+    }
+
     /**
      * Sets the contents of file into the bucketName/keyName
      *
